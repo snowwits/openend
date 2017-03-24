@@ -20,7 +20,9 @@
 	margin-left: 5px;
 }
 
-/* OPENEND: Skip button */
-#oe-skip {
+/* OPENEND: Utility span */
+#openend-util {
 	float: right;
+	margin: 0px 5px 0px 5px;
+	padding-right: 5px; 
 }
