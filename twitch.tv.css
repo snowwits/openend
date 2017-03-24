@@ -1,0 +1,26 @@
+/* The whole time & progress div */
+#js-player-seek {
+	/*background: red;*/
+}
+
+/* The total time span */
+.player-seek__time--total {
+		/*background: orange;*/
+		/*display: none;*/
+}
+
+/* The slider div */
+.js-player-slider {
+		/*background: green;*/
+		/*display: none;*/
+}
+
+/* OPENEND: Toggle progress button */
+#oe-toggle-progress {
+	margin-left: 5px;
+}
+
+/* OPENEND: Skip button */
+#oe-skip {
+	float: right;
+}

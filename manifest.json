@@ -1,0 +1,24 @@
+{
+  "manifest_version": 2,
+
+  "name": "Open end",
+  "description": "An extension that hides the progress of videos to prevent spoilers.",
+  "version": "1.0.0",
+
+  "page_action": {
+    "default_icon": "icon_16.png",
+	"default_title": "Open End",
+    "default_popup": "popup.html"
+  },
+  
+ "content_scripts": [
+    {
+      "matches": ["*://*.twitch.tv/*", "file://*/*"],
+      "css": ["twitch.tv.css"],
+      "js": ["twitch.tv.js"],
+	  "run_at": "document_end"
+    }
+  ],
+  
+  "web_accessible_resources": ["oe_twitch.tv_injected.js"]
+}
