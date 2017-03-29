@@ -15,13 +15,22 @@
 		/*display: none;*/
 }
 
-/* OPENEND: Toggle progress button */
-#oe-toggle-progress {
-	margin-left: 5px;
+/* OPENEND: Utility span */
+#oe-util {
+
 }
 
-/* OPENEND: Utility span */
-#openend-util {
-	margin: 0px 5px 0px 5px;
-	padding-right: 5px; 
+/* OPENEND: Toggle progress button */
+#oe-toggle-progress {
+	margin-left: 15px;
+	margin-right: 15px;
 }
+
+/* OPENEND: Seek Amount text input */
+#oe-seek-amount {
+	margin-left: 5px;
+	margin-right: 5px;
+	width: 75px;
+}
+
+
