@@ -221,6 +221,14 @@ function buildUtilSpan() {
 	// Add "Seek Forward" button to util span
 	utilSpan.appendChild(seekForwardBtn);
 	
+	// Pressing Enter in the text field should trigger the Seek Forward button
+	seekAmountInput.addEventListener("keyup", function(event) {
+		event.preventDefault();
+		if (event.keyCode == 13) { // 13 = ENTER
+			seekForwardBtn.click();
+		}
+	});
+	
 	return utilSpan;
 }
 
