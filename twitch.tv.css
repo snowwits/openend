@@ -15,12 +15,12 @@
 		/*display: none;*/
 }
 
-/* OPENEND: Utility span */
-#oe-util {
-
+/* OPENEND: Children of the Utility span */
+#oe-util img, #oe-util button, #oe-util input {
+	vertical-align: middle;
 }
 
-/* OPENEND: Toggle progress button */
+/* OPENEND: Toggle Progress button */
 #oe-toggle-progress {
 	margin-left: 15px;
 	margin-right: 15px;

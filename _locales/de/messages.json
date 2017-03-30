@@ -1,0 +1,35 @@
+{
+	"toggleProgress_visible": {
+		"message": "Fortschritt verstecken",
+		"description": "Beschriftung des Toggle-Progress-Buttons für den sichtbaren Zustand."
+	},
+	"toggleProgress_hidden": {
+		"message": "Fortschritt anzeigen",
+		"description": "Beschriftung des Toggle-Progress-Buttons für den versteckten Zustand."
+	},
+
+  
+  "hello": {
+    "message": "Hello, $USER$",
+    "description": "Greet the user",
+    "placeholders": {
+      "user": {
+        "content": "$1",
+        "example": "Cira"
+      }
+    }
+  },
+  "bye": {
+    "message": "Goodbye, $USER$. Come back to $OUR_SITE$ soon!",
+    "description": "Say goodbye to the user",
+    "placeholders": {
+      "our_site": {
+        "content": "Example.com"
+      },
+      "user": {
+        "content": "$1",
+        "example": "Cira"
+      }
+    }
+  }
+}

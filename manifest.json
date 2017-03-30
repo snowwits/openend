@@ -1,24 +1,31 @@
 {
-  "manifest_version": 2,
+	// Required
+	"manifest_version": 2,
+	"name": "Open end",
+	"version": "1.0.0",
+	
+	// Recommended
+	"default_locale": "en",
+	"description": "Hides the progress bars and length of videos on Twitch.tv and YouTube.com to prevent spoilers when watching sports or esports.",
 
-  "name": "Open end",
-  "description": "An extension that hides the progress of videos to prevent spoilers.",
-  "version": "1.0.0",
-
-  "page_action": {
-    "default_icon": "icon_16.png",
-	"default_title": "Open End",
-    "default_popup": "popup.html"
-  },
+	// Pick one (or none)
+	"page_action": {
+		"default_icon": "icon_16.png",
+		"default_title": "Open End",
+		"default_popup": "popup.html"
+	},
   
- "content_scripts": [
-    {
-      "matches": ["*://*.twitch.tv/*", "file://*/*"],
-      "css": ["twitch.tv.css"],
-      "js": ["twitch.tv.js"],
-	  "run_at": "document_end"
-    }
-  ],
+	// Optional
+	"author": "",
+	
+	"content_scripts": [
+		{
+			"matches": ["*://*.twitch.tv/*", "file://*/*"],
+			"css": ["twitch.tv.css"],
+			"js": ["twitch.tv.js"],
+			"run_at": "document_end"
+		}
+	],
   
-  "web_accessible_resources": ["icon_16.png"]
+	"web_accessible_resources": ["icon_16.png"]
 }

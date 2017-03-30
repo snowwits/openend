@@ -1,0 +1,35 @@
+{
+	"toggleProgress_visible": {
+		"message": "Hide progress",
+		"description": "Label of the Toggle Progress button for the visible state."
+	},
+	"toggleProgress_hidden": {
+		"message": "Show progress",
+		"description": "Label of the Toggle Progress button for the hidden state."
+	},
+
+  
+  "hello": {
+    "message": "Hello, $USER$",
+    "description": "Greet the user",
+    "placeholders": {
+      "user": {
+        "content": "$1",
+        "example": "Cira"
+      }
+    }
+  },
+  "bye": {
+    "message": "Goodbye, $USER$. Come back to $OUR_SITE$ soon!",
+    "description": "Say goodbye to the user",
+    "placeholders": {
+      "our_site": {
+        "content": "Example.com"
+      },
+      "user": {
+        "content": "$1",
+        "example": "Cira"
+      }
+    }
+  }
+}
