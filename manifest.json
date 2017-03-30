@@ -7,14 +7,10 @@
 	// Recommended
 	"default_locale": "en",
 	"description": "Hides the progress bars and length of videos on Twitch.tv and YouTube.com to prevent spoilers when watching sports or esports.",
-
-	// Pick one (or none)
-	"page_action": {
-		"default_icon": "icon_16.png",
-		"default_title": "Open End",
-		"default_popup": "popup.html"
+	"icons": {
+		"16": "icon_16.png"
 	},
-  
+	
 	// Optional
 	"author": "",
 	
