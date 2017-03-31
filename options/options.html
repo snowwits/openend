@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Open End Options</title>
+<style>
+body: {
+	padding: 10px;
+}
+</style>
+</head>
+
+<body>
+	<h3>General</h3>
+	<table>
+		<tr>
+			<td>Default seek amount:</td>
+			<td><input type="text" id="seekAmount"></input></td>
+		</tr>
+	</table>
+	<h3>Twitch</h3>
+	<table>
+		<tr>
+			<td>Start in theatre mode:</td>
+			<td><input type="checkbox" id="twitchTheatreMode"
+				value="twitchTheatreMode"></td>
+		</tr>
+	</table>
+	<hr />
+	<div>
+		<button id="save">Save</button>
+		<button id="restoreDefaults">Restore default defaults</button>
+		<span id="status"></span>
+	</div>
+
+	<script src="options.js"></script>
+</body>
+</html>

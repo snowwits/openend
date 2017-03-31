@@ -8,6 +8,20 @@ const PROGRESS_SLIDER_DIV_CLASS = "js-player-slider";
 let GLOBAL_progressVisible = false;
 
 /* Functions */
+/* OPEN OPTIONS */
+function handleOpenOptionsAction() {
+	console.log("OPENEND: Handling Open Options action");
+	  if (chrome.runtime.openOptionsPage) {
+		    // New way to open options pages, if supported (Chrome 42+).
+		    chrome.runtime.openOptionsPage();
+		  } else {
+		    // Reasonable fallback.
+		    window.open(chrome.runtime.getURL("options/options.html"));
+			//chrome.tabs.create({ 'url': 'chrome://extensions/?options=' + chrome.runtime.id });
+		  }
+}
+
+/* TOGGLE PROGRESS */
 function handleToggleProgressAction() {
 	console.log("OPENEND: Handling Toggle Progress action");
 
@@ -17,7 +31,7 @@ function handleToggleProgressAction() {
 	updateProgressVisibility();
 }
 
-/* TOGGLE PROGRESS */
+
 function updateProgressVisibility() {
 	// Make progress indicators visible / hidden
 	const toggleClasses = [PROGRESS_TOTAL_TIME_DIV_CLASS, PROGRESS_SLIDER_DIV_CLASS];
@@ -53,11 +67,10 @@ function handleSeekForwardAction() {
 }
 
 function seek(forward = true) {
-	const sliders = document.getElementsByClassName(PROGRESS_SLIDER_DIV_CLASS);
-	if (sliders.length != 1) {
+	const slider = getSingleElementByClassName(PROGRESS_SLIDER_DIV_CLASS);
+	if (!slider) {
 		console.error("OPENEND: Seeking failed: div.%s not available", PROGRESS_SLIDER_DIV_CLASS);
 	}
-	const slider = sliders[0];
 	
 	// Get min, max, current time in seconds
 	const minTime = parseInt(slider.getAttribute("aria-valuemin"));
@@ -87,8 +100,7 @@ function seek(forward = true) {
 }
 
 /*
- * "01h02m03s" -> 1 * 60 * 60 + 2 * 60 + 3 = 3723
- * 0 if no match
+ * "01h02m03s" -> 1 * 60 * 60 + 2 * 60 + 3 = 3723 0 if no match
  */
 function parseDuration(durationString) {
 	const rxTime = new RegExp("(?:(\\d+)h)?(?:(\\d+)m)?(?:(\\d+)s)?");
@@ -157,14 +169,19 @@ function init(){
 
 function injectUtilSpan(initStartTime) {
 	// Inject util span into player seek time container
-	const playerSeekTimeContainers = document.getElementsByClassName("player-seek__time-container");
-	if (playerSeekTimeContainers.length == 1){
-		const playerSeekTimeContainer = playerSeekTimeContainers[0];
+	const playerSeekTimeContainer = getSingleElementByClassName("player-seek__time-container");
+	if (playerSeekTimeContainer){
 		const utilSpan = buildUtilSpan();
 		playerSeekTimeContainer.appendChild(utilSpan);
 			
 		// Set initial visibility
 		updateProgressVisibility();
+		
+		// May set theatre mode
+		updateTheatreMode();
+		
+		//
+		listenForStorageChanges();
 		
 		console.log("OPENEND: Open End utility available (added in div.player-seek__time-container)");
 	} else {
@@ -184,11 +201,18 @@ function buildUtilSpan() {
 
 	// Build Open End img
 	const iconImg = document.createElement("img");
-	const iconImgUrl = chrome.extension.getURL("icon_16.png");
+	const iconImgUrl = chrome.runtime.getURL("imgs/icon_16.png");
 	iconImg.setAttribute("src", iconImgUrl);
-	// Add "Open End" img to util span
-	utilSpan.appendChild(iconImg);
 	
+	// Build "Open Options" button
+	const openOptionsBtn = document.createElement("button");
+	openOptionsBtn.setAttribute("id", "oe-seek-back");
+	openOptionsBtn.onclick = handleOpenOptionsAction;
+	// Add "Open End" img to "Open Options" button
+	openOptionsBtn.appendChild(iconImg);
+	// Add "Open Options" button to util span
+	utilSpan.appendChild(openOptionsBtn);
+
 	// Build "Toggle Progress" button
 	const toggleProgressBtn = document.createElement("button");
 	toggleProgressBtn.setAttribute("id", "oe-toggle-progress");
@@ -200,7 +224,7 @@ function buildUtilSpan() {
 	// Build "Seek Back" button
 	const seekBackBtn = document.createElement("button");
 	seekBackBtn.setAttribute("id", "oe-seek-back");
-	seekBackBtn.innerHTML = "<";
+	seekBackBtn.textContent = "<";
 	seekBackBtn.onclick = handleSeekBackAction;
 	// Add "Seek Back" button to util span
 	utilSpan.appendChild(seekBackBtn);
@@ -209,19 +233,19 @@ function buildUtilSpan() {
 	const seekAmountInput = document.createElement("input");
 	seekAmountInput.setAttribute("type", "text");
 	seekAmountInput.setAttribute("id", "oe-seek-amount");
-	seekAmountInput.value = "10m";
+	setValueFromOptions("seekAmount", "10m", seekAmountInput);
 	// Add "Seek Amount" button to util span
 	utilSpan.appendChild(seekAmountInput);
 	
 	// Build "Seek Forward" button
 	const seekForwardBtn = document.createElement("button");
 	seekForwardBtn.setAttribute("id", "oe-seek-forward");
-	seekForwardBtn.innerHTML = ">";
+	seekForwardBtn.textContent = ">";
 	seekForwardBtn.onclick = handleSeekForwardAction;
 	// Add "Seek Forward" button to util span
 	utilSpan.appendChild(seekForwardBtn);
 	
-	// Pressing Enter in the text field should trigger the Seek Forward button
+	// Pressing Enter in the "Seek Amount" text field should trigger the "Seek Forward" button
 	seekAmountInput.addEventListener("keyup", function(event) {
 		event.preventDefault();
 		if (event.keyCode == 13) { // 13 = ENTER
@@ -232,5 +256,49 @@ function buildUtilSpan() {
 	return utilSpan;
 }
 
+function setValueFromOptions(key, defaultValue, textInput) {
+	chrome.storage.sync.get({
+		[key] : defaultValue
+	}, function(items) {
+		textInput.value = items[key];
+	});
+}
+
+function updateTheatreMode() {
+	chrome.storage.sync.get({
+		twitchTheatreMode : false
+	}, function(items) {
+		if (items.twitchTheatreMode === true) {
+			const theatreModeBtn = getSingleElementByClassName("js-control-theatre");
+			if(theatreModeBtn) {
+				theatreModeBtn.click();
+			} else {
+				console.warn("OPENEND: Could not enter theatre mode because the button could not be found");
+			}
+		}
+	});
+}
+
+function listenForStorageChanges() {
+	chrome.storage.onChanged.addListener(function(changes, namespace) {
+        for (const key in changes) {
+          const storageChange = changes[key];
+          console.log('Storage key "%s" in namespace "%s" changed. ' +
+                      'Old value was "%s", new value is "%s".',
+                      key,
+                      namespace,
+                      storageChange.oldValue,
+                      storageChange.newValue);
+        }
+      });
+}
+
+function getSingleElementByClassName(className) {
+	const elems = document.getElementsByClassName(className);
+	if (elems.length == 1){
+		return elems[0];
+	}
+	return null;
+}
 
 window.onload = init;
