@@ -12,7 +12,7 @@ function saveOptions() {
 		seekAmount : seekAmount,
 		twitchTheatreMode : twitchTheatreMode
 	}, function() {
-		showStatusMsg("Options saved.");
+		showStatusMsg(chrome.i18n.getMessage("options_save_successMsg"));
 	});
 }
 
@@ -29,12 +29,12 @@ function restoreOptions() {
 	});
 }
 
-//Restores option values using the preferences stored in chrome.storage.
+// Restores option values using the preferences stored in chrome.storage.
 function restoreDefaultOptions() {
 	// Set option values to elements
 	document.getElementById("seekAmount").value = DEFAULT_SEEK_AMOUNT;
 	document.getElementById("twitchTheatreMode").checked = DEFAULT_TWITCH_THEATRE_MODE;
-	showStatusMsg("Restored default options.");
+	showStatusMsg(chrome.i18n.getMessage("options_restoreDefaults_successMsg"));
 }
 
 function showStatusMsg(msg) {
@@ -46,6 +46,25 @@ function showStatusMsg(msg) {
 	}, 750);
 }
 
+// Init elements
+// General
+const generalLabelH3 = document.getElementById("generalLabel");
+generalLabelH3.textContent = chrome.i18n.getMessage("options_general");
+const seekAmountLabelTd = document.getElementById("seekAmountLabel");
+seekAmountLabelTd.textContent = chrome.i18n.getMessage("options_seekAmount");
+
+// Twitch
+const twitchLabelH3 = document.getElementById("twitchLabel");
+twitchLabelH3.textContent = chrome.i18n.getMessage("options_twitch");
+const twitchTheatreModeLabelTd = document.getElementById("twitchTheatreModeLabel");
+twitchTheatreModeLabelTd.textContent = chrome.i18n.getMessage("options_twitchTheatreMode");
+
+// Controls
+const saveBtn = document.getElementById("save");
+saveBtn.textContent = chrome.i18n.getMessage("options_save");
+saveBtn.onclick=saveOptions;
+
+const restoreDefaultsBtn = document.getElementById("restoreDefaults");
+restoreDefaultsBtn.textContent = chrome.i18n.getMessage("options_restoreDefaults");
+restoreDefaultsBtn.onclick=restoreDefaultOptions;
 document.addEventListener("DOMContentLoaded", restoreOptions);
-document.getElementById("save").onclick=saveOptions;
-document.getElementById("restoreDefaults").onclick=restoreDefaultOptions;

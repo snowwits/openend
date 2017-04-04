@@ -1,0 +1,13 @@
+TODO
+- display error message when user is trying to seek with invalid duration string
+- create open end icon
+- create "Toggle Progress" icon
+- support YouTube.com
+- find a way to directly access Twitch.Player for seeking instead of reloading the entire page (Twitch.Player isn't accessible)
+
+2017-04-04
+- load all settings from chrome.storage.sync in one go
+- i8n option page
+- i8n manifest.json (f.e. description)
+- supply 16, 48, 128 pixel icons
+- supply white version of icon for Utility

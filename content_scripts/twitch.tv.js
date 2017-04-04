@@ -5,22 +5,10 @@ const PROGRESS_TOTAL_TIME_DIV_CLASS = "player-seek__time--total";
 const PROGRESS_SLIDER_DIV_CLASS = "js-player-slider";
 
 /* Global variables */
+let GLOBAL_options;
 let GLOBAL_progressVisible = false;
 
 /* Functions */
-/* OPEN OPTIONS */
-function handleOpenOptionsAction() {
-	console.log("OPENEND: Handling Open Options action");
-	  if (chrome.runtime.openOptionsPage) {
-		    // New way to open options pages, if supported (Chrome 42+).
-		    chrome.runtime.openOptionsPage();
-		  } else {
-		    // Reasonable fallback.
-		    window.open(chrome.runtime.getURL("options/options.html"));
-			//chrome.tabs.create({ 'url': 'chrome://extensions/?options=' + chrome.runtime.id });
-		  }
-}
-
 /* TOGGLE PROGRESS */
 function handleToggleProgressAction() {
 	console.log("OPENEND: Handling Toggle Progress action");
@@ -164,7 +152,18 @@ function padLeft(number, width = 2, padChar = "0") {
 /* INIT */
 function init(){
 	console.log("OPENEND: Initializing...");
+	readOptions();
 	injectUtilSpan(Date.now());
+}
+
+function readOptions() {
+	chrome.storage.sync.get({
+		seekAmount : "10m",
+		twitchTheatreMode : false
+	}, function(items) {
+		GLOBAL_options = items;
+		console.log("OPENEND: Read options: %O", GLOBAL_options);
+	});
 }
 
 function injectUtilSpan(initStartTime) {
@@ -178,10 +177,10 @@ function injectUtilSpan(initStartTime) {
 		updateProgressVisibility();
 		
 		// May set theatre mode
-		updateTheatreMode();
+		mayEnterTheatreMode();
 		
-		//
-		listenForStorageChanges();
+		// Listen for changes to options
+		listenForOptionsChanges();
 		
 		console.log("OPENEND: Open End utility available (added in div.player-seek__time-container)");
 	} else {
@@ -198,20 +197,6 @@ function buildUtilSpan() {
 	// Build util span
 	const utilSpan = document.createElement("span");
 	utilSpan.setAttribute("id", "oe-util")
-
-	// Build Open End img
-	const iconImg = document.createElement("img");
-	const iconImgUrl = chrome.runtime.getURL("imgs/icon_16.png");
-	iconImg.setAttribute("src", iconImgUrl);
-	
-	// Build "Open Options" button
-	const openOptionsBtn = document.createElement("button");
-	openOptionsBtn.setAttribute("id", "oe-seek-back");
-	openOptionsBtn.onclick = handleOpenOptionsAction;
-	// Add "Open End" img to "Open Options" button
-	openOptionsBtn.appendChild(iconImg);
-	// Add "Open Options" button to util span
-	utilSpan.appendChild(openOptionsBtn);
 
 	// Build "Toggle Progress" button
 	const toggleProgressBtn = document.createElement("button");
@@ -233,7 +218,7 @@ function buildUtilSpan() {
 	const seekAmountInput = document.createElement("input");
 	seekAmountInput.setAttribute("type", "text");
 	seekAmountInput.setAttribute("id", "oe-seek-amount");
-	setValueFromOptions("seekAmount", "10m", seekAmountInput);
+	seekAmountInput.value = GLOBAL_options.seekAmount;
 	// Add "Seek Amount" button to util span
 	utilSpan.appendChild(seekAmountInput);
 	
@@ -256,35 +241,22 @@ function buildUtilSpan() {
 	return utilSpan;
 }
 
-function setValueFromOptions(key, defaultValue, textInput) {
-	chrome.storage.sync.get({
-		[key] : defaultValue
-	}, function(items) {
-		textInput.value = items[key];
-	});
-}
-
-function updateTheatreMode() {
-	chrome.storage.sync.get({
-		twitchTheatreMode : false
-	}, function(items) {
-		if (items.twitchTheatreMode === true) {
-			const theatreModeBtn = getSingleElementByClassName("js-control-theatre");
-			if(theatreModeBtn) {
-				theatreModeBtn.click();
-			} else {
-				console.warn("OPENEND: Could not enter theatre mode because the button could not be found");
-			}
+function mayEnterTheatreMode() {
+	if (GLOBAL_options.twitchTheatreMode === true) {
+		const theatreModeBtn = getSingleElementByClassName("js-control-theatre");
+		if(theatreModeBtn) {
+			theatreModeBtn.click();
+		} else {
+			console.warn("OPENEND: Could not enter theatre mode because the button could not be found");
 		}
-	});
+	}
 }
 
-function listenForStorageChanges() {
+function listenForOptionsChanges() {
 	chrome.storage.onChanged.addListener(function(changes, namespace) {
         for (const key in changes) {
           const storageChange = changes[key];
-          console.log('Storage key "%s" in namespace "%s" changed. ' +
-                      'Old value was "%s", new value is "%s".',
+          console.log('Storage key "%s" in namespace "%s" changed. ' + 'Old value was "%s", new value is "%s".',
                       key,
                       namespace,
                       storageChange.oldValue,

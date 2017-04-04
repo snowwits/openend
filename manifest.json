@@ -1,12 +1,14 @@
 {
 	"manifest_version": 2,
-	"name": "Open end",
+	"name": "Open End",
 	"version": "1.0.0",
 	
 	"default_locale": "en",
-	"description": "Hides the progress bars and length of videos on Twitch.tv and YouTube.com to prevent spoilers when watching sports or esports.",
+	"description": "__MSG_manifest_description__",
 	"icons": {
-		"16": "imgs/icon_16.png"
+		"16": "imgs/icon_16.png",
+		"48": "imgs/icon_48.png",
+		"128": "imgs/icon_128.png"
 	},
 	
 	"author": "",

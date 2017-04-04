@@ -1,13 +1,52 @@
 {
+	"manifest_description": {
+		"message": "Versteckt die Fortschrittsanzeige und Gesamtdauer von Videos auf Twitch.tv und YouTube.com, um den Benutzer beim Schauen von Sport- oder E-Sport-Videos vor Spoilern zu schützen.",
+		"description": "Extension description."
+	},
+
 	"toggleProgress_visible": {
 		"message": "Fortschritt verstecken",
-		"description": "Beschriftung des Toggle-Progress-Buttons für den sichtbaren Zustand."
+		"description": "Label of the Toggle Progress button for the visible state."
 	},
 	"toggleProgress_hidden": {
 		"message": "Fortschritt anzeigen",
-		"description": "Beschriftung des Toggle-Progress-Buttons für den versteckten Zustand."
+		"description": "Label of the Toggle Progress button for the hidden state."
 	},
 
+	"options_general": {
+		"message": "Allgemein",
+		"description": "Label of the General options section."
+	},
+	"options_seekAmount": {
+		"message": "Standardwert fürs Spulen",
+		"description": "Label of the Seek Amount option."
+	},
+	
+	"options_twitch": {
+		"message": "Twitch",
+		"description": "Label of the Twitch options section."
+	},
+	"options_twitchTheatreMode": {
+		"message": "Im Theater-Modus starten",
+		"description": "Label of the Twitch Theatre Mode option."
+	},
+	
+	"options_save": {
+		"message": "Speichern",
+		"description": "Label of the Save button."
+	},
+	"options_save_successMsg": {
+		"message": "Optionen gespeichert.",
+		"description": "Message to be displayed after a successful Save action."
+	},
+	"options_restoreDefaults": {
+		"message": "Standardwerte wiederherstellen",
+		"description": "Label of the Restore Defaults button."
+	},
+  	"options_restoreDefaults_successMsg": {
+		"message": "Standardwerte wiederhergestellt.",
+		"description": "Message to be displayed after a successful Restore Defaults action."
+	},
   
   "hello": {
     "message": "Hello, $USER$",

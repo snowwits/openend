@@ -1,4 +1,9 @@
 {
+	"manifest_description": {
+		"message": "Hides the progress bars and length of videos on Twitch.tv and YouTube.com to prevent spoilers when watching sports or esports.",
+		"description": "Extension description."
+	},
+
 	"toggleProgress_visible": {
 		"message": "Hide progress",
 		"description": "Label of the Toggle Progress button for the visible state."
@@ -7,8 +12,43 @@
 		"message": "Show progress",
 		"description": "Label of the Toggle Progress button for the hidden state."
 	},
-
-  
+	
+	
+	"options_general": {
+		"message": "General",
+		"description": "Label of the General options section."
+	},
+	"options_seekAmount": {
+		"message": "Default seek amount",
+		"description": "Label of the Seek Amount option."
+	},
+	
+	"options_twitch": {
+		"message": "Twitch",
+		"description": "Label of the Twitch options section."
+	},
+	"options_twitchTheatreMode": {
+		"message": "Start in theatre mode",
+		"description": "Label of the Twitch Theatre Mode option."
+	},
+	
+	"options_save": {
+		"message": "Save",
+		"description": "Label of the Save button."
+	},
+	"options_save_successMsg": {
+		"message": "Options saved.",
+		"description": "Message to be displayed after a successful Save action."
+	},
+	"options_restoreDefaults": {
+		"message": "Restore defaults",
+		"description": "Label of the Restore Defaults button."
+	},
+  	"options_restoreDefaults_successMsg": {
+		"message": "Restored default options.",
+		"description": "Message to be displayed after a successful Restore Defaults action."
+	},
+	
   "hello": {
     "message": "Hello, $USER$",
     "description": "Greet the user",

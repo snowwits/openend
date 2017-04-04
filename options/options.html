@@ -10,25 +10,24 @@ body: {
 </head>
 
 <body>
-	<h3>General</h3>
+	<h3 id="generalLabel"></h3>
 	<table>
 		<tr>
-			<td>Default seek amount:</td>
+			<td id="seekAmountLabel"></td>
 			<td><input type="text" id="seekAmount"></input></td>
 		</tr>
 	</table>
-	<h3>Twitch</h3>
+	<h3 id="twitchLabel"></h3>
 	<table>
 		<tr>
-			<td>Start in theatre mode:</td>
-			<td><input type="checkbox" id="twitchTheatreMode"
-				value="twitchTheatreMode"></td>
+			<td id="twitchTheatreModeLabel"></td>
+			<td><input type="checkbox" id="twitchTheatreMode" value="twitchTheatreMode"></td>
 		</tr>
 	</table>
 	<hr />
 	<div>
-		<button id="save">Save</button>
-		<button id="restoreDefaults">Restore default defaults</button>
+		<button id="save"></button>
+		<button id="restoreDefaults"></button>
 		<span id="status"></span>
 	</div>
 
