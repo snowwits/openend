@@ -5,7 +5,7 @@ const PROGRESS_TOTAL_TIME_DIV_CLASS = "player-seek__time--total";
 const PROGRESS_SLIDER_DIV_CLASS = "js-player-slider";
 
 /* Global variables */
-let GLOBAL_options;
+let GLOBAL_options = null;
 let GLOBAL_progressVisible = false;
 
 /* Functions */
@@ -16,11 +16,13 @@ function handleToggleProgressAction() {
 	// Toggle
 	GLOBAL_progressVisible = !GLOBAL_progressVisible;
 	
-	updateProgressVisibility();
+	updateToggleProgressState();
 }
 
 
-function updateProgressVisibility() {
+function updateToggleProgressState() {
+	console.log("OPENEND: Updating toggle progress state. Progress visible: %s", GLOBAL_progressVisible);
+	
 	// Make progress indicators visible / hidden
 	const toggleClasses = [PROGRESS_TOTAL_TIME_DIV_CLASS, PROGRESS_SLIDER_DIV_CLASS];
 	for (let i = 0; i < toggleClasses.length; i++) {
@@ -37,10 +39,12 @@ function updateProgressVisibility() {
 		}
 	}	
 	
-	// Update the button label
-	const toggleProgressBtn = document.getElementById("oe-toggle-progress");
-	const toggleProgressBtnLabelMsg = GLOBAL_progressVisible ? "toggleProgress_visible" : "toggleProgress_hidden";
-	toggleProgressBtn.innerHTML = chrome.i18n.getMessage(toggleProgressBtnLabelMsg);
+	// Update the img src and alt
+	const toggleProgressImg = document.getElementById("oe-toggle-progress-img");
+	const toggleProgressImgSrc = GLOBAL_progressVisible ? "imgs/hide_white_16.png" : "imgs/view_white_16.png";
+	toggleProgressImg.src = chrome.runtime.getURL(toggleProgressImgSrc);
+	const toggleProgressImgAlt = GLOBAL_progressVisible ? "toggleProgress_visible" : "toggleProgress_hidden";
+	toggleProgressImg.alt = chrome.i18n.getMessage(toggleProgressImgAlt);
 }
 
 /* SEEKING */
@@ -152,83 +156,90 @@ function padLeft(number, width = 2, padChar = "0") {
 /* INIT */
 function init(){
 	console.log("OPENEND: Initializing...");
-	readOptions();
-	injectUtilSpan(Date.now());
+	readOptionsAndThenInit();
 }
 
-function readOptions() {
+function readOptionsAndThenInit() {
 	chrome.storage.sync.get({
 		seekAmount : "10m",
 		twitchTheatreMode : false
 	}, function(items) {
 		GLOBAL_options = items;
 		console.log("OPENEND: Read options: %O", GLOBAL_options);
+		
+		injectUtilDiv(Date.now());
 	});
 }
 
-function injectUtilSpan(initStartTime) {
-	// Inject util span into player seek time container
-	const playerSeekTimeContainer = getSingleElementByClassName("player-seek__time-container");
-	if (playerSeekTimeContainer){
-		const utilSpan = buildUtilSpan();
-		playerSeekTimeContainer.appendChild(utilSpan);
-			
-		// Set initial visibility
-		updateProgressVisibility();
+function injectUtilDiv(initStartTime) {
+	// "player-seek__time-container"
+	const injectionTargetClassName = "player-seek__time-container";
+	// Inject util span into a div
+	const injectionContainer = getSingleElementByClassName(injectionTargetClassName);
+	if (injectionContainer){
+		const utilDiv = buildUtilDiv();
+		injectionContainer.appendChild(utilDiv);
+		console.log("OPENEND: Open End utility available (added in div.%s)", injectionTargetClassName);
+		
+		// Set initial toggle progress state
+		updateToggleProgressState();
 		
 		// May set theatre mode
 		mayEnterTheatreMode();
 		
 		// Listen for changes to options
 		listenForOptionsChanges();
-		
-		console.log("OPENEND: Open End utility available (added in div.player-seek__time-container)");
 	} else {
 		if (AVAILIBILITY_CHECK_TIMEOUT > Date.now() - initStartTime) {
-			console.log("OPENEND: div to add Open End utility to is not available yet (div.player-seek__time-container). Checking again in %ims...", AVAILIBILITY_CHECK_INTERVAL)
-			setTimeout(injectUtilSpan, AVAILIBILITY_CHECK_INTERVAL, initStartTime);	
+			console.log("OPENEND: div to add Open End utility to is not available yet (div.%s). Checking again in %ims...", injectionTargetClassName, AVAILIBILITY_CHECK_INTERVAL)
+			setTimeout(injectUtilDiv, AVAILIBILITY_CHECK_INTERVAL, initStartTime);	
 		} else {
-			console.log("OPENEND: Open End utility not available (failed to find div.player-seek__time-container in %ims)", AVAILIBILITY_CHECK_TIMEOUT);
+			console.log("OPENEND: Open End utility not available (failed to find div.%s in %ims)", injectionTargetClassName, AVAILIBILITY_CHECK_TIMEOUT);
 		}
 	}
 }
 
-function buildUtilSpan() {
-	// Build util span
-	const utilSpan = document.createElement("span");
-	utilSpan.setAttribute("id", "oe-util")
+function buildUtilDiv() {
+	// Build util div
+	const utilDiv = document.createElement("div");
+	utilDiv.setAttribute("id", "oe-util")
 
 	// Build "Toggle Progress" button
 	const toggleProgressBtn = document.createElement("button");
 	toggleProgressBtn.setAttribute("id", "oe-toggle-progress");
-	// innerHTML will be set via updateProgressVisibility()
 	toggleProgressBtn.onclick = handleToggleProgressAction;
-	// Add "Toggle Progress" button to util span
-	utilSpan.appendChild(toggleProgressBtn);
+	// Build "Toggle Progress" img
+	const toggleProgressImg = document.createElement("img");
+	toggleProgressImg.setAttribute("id", "oe-toggle-progress-img");
+	// src and alt will be set via updateToggleProgressState()
+	// Add "Toggle Progress" img to "Toggle Progress" button
+	toggleProgressBtn.appendChild(toggleProgressImg);
+	// Add "Toggle Progress" button to util div
+	utilDiv.appendChild(toggleProgressBtn);
 	
 	// Build "Seek Back" button
 	const seekBackBtn = document.createElement("button");
 	seekBackBtn.setAttribute("id", "oe-seek-back");
 	seekBackBtn.textContent = "<";
 	seekBackBtn.onclick = handleSeekBackAction;
-	// Add "Seek Back" button to util span
-	utilSpan.appendChild(seekBackBtn);
+	// Add "Seek Back" button to util div
+	utilDiv.appendChild(seekBackBtn);
 	
 	// Build "Seek Amount" text field
 	const seekAmountInput = document.createElement("input");
 	seekAmountInput.setAttribute("type", "text");
 	seekAmountInput.setAttribute("id", "oe-seek-amount");
 	seekAmountInput.value = GLOBAL_options.seekAmount;
-	// Add "Seek Amount" button to util span
-	utilSpan.appendChild(seekAmountInput);
+	// Add "Seek Amount" button to util div
+	utilDiv.appendChild(seekAmountInput);
 	
 	// Build "Seek Forward" button
 	const seekForwardBtn = document.createElement("button");
 	seekForwardBtn.setAttribute("id", "oe-seek-forward");
 	seekForwardBtn.textContent = ">";
 	seekForwardBtn.onclick = handleSeekForwardAction;
-	// Add "Seek Forward" button to util span
-	utilSpan.appendChild(seekForwardBtn);
+	// Add "Seek Forward" button to util div
+	utilDiv.appendChild(seekForwardBtn);
 	
 	// Pressing Enter in the "Seek Amount" text field should trigger the "Seek Forward" button
 	seekAmountInput.addEventListener("keyup", function(event) {
@@ -238,7 +249,7 @@ function buildUtilSpan() {
 		}
 	});
 	
-	return utilSpan;
+	return utilDiv;
 }
 
 function mayEnterTheatreMode() {
