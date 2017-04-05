@@ -5,17 +5,21 @@
 	},
 
 	"toggleProgress_visible": {
-		"message": "Fortschritt verstecken",
+		"message": "Videofortschritt verstecken",
 		"description": "Label of the Toggle Progress button for the visible state."
 	},
 	"toggleProgress_hidden": {
-		"message": "Fortschritt anzeigen",
+		"message": "Videofortschritt anzeigen",
 		"description": "Label of the Toggle Progress button for the hidden state."
 	},
 
 	"options_general": {
 		"message": "Allgemein",
 		"description": "Label of the General options section."
+	},
+	"options_hideProgress": {
+		"message": "Videofortschritt initial verstecken",
+		"description": "Label of the Hide Progress option."
 	},
 	"options_seekAmount": {
 		"message": "Standardwert fürs Spulen",

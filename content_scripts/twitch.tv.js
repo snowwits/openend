@@ -1,4 +1,8 @@
 /* Global values */
+const DEFAULT_HIDE_PROGRESS = true;
+const DEFAULT_SEEK_AMOUNT = "10m";
+const DEFAULT_TWITCH_THEATRE_MODE = false;
+
 const AVAILIBILITY_CHECK_INTERVAL = 200; // 200ms
 const AVAILIBILITY_CHECK_TIMEOUT = 30000; // 30s
 const PROGRESS_TOTAL_TIME_DIV_CLASS = "player-seek__time--total";
@@ -6,10 +10,37 @@ const PROGRESS_SLIDER_DIV_CLASS = "js-player-slider";
 
 /* Global variables */
 let GLOBAL_options = null;
-let GLOBAL_progressVisible = false;
+let GLOBAL_progressVisible = null;
 
 /* Functions */
-/* TOGGLE PROGRESS */
+/* PROGRESS */
+function updateToggleProgressState() {
+    console.log("OPENEND: Updating Progress visibility to %s", GLOBAL_progressVisible);
+    
+    // Make progress indicators visible / hidden
+    const toggleClasses = [PROGRESS_TOTAL_TIME_DIV_CLASS, PROGRESS_SLIDER_DIV_CLASS];
+    for (let i = 0; i < toggleClasses.length; i++) {
+        const toggleClass = toggleClasses[i];
+        const elements = document.getElementsByClassName(toggleClass);
+        for (let j = 0; j < elements.length; j++) {
+            const element = elements[j];
+            if (GLOBAL_progressVisible) {
+                element.style.display = "block";
+            }
+            else {
+                element.style.display = "none";
+            }
+        }
+    }   
+    
+    // Update the img src and alt
+    const toggleProgressImg = document.getElementById("oe-toggle-progress-img");
+    const toggleProgressImgSrc = GLOBAL_progressVisible ? "imgs/hide_white_16.png" : "imgs/view_white_16.png";
+    toggleProgressImg.src = chrome.runtime.getURL(toggleProgressImgSrc);
+    const toggleProgressImgAlt = GLOBAL_progressVisible ? "toggleProgress_visible" : "toggleProgress_hidden";
+    toggleProgressImg.alt = chrome.i18n.getMessage(toggleProgressImgAlt);
+}
+
 function handleToggleProgressAction() {
 	console.log("OPENEND: Handling Toggle Progress action");
 
@@ -19,35 +50,12 @@ function handleToggleProgressAction() {
 	updateToggleProgressState();
 }
 
-
-function updateToggleProgressState() {
-	console.log("OPENEND: Updating progress visibility to %s", GLOBAL_progressVisible);
-	
-	// Make progress indicators visible / hidden
-	const toggleClasses = [PROGRESS_TOTAL_TIME_DIV_CLASS, PROGRESS_SLIDER_DIV_CLASS];
-	for (let i = 0; i < toggleClasses.length; i++) {
-		const toggleClass = toggleClasses[i];
-		const elements = document.getElementsByClassName(toggleClass);
-		for (let j = 0; j < elements.length; j++) {
-			const element = elements[j];
-			if (GLOBAL_progressVisible) {
-				element.style.display = "block";
-			}
-			else {
-				element.style.display = "none";
-			}
-		}
-	}	
-	
-	// Update the img src and alt
-	const toggleProgressImg = document.getElementById("oe-toggle-progress-img");
-	const toggleProgressImgSrc = GLOBAL_progressVisible ? "imgs/hide_white_16.png" : "imgs/view_white_16.png";
-	toggleProgressImg.src = chrome.runtime.getURL(toggleProgressImgSrc);
-	const toggleProgressImgAlt = GLOBAL_progressVisible ? "toggleProgress_visible" : "toggleProgress_hidden";
-	toggleProgressImg.alt = chrome.i18n.getMessage(toggleProgressImgAlt);
+/* SEEKING */
+function updateSeekAmountValue() {
+    console.log("OPENEND: Updating Seek Amount value to %s", GLOBAL_options.seekAmount);
+    document.getElementById("oe-seek-amount").value = GLOBAL_options.seekAmount;
 }
 
-/* SEEKING */
 function handleSeekBackAction() {
 	console.log("OPENEND: Handling Seek Back action");
 	seek(false);
@@ -162,18 +170,16 @@ function padLeft(number, width = 2, padChar = "0") {
 /* INIT */
 function init(){
 	console.log("OPENEND: Initializing...");
-	readOptions().then(injectUtil).catch(handleInitError);
-}
-
-function handleInitError(err) {
-    console.error("OPENEND: Failed to initialize: %s", err);
+	// After the options are read and the toolbar is injected, the page can be set up
+	Promise.all([readOptions(), injectToolbar()]).then(initAfterOptionsAndToolbarLoaded).catch(handleInitError);
 }
 
 function readOptions() {
-    return new Promise(function(resolve,reject){
+    return new Promise(function(resolve, reject){
         chrome.storage.sync.get({
-            seekAmount : "10m",
-            twitchTheatreMode : false
+            hideProgress : DEFAULT_HIDE_PROGRESS,
+            seekAmount : DEFAULT_SEEK_AMOUNT,
+            twitchTheatreMode : DEFAULT_TWITCH_THEATRE_MODE
         }, function(items) {
             if ("undefined" === typeof chrome.runtime.lastError) {
                 GLOBAL_options = items;
@@ -186,87 +192,105 @@ function readOptions() {
    });
 }
 
-function injectUtil(availibityCheckStartTime = Date.now()) {
-	// "player-seek__time-container"
-	const injectionTargetCssClass = "player-seek__time-container";
-	// Inject util span into a div
-	const injectionContainer = getSingleElementByClassName(injectionTargetCssClass);
-	if (injectionContainer){
-		const utilDiv = buildUtil();
-		injectionContainer.appendChild(utilDiv);
-		console.log("OPENEND: Open End utility available (added in div.%s)", injectionTargetCssClass);
-		
-		// Set initial toggle progress state
-		updateToggleProgressState();
-		
-		// May set theatre mode
-		mayEnterTheatreMode();
-		
-		// Listen for changes to options
-		listenForOptionsChanges();
-	} else {
-		if (AVAILIBILITY_CHECK_TIMEOUT > Date.now() - availibityCheckStartTime) {
-			console.log("OPENEND: div to add Open End utility to is not available yet (div.%s). Checking again in %ims...", injectionTargetCssClass, AVAILIBILITY_CHECK_INTERVAL)
-			setTimeout(injectUtil, AVAILIBILITY_CHECK_INTERVAL, availibityCheckStartTime);	
-		} else {
-			console.error("OPENEND: Open End utility not available (failed to find div.%s in %ims)", injectionTargetCssClass, AVAILIBILITY_CHECK_TIMEOUT);
-		}
-	}
+function injectToolbar() {
+    return new Promise(function(resolve, reject){
+        const tryInject = function(availibityCheckStartTime) {
+            // "player-seek__time-container"
+            const injectionTargetCssClass = "player-seek__time-container";
+            // Inject util span into a div
+            const injectionContainer = getSingleElementByClassName(injectionTargetCssClass);
+            if (injectionContainer){
+                const toolbar = buildToolbar();
+                injectionContainer.appendChild(toolbar);
+                console.log("OPENEND: Open End toolbar available (added in div.%s)", injectionTargetCssClass);
+                resolve();
+            } else {
+                if (AVAILIBILITY_CHECK_TIMEOUT > Date.now() - availibityCheckStartTime) {
+                    console.log("OPENEND: div to add Open End toolbar to is not available yet (div.%s). Checking again in %ims...", injectionTargetCssClass, AVAILIBILITY_CHECK_INTERVAL)
+                    setTimeout(tryInject, AVAILIBILITY_CHECK_INTERVAL, availibityCheckStartTime);  
+                } else {
+                    reject(new Error("OPENEND: Open End toolbar not available (failed to find div." + injectionTargetCssClass + " in " + AVAILIBILITY_CHECK_TIMEOUT + "ms)"));
+                }
+            }
+        }
+        tryInject(Date.now());
+    });
 }
 
-function buildUtil() {
-	// Build util div
-	const utilDiv = document.createElement("div");
-	utilDiv.setAttribute("id", "oe-util")
+function buildToolbar() {
+    // Build toolbar div
+    const toolbar = document.createElement("div");
+    toolbar.setAttribute("id", "oe-util")
 
-	// Build "Toggle Progress" button
-	const toggleProgressBtn = document.createElement("button");
-	toggleProgressBtn.setAttribute("id", "oe-toggle-progress");
-	toggleProgressBtn.onclick = handleToggleProgressAction;
-	// Build "Toggle Progress" img
-	const toggleProgressImg = document.createElement("img");
-	toggleProgressImg.setAttribute("id", "oe-toggle-progress-img");
-	// src and alt will be set via updateToggleProgressState()
-	// Add "Toggle Progress" img to "Toggle Progress" button
-	toggleProgressBtn.appendChild(toggleProgressImg);
-	// Add "Toggle Progress" button to util div
-	utilDiv.appendChild(toggleProgressBtn);
-	
-	// Build "Seek Back" button
-	const seekBackBtn = document.createElement("button");
-	seekBackBtn.setAttribute("id", "oe-seek-back");
-	seekBackBtn.textContent = "<";
-	seekBackBtn.onclick = handleSeekBackAction;
-	// Add "Seek Back" button to util div
-	utilDiv.appendChild(seekBackBtn);
-	
-	// Build "Seek Amount" text field
-	const seekAmountInput = document.createElement("input");
-	seekAmountInput.setAttribute("type", "text");
-	seekAmountInput.setAttribute("id", "oe-seek-amount");
-	seekAmountInput.value = GLOBAL_options.seekAmount;
-	// Add "Seek Amount" button to util div
-	utilDiv.appendChild(seekAmountInput);
-	
-	// Build "Seek Forward" button
-	const seekForwardBtn = document.createElement("button");
-	seekForwardBtn.setAttribute("id", "oe-seek-forward");
-	seekForwardBtn.textContent = ">";
-	seekForwardBtn.onclick = handleSeekForwardAction;
-	// Add "Seek Forward" button to util div
-	utilDiv.appendChild(seekForwardBtn);
-	
-	// Pressing Enter in the "Seek Amount" text field should trigger the "Seek
+    // Build "Toggle Progress" button
+    const toggleProgressBtn = document.createElement("button");
+    toggleProgressBtn.setAttribute("id", "oe-toggle-progress");
+    toggleProgressBtn.onclick = handleToggleProgressAction;
+    // Build "Toggle Progress" img
+    const toggleProgressImg = document.createElement("img");
+    toggleProgressImg.setAttribute("id", "oe-toggle-progress-img");
+    // src and alt will be set via updateToggleProgressState() after options are
+    // loaded
+    // Add "Toggle Progress" img to "Toggle Progress" button
+    toggleProgressBtn.appendChild(toggleProgressImg);
+    // Add "Toggle Progress" button to toolbar div
+    toolbar.appendChild(toggleProgressBtn);
+    
+    // Build "Seek Back" button
+    const seekBackBtn = document.createElement("button");
+    seekBackBtn.setAttribute("id", "oe-seek-back");
+    seekBackBtn.textContent = "<";
+    seekBackBtn.onclick = handleSeekBackAction;
+    // Add "Seek Back" button to toolbar div
+    toolbar.appendChild(seekBackBtn);
+    
+    // Build "Seek Amount" text field
+    const seekAmountInput = document.createElement("input");
+    seekAmountInput.setAttribute("type", "text");
+    seekAmountInput.setAttribute("id", "oe-seek-amount");
+    // value will be set via updateSeekAmountValue() after options are loaded
+    // Add "Seek Amount" button to toolbar div
+    toolbar.appendChild(seekAmountInput);
+    
+    // Build "Seek Forward" button
+    const seekForwardBtn = document.createElement("button");
+    seekForwardBtn.setAttribute("id", "oe-seek-forward");
+    seekForwardBtn.textContent = ">";
+    seekForwardBtn.onclick = handleSeekForwardAction;
+    // Add "Seek Forward" button to toolbar div
+    toolbar.appendChild(seekForwardBtn);
+    
+    // Pressing Enter in the "Seek Amount" text field should trigger the "Seek
     // Forward" button
-	seekAmountInput.addEventListener("keyup", function(event) {
-		event.preventDefault();
-		if (event.keyCode == 13) { // 13 = ENTER
-			seekForwardBtn.click();
-		}
-	});
-	
-	return utilDiv;
+    seekAmountInput.addEventListener("keyup", function(event) {
+        event.preventDefault();
+        if (event.keyCode == 13) { // 13 = ENTER
+            seekForwardBtn.click();
+        }
+    });
+    
+    return toolbar;
 }
+
+function initAfterOptionsAndToolbarLoaded() {
+    console.log("OPENEND: initAfterOptionsAndToolbarLoaded()");
+    
+    // Initialize global variables with the option values
+    GLOBAL_progressVisible = !GLOBAL_options.hideProgress;
+    
+    // Update Seek Amount value
+    updateSeekAmountValue();
+    
+    // Set initial Toggle Progress state
+    updateToggleProgressState();
+    
+    // May set theatre mode
+    mayEnterTheatreMode();
+    
+    // Listen for future changes to options
+    listenForOptionsChanges();
+}
+
 
 function mayEnterTheatreMode() {
 	if (GLOBAL_options.twitchTheatreMode === true) {
@@ -292,6 +316,11 @@ function listenForOptionsChanges() {
       });
 }
 
+function handleInitError(err) {
+    console.error("OPENEND: Failed to initialize: %s", err);
+}
+
+/* UTIL METHODS */
 function getSingleElementByClassName(className) {
 	const elems = document.getElementsByClassName(className);
 	if (elems.length == 1){

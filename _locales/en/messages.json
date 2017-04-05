@@ -18,6 +18,10 @@
 		"message": "General",
 		"description": "Label of the General options section."
 	},
+	"options_hideProgress": {
+		"message": "Initially hide the video's progress",
+		"description": "Label of the Hide Progress option."
+	},
 	"options_seekAmount": {
 		"message": "Default seek amount",
 		"description": "Label of the Seek Amount option."
