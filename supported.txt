@@ -1,3 +1,4 @@
+since 32: Promise API
 since 42: New way to open options pages (chrome.runtime.openOptionsPage();)
 since 49: ECMAScript6 (let, const)
 since 58: string chrome.extension.getURL(string path) deprecated. Please use runtime.getURL.

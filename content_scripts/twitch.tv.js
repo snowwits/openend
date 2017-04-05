@@ -21,7 +21,7 @@ function handleToggleProgressAction() {
 
 
 function updateToggleProgressState() {
-	console.log("OPENEND: Updating toggle progress state. Progress visible: %s", GLOBAL_progressVisible);
+	console.log("OPENEND: Updating progress visibility to %s", GLOBAL_progressVisible);
 	
 	// Make progress indicators visible / hidden
 	const toggleClasses = [PROGRESS_TOTAL_TIME_DIV_CLASS, PROGRESS_SLIDER_DIV_CLASS];
@@ -73,7 +73,7 @@ function seek(forward = true) {
 	const seekDirectionFactor = forward ? 1 : -1;
 	const seekAmountInputValue = document.getElementById("oe-seek-amount").value;
 	const seekAmount = parseDuration(seekAmountInputValue) * seekDirectionFactor;
-	if (seekAmount == 0) {
+	if (seekAmount === 0) {
 		console.log("OPENEND: No valid seek amount input value given: %s", seekAmountInputValue);
 		return;
 	}
@@ -95,8 +95,14 @@ function seek(forward = true) {
  * "01h02m03s" -> 1 * 60 * 60 + 2 * 60 + 3 = 3723 0 if no match
  */
 function parseDuration(durationString) {
-	const rxTime = new RegExp("(?:(\\d+)h)?(?:(\\d+)m)?(?:(\\d+)s)?");
-	const groups = durationString.match(rxTime);
+    if (durationString.length === 0) {
+        return 0;
+    }
+	const rxDuration = new RegExp("^(?:(\\d+)h)?(?:(\\d+)m)?(?:(\\d+)s)?$");
+	const groups = durationString.match(rxDuration);
+	if (groups === null) {
+	    return 0;
+	}
 	const hours = parseDurationPart(groups, 1);
 	const mins = parseDurationPart(groups, 2);
 	const secs = parseDurationPart(groups, 3);
@@ -156,30 +162,39 @@ function padLeft(number, width = 2, padChar = "0") {
 /* INIT */
 function init(){
 	console.log("OPENEND: Initializing...");
-	readOptionsAndThenInit();
+	readOptions().then(injectUtil).catch(handleInitError);
 }
 
-function readOptionsAndThenInit() {
-	chrome.storage.sync.get({
-		seekAmount : "10m",
-		twitchTheatreMode : false
-	}, function(items) {
-		GLOBAL_options = items;
-		console.log("OPENEND: Read options: %O", GLOBAL_options);
-		
-		injectUtilDiv(Date.now());
-	});
+function handleInitError(err) {
+    console.error("OPENEND: Failed to initialize: %s", err);
 }
 
-function injectUtilDiv(initStartTime) {
+function readOptions() {
+    return new Promise(function(resolve,reject){
+        chrome.storage.sync.get({
+            seekAmount : "10m",
+            twitchTheatreMode : false
+        }, function(items) {
+            if ("undefined" === typeof chrome.runtime.lastError) {
+                GLOBAL_options = items;
+                console.log("OPENEND: Read options: %O", GLOBAL_options);
+                resolve();
+            } else {
+                reject(chrome.runtime.lastError);
+            }
+        });
+   });
+}
+
+function injectUtil(availibityCheckStartTime = Date.now()) {
 	// "player-seek__time-container"
-	const injectionTargetClassName = "player-seek__time-container";
+	const injectionTargetCssClass = "player-seek__time-container";
 	// Inject util span into a div
-	const injectionContainer = getSingleElementByClassName(injectionTargetClassName);
+	const injectionContainer = getSingleElementByClassName(injectionTargetCssClass);
 	if (injectionContainer){
-		const utilDiv = buildUtilDiv();
+		const utilDiv = buildUtil();
 		injectionContainer.appendChild(utilDiv);
-		console.log("OPENEND: Open End utility available (added in div.%s)", injectionTargetClassName);
+		console.log("OPENEND: Open End utility available (added in div.%s)", injectionTargetCssClass);
 		
 		// Set initial toggle progress state
 		updateToggleProgressState();
@@ -190,16 +205,16 @@ function injectUtilDiv(initStartTime) {
 		// Listen for changes to options
 		listenForOptionsChanges();
 	} else {
-		if (AVAILIBILITY_CHECK_TIMEOUT > Date.now() - initStartTime) {
-			console.log("OPENEND: div to add Open End utility to is not available yet (div.%s). Checking again in %ims...", injectionTargetClassName, AVAILIBILITY_CHECK_INTERVAL)
-			setTimeout(injectUtilDiv, AVAILIBILITY_CHECK_INTERVAL, initStartTime);	
+		if (AVAILIBILITY_CHECK_TIMEOUT > Date.now() - availibityCheckStartTime) {
+			console.log("OPENEND: div to add Open End utility to is not available yet (div.%s). Checking again in %ims...", injectionTargetCssClass, AVAILIBILITY_CHECK_INTERVAL)
+			setTimeout(injectUtil, AVAILIBILITY_CHECK_INTERVAL, availibityCheckStartTime);	
 		} else {
-			console.log("OPENEND: Open End utility not available (failed to find div.%s in %ims)", injectionTargetClassName, AVAILIBILITY_CHECK_TIMEOUT);
+			console.error("OPENEND: Open End utility not available (failed to find div.%s in %ims)", injectionTargetCssClass, AVAILIBILITY_CHECK_TIMEOUT);
 		}
 	}
 }
 
-function buildUtilDiv() {
+function buildUtil() {
 	// Build util div
 	const utilDiv = document.createElement("div");
 	utilDiv.setAttribute("id", "oe-util")
@@ -241,7 +256,8 @@ function buildUtilDiv() {
 	// Add "Seek Forward" button to util div
 	utilDiv.appendChild(seekForwardBtn);
 	
-	// Pressing Enter in the "Seek Amount" text field should trigger the "Seek Forward" button
+	// Pressing Enter in the "Seek Amount" text field should trigger the "Seek
+    // Forward" button
 	seekAmountInput.addEventListener("keyup", function(event) {
 		event.preventDefault();
 		if (event.keyCode == 13) { // 13 = ENTER
