@@ -14,7 +14,7 @@
 	"author": "",
 	"content_scripts": [
 		{
-			"matches": ["*://*.twitch.tv/*", "file://*/*"],
+			"matches": ["*://*.twitch.tv/*videos/*"],
 			"css": ["content_scripts/twitch.tv.css"],
 			"js": ["content_scripts/twitch.tv.js"],
 			"run_at": "document_end"
@@ -24,6 +24,6 @@
 		"page": "options/options.html",
 		"chrome_style": true
 	},
-	"permissions": ["storage", "tabs"],
+	"permissions": ["storage"],
 	"web_accessible_resources": ["imgs/*", "options/options.html"]
 }

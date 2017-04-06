@@ -1,6 +1,25 @@
 TODO
 - twitch: hide times on video cards (figure.card__meta card__meta--right -> style.display = none)
-- twitch: distinguish between twitch.tv/<channelname>/videos/all and twitch.tv/<channelname>/videos/<videoId>
+-- add global scheduled service that checks for window.location changes / existance of certain elements if the check is enabled
+
+- load options
+-- onFinished -> set options, configure available elements
+
+- checker
+-- check for window.location change
+--- init (clear availability flags, set page, reset initStartTime)
+-- set local startTime
+-- if(!cardsAvailable && !cardsAvailableTimeoutReached) {
+	- check for cards:
+	-> if(options) {configure cards accordingly} else {configure to not display anything}
+}
+-- if(isOnVideoPage && !playerAvailable && !playerAvailableTimeoutReached) {
+	check for video player:
+	-> set playerAvailable, if(options) {configure player accordingly} else {configure to not display anything}
+}
+
+
+
 - display error message when user is trying to seek with invalid duration string
 - create open end icon
 - create "Toggle Progress" icon
@@ -17,3 +36,7 @@ TODO
 2017-04-05
 - Parallelized "Loading options" and "Waiting for target element for toolbar injection" tasks
 - Added "Hide Progress" option
+
+2017-04-06
+- twitch: distinguish between twitch.tv/<channelname>/videos/all and twitch.tv/<channelname>/videos/<videoId>
+- twitch: repeatedly check for a change to window.location to detect AJAX page changes and configure the new page
