@@ -1,4 +1,6 @@
 TODO
+- twitch: hide times on video cards (figure.card__meta card__meta--right -> style.display = none)
+- twitch: distinguish between twitch.tv/<channelname>/videos/all and twitch.tv/<channelname>/videos/<videoId>
 - display error message when user is trying to seek with invalid duration string
 - create open end icon
 - create "Toggle Progress" icon
@@ -11,3 +13,7 @@ TODO
 - i8n manifest.json (f.e. description)
 - supply 16, 48, 128 pixel icons
 - supply white version of icon for Utility
+
+2017-04-05
+- Parallelized "Loading options" and "Waiting for target element for toolbar injection" tasks
+- Added "Hide Progress" option
