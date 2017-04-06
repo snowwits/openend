@@ -1,24 +1,33 @@
 TODO
 - twitch: hide times on video cards (figure.card__meta card__meta--right -> style.display = none)
--- add global scheduled service that checks for window.location changes / existance of certain elements if the check is enabled
 
-- load options
--- onFinished -> set options, configure available elements
 
-- checker
--- check for window.location change
---- init (clear availability flags, set page, reset initStartTime)
--- set local startTime
--- if(!cardsAvailable && !cardsAvailableTimeoutReached) {
-	- check for cards:
-	-> if(options) {configure cards accordingly} else {configure to not display anything}
+== add global scheduled service that checks for window.location changes / existence of certain elements ==
+
+load options:
+- onFinished -> set global options, configure available elements, listen for future changes
+
+checker:
+- determine time since init (Date.now() - initStartTime)
+- check for window.location change
+-- init (clear availability flags, set page, reset initStartTime)
+- if(!checkTimeoutReached) {
+	if(!cardsAvailable) {
+		check for cards:
+		-> set cards available
+		-> if(options) {configure cards accordingly} else {configure to not display anything}
+	}
+	if(!playerAvailable && isOnVideoPage) {
+		check for video player:
+		-> set playerAvailable
+		-> if(options) {configure player accordingly} else {configure to not display anything}
+	}
 }
--- if(isOnVideoPage && !playerAvailable && !playerAvailableTimeoutReached) {
-	check for video player:
-	-> set playerAvailable, if(options) {configure player accordingly} else {configure to not display anything}
-}
 
+onSettings changes:
+- configure available elements
 
+====
 
 - display error message when user is trying to seek with invalid duration string
 - create open end icon
