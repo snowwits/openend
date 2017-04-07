@@ -9,7 +9,7 @@ const ELEMENTS_LOADED_TIMEOUT = 15000; // 15s
 
 const PROGRESS_TOTAL_TIME_DIV_CLASS = "player-seek__time--total";
 const PROGRESS_SLIDER_DIV_CLASS = "js-player-slider";
-const OPND_TOOLBAR_CLASS = "oe-util";
+const OPND_TOOLBAR_CLASS = "opnd-toolbar";
 
 /* Global variables */
 let GLOBAL_options = {
@@ -30,7 +30,6 @@ function init(){
 	
 	loadOptions();
     determinePage();
-    configurePage();
 	startCheckPageTask();
 }
 
@@ -59,62 +58,57 @@ function initGlobalsFromOptions() {
 }
 
 function configurePage() {
-    configureVideoCards();
+    updateAllVideoDurationsVisibility();
     
     if (GLOBAL_onVideoPage) {
-        configureVideoPlayer();
+        configureVideoPlayer(false);
     }
 }
 
-function configureVideoCards() {
-    const videoCardTotalTimeElems = document.getElementsByClassName("card__meta--right");
-    for (let i = 0; i < videoCardTotalTimeElems.length; i++) {
-        if (GLOBAL_options.hideAllVideoDurations) {
-            videoCardTotalTimeElems[i].style.display  = "none";
-        } else {
-            videoCardTotalTimeElems[i].style.display  = "block"; 
-        }
-    }
+function updateAllVideoDurationsVisibility() {
+    console.log("OPENEND: Updating All Video Durations visibility to %s", !GLOBAL_options.hideAllVideoDurations);
+    setVisible(document.getElementsByClassName("card__meta--right"), !GLOBAL_options.hideAllVideoDurations)
 }
 
-function configureVideoPlayer() {
+function configureVideoPlayer(calledAfterPlayerLoaded) {
     // Update Seek Amount value
     updateSeekAmountValue();
     
     // Set initial Toggle Progress state
-    updateToggleProgressState();
+    updatePlayerProgressBarVisibility();
     
     // May set theatre mode
-    mayEnterTheatreMode();
+    if (calledAfterPlayerLoaded) {
+    	mayEnterTheatreMode();
+    }
 }
 
 function updateSeekAmountValue() {
-    const seekAmountElem = document.getElementById("oe-seek-amount");
+    const seekAmountElem = document.getElementById("opnd-seek-amount");
     if (seekAmountElem) {
         console.log("OPENEND: Updating Seek Amount value to %s", GLOBAL_options.seekAmount);
         seekAmountElem.value = GLOBAL_options.seekAmount;
     }
 }
 
-function updateToggleProgressState() {
-    console.log("OPENEND: Updating Progress visibility to %s", GLOBAL_progressVisible);
-    
+function updatePlayerProgressBarVisibility() {
     // Make progress indicators visible / hidden
     const toggleClasses = [PROGRESS_TOTAL_TIME_DIV_CLASS, PROGRESS_SLIDER_DIV_CLASS];
+    const allElementsToToggle = [];
     for (let i = 0; i < toggleClasses.length; i++) {
-        const elements = document.getElementsByClassName(toggleClasses[i]);
-        for (let j = 0; j < elements.length; j++) {
-            if (GLOBAL_progressVisible) {
-                elements[j].style.display = "block";
-            }
-            else {
-                elements[j].style.display = "none";
-            }
-        }
-    }   
+    	const classes = document.getElementsByClassName(toggleClasses[i]);
+    	for (let j = 0; j < classes.length; j++) {
+    		allElementsToToggle.push(classes[j]);
+    	}
+    }
     
-    // Update the img src and alt
-    const toggleProgressImg = document.getElementById("oe-toggle-progress-img");
+    if (allElementsToToggle.length > 0) {
+    	console.log("OPENEND: Updating Progress visibility to %s", GLOBAL_progressVisible);
+        setVisible(allElementsToToggle, GLOBAL_progressVisible)
+    }
+   
+    // Update the toggle img src and alt
+    const toggleProgressImg = document.getElementById("opnd-toggle-progress-img");
     if (toggleProgressImg) {
         toggleProgressImg.src = chrome.runtime.getURL(GLOBAL_progressVisible ? "imgs/hide_white_16.png" : "imgs/view_white_16.png");
         toggleProgressImg.alt = chrome.i18n.getMessage(GLOBAL_progressVisible ? "toggleProgress_visible" : "toggleProgress_hidden");
@@ -126,6 +120,7 @@ function mayEnterTheatreMode() {
     if (GLOBAL_options.twitchTheatreMode === true) {
         const theatreModeBtn = getSingleElementByClassName("js-control-theatre");
         if (theatreModeBtn) {
+            console.log("OPENEND: Clicking theatreMode button");
             theatreModeBtn.click();
         } else {
             console.warn("OPENEND: Could not enter theatre mode because the button could not be found");
@@ -177,7 +172,7 @@ function startCheckPageTask() {
                 if (videoCards.length > 0) {
                     console.log("OPENEND: Video cards loaded")
                     GLOBAL_videoCardsLoaded = true;
-                    configureVideoCards();
+                    updateAllVideoDurationsVisibility();
                 }
             }
             if (GLOBAL_onVideoPage && !GLOBAL_playerLoaded) {
@@ -188,7 +183,7 @@ function startCheckPageTask() {
                     GLOBAL_playerLoaded = true;
                     // Inject toolbar
                     injectionContainer.appendChild(buildToolbar());
-                    configureVideoPlayer();
+                    configureVideoPlayer(true);
                     console.log("OPENEND: Added Open End toolbar to the Twitch player");
                 }
             }
@@ -201,7 +196,8 @@ function startCheckPageTask() {
 }
 
 function createLocationIdentifier(location) {
-    // Don't include the fragment (#) because a changed fragment does not indicate a page change
+    // Don't include the fragment (#) because a changed fragment does not
+	// indicate a page change
     // See https://developer.mozilla.org/en-US/docs/Web/API/Location
     return location.pathname + location.search;
 }
@@ -233,12 +229,13 @@ function buildToolbar() {
 
     // Build "Toggle Progress" button
     const toggleProgressBtn = document.createElement("button");
-    toggleProgressBtn.setAttribute("id", "oe-toggle-progress");
+    toggleProgressBtn.setAttribute("id", "opnd-toggle-progress");
     toggleProgressBtn.onclick = handleToggleProgressAction;
     // Build "Toggle Progress" img
     const toggleProgressImg = document.createElement("img");
-    toggleProgressImg.setAttribute("id", "oe-toggle-progress-img");
-    // src and alt will be set via updateToggleProgressState() after options are
+    toggleProgressImg.setAttribute("id", "opnd-toggle-progress-img");
+    // src and alt will be set via updatePlayerProgressBarVisibility() after
+	// options are
     // loaded
     // Add "Toggle Progress" img to "Toggle Progress" button
     toggleProgressBtn.appendChild(toggleProgressImg);
@@ -247,7 +244,7 @@ function buildToolbar() {
     
     // Build "Seek Back" button
     const seekBackBtn = document.createElement("button");
-    seekBackBtn.setAttribute("id", "oe-seek-back");
+    seekBackBtn.setAttribute("id", "opnd-seek-back");
     seekBackBtn.textContent = "<";
     seekBackBtn.onclick = handleSeekBackAction;
     // Add "Seek Back" button to toolbar div
@@ -256,14 +253,14 @@ function buildToolbar() {
     // Build "Seek Amount" text field
     const seekAmountInput = document.createElement("input");
     seekAmountInput.setAttribute("type", "text");
-    seekAmountInput.setAttribute("id", "oe-seek-amount");
+    seekAmountInput.setAttribute("id", "opnd-seek-amount");
     // value will be set via updateSeekAmountValue() after options are loaded
     // Add "Seek Amount" button to toolbar div
     toolbar.appendChild(seekAmountInput);
     
     // Build "Seek Forward" button
     const seekForwardBtn = document.createElement("button");
-    seekForwardBtn.setAttribute("id", "oe-seek-forward");
+    seekForwardBtn.setAttribute("id", "opnd-seek-forward");
     seekForwardBtn.textContent = ">";
     seekForwardBtn.onclick = handleSeekForwardAction;
     // Add "Seek Forward" button to toolbar div
@@ -288,7 +285,7 @@ function handleToggleProgressAction() {
     // Toggle
     GLOBAL_progressVisible = !GLOBAL_progressVisible;
     
-    updateToggleProgressState();
+    updatePlayerProgressBarVisibility();
 }
 
 
@@ -316,7 +313,7 @@ function seek(forward = true) {
             
     // Get the seek amount in seconds
     const seekDirectionFactor = forward ? 1 : -1;
-    const seekAmountInputValue = document.getElementById("oe-seek-amount").value;
+    const seekAmountInputValue = document.getElementById("opnd-seek-amount").value;
     const seekAmount = parseDuration(seekAmountInputValue) * seekDirectionFactor;
     if (seekAmount === 0) {
         console.log("OPENEND: No valid seek amount input value given: %s", seekAmountInputValue);
@@ -414,5 +411,16 @@ function getSingleElementByClassName(className) {
 	return null;
 }
 
+function setVisible(elements, visible) {
+	for (let i = 0; i < elements.length; i++) {
+        if (visible) {
+        	elements[i].classList.remove("opnd-hidden");
+        } else {
+        	elements[i].classList.add("opnd-hidden");
+        }
+    }
+}
 
-window.onload = init;
+
+init();
+// window.onload = init;

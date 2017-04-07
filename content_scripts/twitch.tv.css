@@ -15,20 +15,24 @@
 		/*display: none;*/
 }
 
-/* OPENEND: Children of the Utility span */
-#oe-util img, #oe-util button, #oe-util input {
+/* OPENEND: Children of the Toolbar span */
+#opnd-toolbar img, #opnd-toolbar button, #opnd-toolbar input {
 	vertical-align: middle;
 }
 
 /* OPENEND: Toggle Progress button */
-#oe-toggle-progress {
+#opnd-toggle-progress {
 	margin-left: 25px;
 	margin-right: 10px;
 }
 
 /* OPENEND: Seek Amount text input */
-#oe-seek-amount {
+#opnd-seek-amount {
 	margin-left: 5px;
 	margin-right: 5px;
 	width: 75px;
+}
+
+.opnd-hidden {
+	display: none !important;
 }
