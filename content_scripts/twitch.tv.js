@@ -1,30 +1,151 @@
 /* Global values */
 const DEFAULT_HIDE_PROGRESS = true;
 const DEFAULT_SEEK_AMOUNT = "10m";
+const DEFAULT_HIDE_ALL_VIDEO_DURATIONS = true;
 const DEFAULT_TWITCH_THEATRE_MODE = false;
 
-const LOCATION_CHANGE_POLL_INTERVAL = 500 // 500ms
-const PLAYER_LOADED_CHECK_INTERVAL = 300; // 300ms
-const PLAYER_LOADED_CHECK_TIMEOUT = 15000; // 15s
+const CHECK_PAGE_TASK_INTERVAL = 200 // 200ms
+const ELEMENTS_LOADED_TIMEOUT = 15000; // 15s
+
 const PROGRESS_TOTAL_TIME_DIV_CLASS = "player-seek__time--total";
 const PROGRESS_SLIDER_DIV_CLASS = "js-player-slider";
+const OPND_TOOLBAR_CLASS = "oe-util";
 
 /* Global variables */
-let GLOBAL_firstLoad = true;
-let GLOBAL_options = null;
+let GLOBAL_options = {
+        hideProgress : DEFAULT_HIDE_PROGRESS,
+        seekAmount : DEFAULT_SEEK_AMOUNT,
+        hideAllVideoDurations : DEFAULT_HIDE_ALL_VIDEO_DURATIONS,
+        twitchTheatreMode : DEFAULT_TWITCH_THEATRE_MODE
+    };
 let GLOBAL_onVideoPage = false;
-let GLOBAL_progressVisible = null;
+let GLOBAL_videoCardsLoaded = false;
+let GLOBAL_playerLoaded = false;
+let GLOBAL_progressVisible = false;
 
 /* Functions */
 /* INIT */
 function init(){
-	console.log("OPENEND: Initializing on %s (first load: %s)...", window.location.href, GLOBAL_firstLoad);
+	console.log("OPENEND: Initializing...");
 	
-	determinePage();
-	setupPage();
-	setupListeners();
-	
-	GLOBAL_firstLoad = false;
+	loadOptions();
+    determinePage();
+    configurePage();
+	startCheckPageTask();
+}
+
+function loadOptions() {
+    chrome.storage.sync.get({
+        hideProgress : DEFAULT_HIDE_PROGRESS,
+        seekAmount : DEFAULT_SEEK_AMOUNT,
+        hideAllVideoDurations : DEFAULT_HIDE_ALL_VIDEO_DURATIONS,
+        twitchTheatreMode : DEFAULT_TWITCH_THEATRE_MODE
+    }, function(items) {
+        if ("undefined" === typeof chrome.runtime.lastError) {
+            GLOBAL_options = items;
+            console.log("OPENEND: Loaded options: %O", GLOBAL_options);
+            initGlobalsFromOptions();
+            configurePage();
+            listenForOptionsChanges();
+        } else {
+            console.error("OPENEND: Failed to load options: %s", chrome.runtime.lastError);
+        }
+    });
+}
+
+function initGlobalsFromOptions() {
+    // Initialize global variables with the option values
+    GLOBAL_progressVisible = !GLOBAL_options.hideProgress;
+}
+
+function configurePage() {
+    configureVideoCards();
+    
+    if (GLOBAL_onVideoPage) {
+        configureVideoPlayer();
+    }
+}
+
+function configureVideoCards() {
+    const videoCardTotalTimeElems = document.getElementsByClassName("card__meta--right");
+    for (let i = 0; i < videoCardTotalTimeElems.length; i++) {
+        if (GLOBAL_options.hideAllVideoDurations) {
+            videoCardTotalTimeElems[i].style.display  = "none";
+        } else {
+            videoCardTotalTimeElems[i].style.display  = "block"; 
+        }
+    }
+}
+
+function configureVideoPlayer() {
+    // Update Seek Amount value
+    updateSeekAmountValue();
+    
+    // Set initial Toggle Progress state
+    updateToggleProgressState();
+    
+    // May set theatre mode
+    mayEnterTheatreMode();
+}
+
+function updateSeekAmountValue() {
+    const seekAmountElem = document.getElementById("oe-seek-amount");
+    if (seekAmountElem) {
+        console.log("OPENEND: Updating Seek Amount value to %s", GLOBAL_options.seekAmount);
+        seekAmountElem.value = GLOBAL_options.seekAmount;
+    }
+}
+
+function updateToggleProgressState() {
+    console.log("OPENEND: Updating Progress visibility to %s", GLOBAL_progressVisible);
+    
+    // Make progress indicators visible / hidden
+    const toggleClasses = [PROGRESS_TOTAL_TIME_DIV_CLASS, PROGRESS_SLIDER_DIV_CLASS];
+    for (let i = 0; i < toggleClasses.length; i++) {
+        const elements = document.getElementsByClassName(toggleClasses[i]);
+        for (let j = 0; j < elements.length; j++) {
+            if (GLOBAL_progressVisible) {
+                elements[j].style.display = "block";
+            }
+            else {
+                elements[j].style.display = "none";
+            }
+        }
+    }   
+    
+    // Update the img src and alt
+    const toggleProgressImg = document.getElementById("oe-toggle-progress-img");
+    if (toggleProgressImg) {
+        toggleProgressImg.src = chrome.runtime.getURL(GLOBAL_progressVisible ? "imgs/hide_white_16.png" : "imgs/view_white_16.png");
+        toggleProgressImg.alt = chrome.i18n.getMessage(GLOBAL_progressVisible ? "toggleProgress_visible" : "toggleProgress_hidden");
+    }
+}
+
+
+function mayEnterTheatreMode() {
+    if (GLOBAL_options.twitchTheatreMode === true) {
+        const theatreModeBtn = getSingleElementByClassName("js-control-theatre");
+        if (theatreModeBtn) {
+            theatreModeBtn.click();
+        } else {
+            console.warn("OPENEND: Could not enter theatre mode because the button could not be found");
+        }
+    }
+}
+
+function listenForOptionsChanges() {
+    chrome.storage.onChanged.addListener(function(changes, namespace) {
+        for (const key in changes) {
+          const storageChange = changes[key];
+          console.log('Storage key "%s" in namespace "%s" changed. ' + 'Old value was "%s", new value is "%s".',
+                      key,
+                      namespace,
+                      storageChange.oldValue,
+                      storageChange.newValue);
+          GLOBAL_options[key] = storageChange.newValue;
+          configurePage();
+        }
+      });
 }
 
 function determinePage() {
@@ -32,100 +153,83 @@ function determinePage() {
     console.log("OPENEND: On video page: %s", GLOBAL_onVideoPage);
 }
 
+function startCheckPageTask() {
+    let pageChangedTime = Date.now();
+    let oldLocation = createLocationIdentifier(location);
+    
+    constCheckPageTask = function() {
+        
+        // Check for location changes
+        const newLocation = createLocationIdentifier(location);
+        if (newLocation != oldLocation) {
+            console.log("OPENEND: Window location changed from %s to %s", oldLocation, newLocation);
+            oldLocation = createLocationIdentifier(location);
+            pageChangedTime = Date.now();
+            handlePageChange();
+        }
+        
+        // Check whether elements are loaded
+        const checkTime = Date.now();
+        if (checkTime - pageChangedTime < ELEMENTS_LOADED_TIMEOUT) {
+            if (!GLOBAL_videoCardsLoaded) {
+                // hide total times of videos cards
+                const videoCards = document.getElementsByClassName("card");
+                if (videoCards.length > 0) {
+                    console.log("OPENEND: Video cards loaded")
+                    GLOBAL_videoCardsLoaded = true;
+                    configureVideoCards();
+                }
+            }
+            if (GLOBAL_onVideoPage && !GLOBAL_playerLoaded) {
+                // Search for injection container for toolbar
+                const injectionContainer = getSingleElementByClassName("player-seek__time-container");
+                if (injectionContainer) {
+                    console.log("OPENEND: Twitch Player loaded")
+                    GLOBAL_playerLoaded = true;
+                    // Inject toolbar
+                    injectionContainer.appendChild(buildToolbar());
+                    configureVideoPlayer();
+                    console.log("OPENEND: Added Open End toolbar to the Twitch player");
+                }
+            }
+        }
+    };
+    
+    // Execute task now and repeatedly after that
+    constCheckPageTask();
+    setInterval(constCheckPageTask, CHECK_PAGE_TASK_INTERVAL);
+}
+
+function createLocationIdentifier(location) {
+    // Don't include the fragment (#) because a changed fragment does not indicate a page change
+    // See https://developer.mozilla.org/en-US/docs/Web/API/Location
+    return location.pathname + location.search;
+}
+
+function handlePageChange() {
+    // Reset global page variables
+    GLOBAL_onVideoPage = false;
+    GLOBAL_videoCardsLoaded = false;
+    GLOBAL_playerLoaded = false;
+    GLOBAL_progressVisible = false;
+    
+    // Remove old toolbar
+    var toolbar = document.getElementById(OPND_TOOLBAR_CLASS);
+    if(toolbar) {
+        toolbar.parentNode.removeChild(toolbar);
+    }
+    
+    // Determine page
+    determinePage();
+}
+
 function isVideoPage() {
     return new RegExp("twitch.tv/videos/\\d+").test(window.location.href);
 }
-
-function setupPage() {
-    setupTwitchVideoPage();
-    
-    let loadingPromises = [];
-    if(GLOBAL_firstLoad) {
-        loadingPromises.push(readOptions());
-    }
-    if(GLOBAL_onVideoPage) {
-        loadingPromises.push(injectToolbar());
-    }
-    Promise.all(loadingPromises).then(initAfterOptionsAndToolbarLoaded).catch(handleInitError);
-}
-
-function setupTwitchVideoPage() {
-    // hide video total times
-    const elements = document.getElementsByClassName("card__meta--right");
-    for (let j = 0; j < elements.length; j++) {
-        elements[j].style.background  = "red";
-    }
-}
-
-function setupListeners() {
-    if(GLOBAL_firstLoad) {
-        // Poll the window location to check for location changes without page reloading
-        // Sadly, Twitch uses HTML5 pushState which isn't listenable (window.onhashchange is not triggered)
-        pollLocationChanges ();
-        // Listen for future changes to options
-        listenForOptionsChanges();
-    }
-}
-
-function pollLocationChanges () {
-    console.log("OPENEND: Polling for window location changes every %ims", LOCATION_CHANGE_POLL_INTERVAL);
-    let oldLocation = location.href;
-    setInterval(function() {
-         if (location.href != oldLocation) {
-             console.log("OPENEND: Window location changed from %s to %s", oldLocation, window.location.href);
-             oldLocation = location.href
-             init();
-         }
-     }, LOCATION_CHANGE_POLL_INTERVAL);
-}
-
-function readOptions() {
-    return new Promise(function(resolve, reject){
-        chrome.storage.sync.get({
-            hideProgress : DEFAULT_HIDE_PROGRESS,
-            seekAmount : DEFAULT_SEEK_AMOUNT,
-            twitchTheatreMode : DEFAULT_TWITCH_THEATRE_MODE
-        }, function(items) {
-            if ("undefined" === typeof chrome.runtime.lastError) {
-                GLOBAL_options = items;
-                console.log("OPENEND: Read options: %O", GLOBAL_options);
-                resolve();
-            } else {
-                reject(chrome.runtime.lastError);
-            }
-        });
-   });
-}
-
-function injectToolbar() {
-    return new Promise(function(resolve, reject) {
-        const tryInject = function(playerLoadedCheckStartTime) {
-            // "player-seek__time-container"
-            const injectionTargetCssClass = "player-seek__time-container";
-            // Inject util span into a div
-            const injectionContainer = getSingleElementByClassName(injectionTargetCssClass);
-            if (injectionContainer){
-                const toolbar = buildToolbar();
-                injectionContainer.appendChild(toolbar);
-                console.log("OPENEND: Open End toolbar available (added in div.%s)", injectionTargetCssClass);
-                resolve();
-            } else {
-                if (PLAYER_LOADED_CHECK_TIMEOUT > Date.now() - playerLoadedCheckStartTime) {
-                    console.log("OPENEND: div to add Open End toolbar to is not available yet (div.%s). Checking again in %ims...", injectionTargetCssClass, PLAYER_LOADED_CHECK_INTERVAL)
-                    setTimeout(tryInject, PLAYER_LOADED_CHECK_INTERVAL, playerLoadedCheckStartTime);  
-                } else {
-                    reject(new Error("OPENEND: Open End toolbar not available (failed to find div." + injectionTargetCssClass + " in " + PLAYER_LOADED_CHECK_TIMEOUT + "ms)"));
-                }
-            }
-        };
-        tryInject(Date.now());
-    });
-}
-
 function buildToolbar() {
     // Build toolbar div
     const toolbar = document.createElement("div");
-    toolbar.setAttribute("id", "oe-util")
+    toolbar.setAttribute("id", OPND_TOOLBAR_CLASS)
 
     // Build "Toggle Progress" button
     const toggleProgressBtn = document.createElement("button");
@@ -177,81 +281,7 @@ function buildToolbar() {
     return toolbar;
 }
 
-function initAfterOptionsAndToolbarLoaded() {
-    console.log("OPENEND: initAfterOptionsAndToolbarLoaded()");
-    
-    // Initialize global variables with the option values
-    GLOBAL_progressVisible = !GLOBAL_options.hideProgress;
-    
-    if (GLOBAL_onVideoPage) {
-        // Update Seek Amount value
-        updateSeekAmountValue();
-        
-        // Set initial Toggle Progress state
-        updateToggleProgressState();
-        
-        // May set theatre mode
-        mayEnterTheatreMode();
-    }
-}
-
-
-function mayEnterTheatreMode() {
-	if (GLOBAL_options.twitchTheatreMode === true) {
-		const theatreModeBtn = getSingleElementByClassName("js-control-theatre");
-		if(theatreModeBtn) {
-			theatreModeBtn.click();
-		} else {
-			console.warn("OPENEND: Could not enter theatre mode because the button could not be found");
-		}
-	}
-}
-
-function listenForOptionsChanges() {
-	chrome.storage.onChanged.addListener(function(changes, namespace) {
-        for (const key in changes) {
-          const storageChange = changes[key];
-          console.log('Storage key "%s" in namespace "%s" changed. ' + 'Old value was "%s", new value is "%s".',
-                      key,
-                      namespace,
-                      storageChange.oldValue,
-                      storageChange.newValue);
-        }
-      });
-}
-
-function handleInitError(err) {
-    console.error("OPENEND: Failed to initialize: %s", err);
-}
-
-
 /* PROGRESS */
-function updateToggleProgressState() {
-    console.log("OPENEND: Updating Progress visibility to %s", GLOBAL_progressVisible);
-    
-    // Make progress indicators visible / hidden
-    const toggleClasses = [PROGRESS_TOTAL_TIME_DIV_CLASS, PROGRESS_SLIDER_DIV_CLASS];
-    for (let i = 0; i < toggleClasses.length; i++) {
-        const toggleClass = toggleClasses[i];
-        const elements = document.getElementsByClassName(toggleClass);
-        for (let j = 0; j < elements.length; j++) {
-            if (GLOBAL_progressVisible) {
-                elements[j].style.display = "block";
-            }
-            else {
-                elements[j].style.display = "none";
-            }
-        }
-    }   
-    
-    // Update the img src and alt
-    const toggleProgressImg = document.getElementById("oe-toggle-progress-img");
-    const toggleProgressImgSrc = GLOBAL_progressVisible ? "imgs/hide_white_16.png" : "imgs/view_white_16.png";
-    toggleProgressImg.src = chrome.runtime.getURL(toggleProgressImgSrc);
-    const toggleProgressImgAlt = GLOBAL_progressVisible ? "toggleProgress_visible" : "toggleProgress_hidden";
-    toggleProgressImg.alt = chrome.i18n.getMessage(toggleProgressImgAlt);
-}
-
 function handleToggleProgressAction() {
     console.log("OPENEND: Handling Toggle Progress action");
 
@@ -263,11 +293,6 @@ function handleToggleProgressAction() {
 
 
 /* SEEKING */
-function updateSeekAmountValue() {
-    console.log("OPENEND: Updating Seek Amount value to %s", GLOBAL_options.seekAmount);
-    document.getElementById("oe-seek-amount").value = GLOBAL_options.seekAmount;
-}
-
 function handleSeekBackAction() {
     console.log("OPENEND: Handling Seek Back action");
     seek(false);

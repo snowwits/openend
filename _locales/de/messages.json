@@ -25,6 +25,10 @@
 		"message": "Standardwert fürs Spulen",
 		"description": "Label of the Seek Amount option."
 	},
+	"options_hideAllVideoDurations": {
+		"message": "Dauer aller Videos verstecken",
+		"description": "Label of the Hide All Video Durations option."
+	},
 	
 	"options_twitch": {
 		"message": "Twitch",

@@ -1,39 +1,10 @@
 TODO
-- twitch: hide times on video cards (figure.card__meta card__meta--right -> style.display = none)
-
-
-== add global scheduled service that checks for window.location changes / existence of certain elements ==
-
-load options:
-- onFinished -> set global options, configure available elements, listen for future changes
-
-checker:
-- determine time since init (Date.now() - initStartTime)
-- check for window.location change
--- init (clear availability flags, set page, reset initStartTime)
-- if(!checkTimeoutReached) {
-	if(!cardsAvailable) {
-		check for cards:
-		-> set cards available
-		-> if(options) {configure cards accordingly} else {configure to not display anything}
-	}
-	if(!playerAvailable && isOnVideoPage) {
-		check for video player:
-		-> set playerAvailable
-		-> if(options) {configure player accordingly} else {configure to not display anything}
-	}
-}
-
-onSettings changes:
-- configure available elements
-
-====
-
 - display error message when user is trying to seek with invalid duration string
 - create open end icon
 - create "Toggle Progress" icon
 - support YouTube.com
 - find a way to directly access Twitch.Player for seeking instead of reloading the entire page (Twitch.Player isn't accessible)
+
 
 2017-04-04
 - load all settings from chrome.storage.sync in one go
@@ -49,3 +20,7 @@ onSettings changes:
 2017-04-06
 - twitch: distinguish between twitch.tv/<channelname>/videos/all and twitch.tv/<channelname>/videos/<videoId>
 - twitch: repeatedly check for a change to window.location to detect AJAX page changes and configure the new page
+
+2017-04-07
+- twitch: hide duration of all videos
+- add global scheduled task that checks for window.location changes / existence of certain elements
