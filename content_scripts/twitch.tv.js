@@ -152,7 +152,7 @@ function startCheckPageTask() {
     let pageChangedTime = Date.now();
     let oldLocation = createLocationIdentifier(location);
     
-    constCheckPageTask = function() {
+    const constCheckPageTask = function() {
         
         // Check for location changes
         const newLocation = createLocationIdentifier(location);
