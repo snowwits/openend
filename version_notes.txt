@@ -1,5 +1,6 @@
 TODO
 - option to hide VOD titles on /videos/all page (maybe show when mouseover or button pressed)
+- check periodically no matter if video tiles where already found (because you can navigate to the /videos/all page without leaving the VOD page (player gets minimized into the bottom left corner)
 - display error message when user is trying to seek with invalid duration string
 - create open end icon
 - create "Toggle Progress" icon
