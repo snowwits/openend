@@ -1,4 +1,5 @@
 TODO
+- option to hide VOD titles on /videos/all page (maybe show when mouseover or button pressed)
 - display error message when user is trying to seek with invalid duration string
 - create open end icon
 - create "Toggle Progress" icon
