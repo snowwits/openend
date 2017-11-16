@@ -1,29 +1,32 @@
 {
-	"manifest_version": 2,
-	"name": "Open End",
-	"version": "1.0.0",
-	
-	"default_locale": "en",
-	"description": "__MSG_manifest_description__",
-	"icons": {
-		"16": "imgs/icon_16.png",
-		"48": "imgs/icon_48.png",
-		"128": "imgs/icon_128.png"
-	},
-	
-	"author": "",
-	"content_scripts": [
-		{
-			"matches": ["*://*.twitch.tv/*videos/*"],
-			"css": ["content_scripts/twitch.tv.css"],
-			"js": ["content_scripts/twitch.tv.js"],
-			"run_at": "document_end"
-		}
-	],
-	"options_ui": {
-		"page": "options/options.html",
-		"chrome_style": true
-	},
-	"permissions": ["storage"],
-	"web_accessible_resources": ["imgs/*", "options/options.html"]
+    "manifest_version": 2,
+    "name": "Open End",
+    "version": "1.0.0",
+    "default_locale": "en",
+    "description": "__MSG_manifest_description__",
+    "icons": {
+        "16": "imgs/icon_16.png",
+        "48": "imgs/icon_48.png",
+        "128": "imgs/icon_128.png"
+    },
+    "author": "",
+    "content_scripts": [
+        {
+            "matches": ["*://*.twitch.tv/*videos/*"],
+            "css": ["content_scripts/twitch.tv.css"],
+            "js": ["content_scripts/twitch.tv.js"],
+            "run_at": "document_end"
+        }
+    ],
+    "options_ui": {
+        "page": "options/options.html",
+        "chrome_style": true
+    },
+    "permissions": [
+        "storage"
+    ],
+    "web_accessible_resources": [
+        "imgs/*",
+        "options/options.html"
+    ]
 }
