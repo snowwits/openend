@@ -25,21 +25,21 @@ let GLOBAL_progressVisible = false;
 
 /* Functions */
 /* INIT */
-function init(){
-	console.log("OPENEND: Initializing...");
-	
-	loadOptions();
+function init() {
+    console.log("OPENEND: Initializing...");
+
+    loadOptions();
     determinePage();
-	startCheckPageTask();
+    startCheckPageTask();
 }
 
 function loadOptions() {
     chrome.storage.sync.get({
-        hideProgress : DEFAULT_HIDE_PROGRESS,
-        seekAmount : DEFAULT_SEEK_AMOUNT,
-        hideAllVideoDurations : DEFAULT_HIDE_ALL_VIDEO_DURATIONS,
-        twitchTheatreMode : DEFAULT_TWITCH_THEATRE_MODE
-    }, function(items) {
+        hideProgress: DEFAULT_HIDE_PROGRESS,
+        seekAmount: DEFAULT_SEEK_AMOUNT,
+        hideAllVideoDurations: DEFAULT_HIDE_ALL_VIDEO_DURATIONS,
+        twitchTheatreMode: DEFAULT_TWITCH_THEATRE_MODE
+    }, function (items) {
         if ("undefined" === typeof chrome.runtime.lastError) {
             GLOBAL_options = items;
             console.log("OPENEND: Loaded options: %O", GLOBAL_options);
@@ -59,7 +59,7 @@ function initGlobalsFromOptions() {
 
 function configurePage() {
     updateAllVideoDurationsVisibility();
-    
+
     if (GLOBAL_onVideoPage) {
         configureVideoPlayer(false);
     }
@@ -73,13 +73,13 @@ function updateAllVideoDurationsVisibility() {
 function configureVideoPlayer(calledAfterPlayerLoaded) {
     // Update Seek Amount value
     updateSeekAmountValue();
-    
+
     // Set initial Toggle Progress state
     updatePlayerProgressBarVisibility();
-    
+
     // May set theatre mode
     if (calledAfterPlayerLoaded) {
-    	mayEnterTheatreMode();
+        mayEnterTheatreMode();
     }
 }
 
@@ -96,17 +96,17 @@ function updatePlayerProgressBarVisibility() {
     const toggleClasses = [PROGRESS_TOTAL_TIME_DIV_CLASS, PROGRESS_SLIDER_DIV_CLASS];
     const allElementsToToggle = [];
     for (let i = 0; i < toggleClasses.length; i++) {
-    	const classes = document.getElementsByClassName(toggleClasses[i]);
-    	for (let j = 0; j < classes.length; j++) {
-    		allElementsToToggle.push(classes[j]);
-    	}
+        const classes = document.getElementsByClassName(toggleClasses[i]);
+        for (let j = 0; j < classes.length; j++) {
+            allElementsToToggle.push(classes[j]);
+        }
     }
-    
+
     if (allElementsToToggle.length > 0) {
-    	console.log("OPENEND: Updating Progress visibility to %s", GLOBAL_progressVisible);
+        console.log("OPENEND: Updating Progress visibility to %s", GLOBAL_progressVisible);
         setVisible(allElementsToToggle, GLOBAL_progressVisible)
     }
-   
+
     // Update the toggle img src and alt
     const toggleProgressImg = document.getElementById("opnd-toggle-progress-img");
     if (toggleProgressImg) {
@@ -129,18 +129,18 @@ function mayEnterTheatreMode() {
 }
 
 function listenForOptionsChanges() {
-    chrome.storage.onChanged.addListener(function(changes, namespace) {
+    chrome.storage.onChanged.addListener(function (changes, namespace) {
         for (const key in changes) {
-          const storageChange = changes[key];
-          console.log('Storage key "%s" in namespace "%s" changed. ' + 'Old value was "%s", new value is "%s".',
-                      key,
-                      namespace,
-                      storageChange.oldValue,
-                      storageChange.newValue);
-          GLOBAL_options[key] = storageChange.newValue;
-          configurePage();
+            const storageChange = changes[key];
+            console.log('Storage key "%s" in namespace "%s" changed. ' + 'Old value was "%s", new value is "%s".',
+                key,
+                namespace,
+                storageChange.oldValue,
+                storageChange.newValue);
+            GLOBAL_options[key] = storageChange.newValue;
+            configurePage();
         }
-      });
+    });
 }
 
 function determinePage() {
@@ -151,17 +151,18 @@ function determinePage() {
 function startCheckPageTask() {
     let pageChangedTime = Date.now();
     let oldLocation = createLocationIdentifier(location);
-    
-    const checkPageTask = function() {
+
+    const constCheckPageTask = function () {
+
         // Check for location changes
         const newLocation = createLocationIdentifier(location);
         if (newLocation !== oldLocation) {
             console.log("OPENEND: Window location changed from %s to %s", oldLocation, newLocation);
-            oldLocation = newLocation;
+            oldLocation = createLocationIdentifier(location);
             pageChangedTime = Date.now();
             handlePageChange();
         }
-        
+
         // Check whether elements are loaded
         const checkTime = Date.now();
         if (checkTime - pageChangedTime < ELEMENTS_LOADED_TIMEOUT) {
@@ -188,15 +189,15 @@ function startCheckPageTask() {
             }
         }
     };
-    
+
     // Execute task now and repeatedly after that
-    checkPageTask();
-    setInterval(checkPageTask, CHECK_PAGE_TASK_INTERVAL);
+    constCheckPageTask();
+    setInterval(constCheckPageTask, CHECK_PAGE_TASK_INTERVAL);
 }
 
 function createLocationIdentifier(location) {
     // Don't include the fragment (#) because a changed fragment does not
-	// indicate a page change
+    // indicate a page change
     // See https://developer.mozilla.org/en-US/docs/Web/API/Location
     return location.pathname + location.search;
 }
@@ -207,13 +208,13 @@ function handlePageChange() {
     GLOBAL_videoCardsLoaded = false;
     GLOBAL_playerLoaded = false;
     GLOBAL_progressVisible = false;
-    
+
     // Remove old toolbar
-    let toolbar = document.getElementById(OPND_TOOLBAR_CLASS);
-    if(toolbar) {
+    const toolbar = document.getElementById(OPND_TOOLBAR_CLASS);
+    if (toolbar) {
         toolbar.parentNode.removeChild(toolbar);
     }
-    
+
     // Determine page
     determinePage();
 }
@@ -221,6 +222,7 @@ function handlePageChange() {
 function isVideoPage() {
     return new RegExp("twitch.tv/videos/\\d+").test(window.location.href);
 }
+
 function buildToolbar() {
     // Build toolbar div
     const toolbar = document.createElement("div");
@@ -233,12 +235,14 @@ function buildToolbar() {
     // Build "Toggle Progress" img
     const toggleProgressImg = document.createElement("img");
     toggleProgressImg.setAttribute("id", "opnd-toggle-progress-img");
-    // src and alt will be set via updatePlayerProgressBarVisibility() after options are loaded
+    // src and alt will be set via updatePlayerProgressBarVisibility() after
+    // options are
+    // loaded
     // Add "Toggle Progress" img to "Toggle Progress" button
     toggleProgressBtn.appendChild(toggleProgressImg);
     // Add "Toggle Progress" button to toolbar div
     toolbar.appendChild(toggleProgressBtn);
-    
+
     // Build "Seek Back" button
     const seekBackBtn = document.createElement("button");
     seekBackBtn.setAttribute("id", "opnd-seek-back");
@@ -246,7 +250,7 @@ function buildToolbar() {
     seekBackBtn.onclick = handleSeekBackAction;
     // Add "Seek Back" button to toolbar div
     toolbar.appendChild(seekBackBtn);
-    
+
     // Build "Seek Amount" text field
     const seekAmountInput = document.createElement("input");
     seekAmountInput.setAttribute("type", "text");
@@ -254,7 +258,7 @@ function buildToolbar() {
     // value will be set via updateSeekAmountValue() after options are loaded
     // Add "Seek Amount" button to toolbar div
     toolbar.appendChild(seekAmountInput);
-    
+
     // Build "Seek Forward" button
     const seekForwardBtn = document.createElement("button");
     seekForwardBtn.setAttribute("id", "opnd-seek-forward");
@@ -262,16 +266,16 @@ function buildToolbar() {
     seekForwardBtn.onclick = handleSeekForwardAction;
     // Add "Seek Forward" button to toolbar div
     toolbar.appendChild(seekForwardBtn);
-    
+
     // Pressing Enter in the "Seek Amount" text field should trigger the "Seek
     // Forward" button
-    seekAmountInput.addEventListener("keyup", function(event) {
+    seekAmountInput.addEventListener("keyup", function (event) {
         event.preventDefault();
         if (event.keyCode === 13) { // 13 = ENTER
             seekForwardBtn.click();
         }
     });
-    
+
     return toolbar;
 }
 
@@ -281,7 +285,7 @@ function handleToggleProgressAction() {
 
     // Toggle
     GLOBAL_progressVisible = !GLOBAL_progressVisible;
-    
+
     updatePlayerProgressBarVisibility();
 }
 
@@ -302,12 +306,12 @@ function seek(forward = true) {
     if (!slider) {
         console.error("OPENEND: Seeking failed: div.%s not available", PROGRESS_SLIDER_DIV_CLASS);
     }
-    
+
     // Get min, max, current time in seconds
     const minTime = parseInt(slider.getAttribute("aria-valuemin"));
     const maxTime = parseInt(slider.getAttribute("aria-valuemax"));
     const currentTime = parseInt(slider.getAttribute("aria-valuenow"));
-            
+
     // Get the seek amount in seconds
     const seekDirectionFactor = forward ? 1 : -1;
     const seekAmountInputValue = document.getElementById("opnd-seek-amount").value;
@@ -316,16 +320,16 @@ function seek(forward = true) {
         console.log("OPENEND: No valid seek amount input value given: %s", seekAmountInputValue);
         return;
     }
-    
+
     // Add the seek amount to the current time (but require: minTime < newTime <
     // maxTime)
     const newTime = Math.min(maxTime, Math.max(minTime, currentTime + seekAmount));
-    
+
     // Build the new url
     const newTimeFormatted = formatDuration(newTime);
     const urlParams = newTimeFormatted.length > 0 ? "?t=" + newTimeFormatted : "";
     const newTimeUrl = window.location.protocol + "//" + window.location.hostname + window.location.pathname + urlParams;
-    
+
     console.log("OPENEND: Seeking %is: %is -> %is (%s)", seekAmount, currentTime, newTime, newTimeFormatted);
     window.location.assign(newTimeUrl);
 }
@@ -386,7 +390,7 @@ function extractDurationParts(duration) {
 
     // What's left is seconds
     const secs = amount % 60;
-    
+
     return [hours, mins, secs];
 }
 
@@ -401,19 +405,19 @@ function padLeft(number, width = 2, padChar = "0") {
 
 /* UTIL METHODS */
 function getSingleElementByClassName(className) {
-	const elems = document.getElementsByClassName(className);
-	if (elems.length === 1){
-		return elems[0];
-	}
-	return null;
+    const elems = document.getElementsByClassName(className);
+    if (elems.length === 1) {
+        return elems[0];
+    }
+    return null;
 }
 
 function setVisible(elements, visible) {
-	for (let i = 0; i < elements.length; i++) {
+    for (let i = 0; i < elements.length; i++) {
         if (visible) {
-        	elements[i].classList.remove("opnd-hidden");
+            elements[i].classList.remove("opnd-hidden");
         } else {
-        	elements[i].classList.add("opnd-hidden");
+            elements[i].classList.add("opnd-hidden");
         }
     }
 }
