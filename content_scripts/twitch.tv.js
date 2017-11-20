@@ -278,7 +278,7 @@ function createLocationIdentifier(location) {
 }
 
 function handlePageChange() {
-    resetGlobalFlags()
+    resetGlobalFlags();
 
     // Remove old toolbar
     const toolbar = document.getElementById(OPND_TOOLBAR_CLASS);
@@ -398,8 +398,7 @@ function seek(forward = true) {
 
     // Build the new url
     const newTimeUrl = buildCurrentUrlWithTime(newTime);
-
-    console.log("OPENEND: Seeking %is: %is -> %is (%s)", seekAmount, currentTime, newTime, newTimeFormatted);
+    console.log("OPENEND: Seeking %is: %is -> %is (%s)", seekAmount, currentTime, newTime, newTimeUrl);
     window.location.assign(newTimeUrl);
 }
 
