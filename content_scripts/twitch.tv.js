@@ -1,10 +1,10 @@
 /* Global values */
 const DEFAULT_HIDE_PROGRESS = true;
-const DEFAULT_SEEK_AMOUNT = "10m";
+const DEFAULT_SEEK_AMOUNT = "2m";
 const DEFAULT_HIDE_ALL_VIDEO_DURATIONS = true;
 const DEFAULT_TWITCH_THEATRE_MODE = false;
 
-const CHECK_PAGE_TASK_INTERVAL = 200 // 200ms
+const CHECK_PAGE_TASK_INTERVAL = 200; // 200ms
 const ELEMENTS_LOADED_TIMEOUT = 15000; // 15s
 
 const PROGRESS_TOTAL_TIME_DIV_CLASS = "player-seek__time--total";
@@ -152,13 +152,12 @@ function startCheckPageTask() {
     let pageChangedTime = Date.now();
     let oldLocation = createLocationIdentifier(location);
     
-    const constCheckPageTask = function() {
-        
+    const checkPageTask = function() {
         // Check for location changes
         const newLocation = createLocationIdentifier(location);
-        if (newLocation != oldLocation) {
+        if (newLocation !== oldLocation) {
             console.log("OPENEND: Window location changed from %s to %s", oldLocation, newLocation);
-            oldLocation = createLocationIdentifier(location);
+            oldLocation = newLocation;
             pageChangedTime = Date.now();
             handlePageChange();
         }
@@ -170,7 +169,7 @@ function startCheckPageTask() {
                 // hide total times of videos cards
                 const videoCards = document.getElementsByClassName("card");
                 if (videoCards.length > 0) {
-                    console.log("OPENEND: Video cards loaded")
+                    console.log("OPENEND: Video cards loaded");
                     GLOBAL_videoCardsLoaded = true;
                     updateAllVideoDurationsVisibility();
                 }
@@ -179,7 +178,7 @@ function startCheckPageTask() {
                 // Search for injection container for toolbar
                 const injectionContainer = getSingleElementByClassName("player-seek__time-container");
                 if (injectionContainer) {
-                    console.log("OPENEND: Twitch Player loaded")
+                    console.log("OPENEND: Twitch Player loaded");
                     GLOBAL_playerLoaded = true;
                     // Inject toolbar
                     injectionContainer.appendChild(buildToolbar());
@@ -191,8 +190,8 @@ function startCheckPageTask() {
     };
     
     // Execute task now and repeatedly after that
-    constCheckPageTask();
-    setInterval(constCheckPageTask, CHECK_PAGE_TASK_INTERVAL);
+    checkPageTask();
+    setInterval(checkPageTask, CHECK_PAGE_TASK_INTERVAL);
 }
 
 function createLocationIdentifier(location) {
@@ -210,7 +209,7 @@ function handlePageChange() {
     GLOBAL_progressVisible = false;
     
     // Remove old toolbar
-    var toolbar = document.getElementById(OPND_TOOLBAR_CLASS);
+    let toolbar = document.getElementById(OPND_TOOLBAR_CLASS);
     if(toolbar) {
         toolbar.parentNode.removeChild(toolbar);
     }
@@ -225,7 +224,7 @@ function isVideoPage() {
 function buildToolbar() {
     // Build toolbar div
     const toolbar = document.createElement("div");
-    toolbar.setAttribute("id", OPND_TOOLBAR_CLASS)
+    toolbar.setAttribute("id", OPND_TOOLBAR_CLASS);
 
     // Build "Toggle Progress" button
     const toggleProgressBtn = document.createElement("button");
@@ -234,9 +233,7 @@ function buildToolbar() {
     // Build "Toggle Progress" img
     const toggleProgressImg = document.createElement("img");
     toggleProgressImg.setAttribute("id", "opnd-toggle-progress-img");
-    // src and alt will be set via updatePlayerProgressBarVisibility() after
-	// options are
-    // loaded
+    // src and alt will be set via updatePlayerProgressBarVisibility() after options are loaded
     // Add "Toggle Progress" img to "Toggle Progress" button
     toggleProgressBtn.appendChild(toggleProgressImg);
     // Add "Toggle Progress" button to toolbar div
@@ -270,7 +267,7 @@ function buildToolbar() {
     // Forward" button
     seekAmountInput.addEventListener("keyup", function(event) {
         event.preventDefault();
-        if (event.keyCode == 13) { // 13 = ENTER
+        if (event.keyCode === 13) { // 13 = ENTER
             seekForwardBtn.click();
         }
     });
@@ -405,7 +402,7 @@ function padLeft(number, width = 2, padChar = "0") {
 /* UTIL METHODS */
 function getSingleElementByClassName(className) {
 	const elems = document.getElementsByClassName(className);
-	if (elems.length == 1){
+	if (elems.length === 1){
 		return elems[0];
 	}
 	return null;
