@@ -1,29 +1,46 @@
-/* Global values */
-const DEFAULT_HIDE_PROGRESS = true;
-const DEFAULT_SEEK_AMOUNT = "2m";
-const DEFAULT_HIDE_ALL_VIDEO_DURATIONS = true;
-const DEFAULT_TWITCH_THEATRE_MODE = false;
-
+/* Global Constants */
+/* Option Defaults */
+const OPT_HIDE_PROGRESS_DEFAULT = true;
+const OPT_SEEK_AMOUNT_DEFAULT = "2m";
+const OPT_HIDE_ALL_VIDEO_DURATIONS_DEFAULT = true;
+const OPT_TWITCH_THEATRE_MODE_DEFAULT = false;
+/* Technical Parameters */
 const CHECK_PAGE_TASK_INTERVAL = 200; // 200ms
 const ELEMENTS_LOADED_TIMEOUT = 15000; // 15s
-
+/* Constants for multi used values */
 const PROGRESS_TOTAL_TIME_DIV_CLASS = "player-seek__time--total";
 const PROGRESS_SLIDER_DIV_CLASS = "js-player-slider";
+const THEATRE_MODE_BUTTON_CLASS = "qa-theatre-mode-button";
 const OPND_TOOLBAR_CLASS = "opnd-toolbar";
+/**
+ * The CSS class of Open End container div elements. To not interfere with the page CSS style, we wrap every element we want to hide in a custom container div and then hide that container.
+ * @type {string}
+ */
+const OPND_CONTAINER_CLASS = "opnd-container";
+/**
+ * The CSS class that is added to Open End containers to hide them and thus their content.
+ * @type {string}
+ */
+const OPND_HIDDEN_CLASS = "opnd-hidden";
 
-/* Global variables */
+/* Global Variables */
+/* Global Cached Options */
 let GLOBAL_options = {
-        hideProgress : DEFAULT_HIDE_PROGRESS,
-        seekAmount : DEFAULT_SEEK_AMOUNT,
-        hideAllVideoDurations : DEFAULT_HIDE_ALL_VIDEO_DURATIONS,
-        twitchTheatreMode : DEFAULT_TWITCH_THEATRE_MODE
-    };
-let GLOBAL_onVideoPage = false;
+    hideProgress: OPT_HIDE_PROGRESS_DEFAULT,
+    seekAmount: OPT_SEEK_AMOUNT_DEFAULT,
+    hideAllVideoDurations: OPT_HIDE_ALL_VIDEO_DURATIONS_DEFAULT,
+    twitchTheatreMode: OPT_TWITCH_THEATRE_MODE_DEFAULT
+};
+/* Global Page Type Flags */
+let GLOBAL_isVideoPage = false;
+/* Global Page Component Loaded Flags */
 let GLOBAL_videoCardsLoaded = false;
 let GLOBAL_playerLoaded = false;
-let GLOBAL_progressVisible = false;
+/* Global Page Component State Flags */
+let GLOBAL_progressVisible = !OPT_HIDE_PROGRESS_DEFAULT;
 
 /* Functions */
+
 /* INIT */
 function init() {
     console.log("OPENEND: Initializing...");
@@ -35,15 +52,15 @@ function init() {
 
 function loadOptions() {
     chrome.storage.sync.get({
-        hideProgress: DEFAULT_HIDE_PROGRESS,
-        seekAmount: DEFAULT_SEEK_AMOUNT,
-        hideAllVideoDurations: DEFAULT_HIDE_ALL_VIDEO_DURATIONS,
-        twitchTheatreMode: DEFAULT_TWITCH_THEATRE_MODE
+        hideProgress: OPT_HIDE_PROGRESS_DEFAULT,
+        seekAmount: OPT_SEEK_AMOUNT_DEFAULT,
+        hideAllVideoDurations: OPT_HIDE_ALL_VIDEO_DURATIONS_DEFAULT,
+        twitchTheatreMode: OPT_TWITCH_THEATRE_MODE_DEFAULT
     }, function (items) {
         if ("undefined" === typeof chrome.runtime.lastError) {
             GLOBAL_options = items;
             console.log("OPENEND: Loaded options: %O", GLOBAL_options);
-            initGlobalsFromOptions();
+            updateGlobalFlagsFromGlobalOptions();
             configurePage();
             listenForOptionsChanges();
         } else {
@@ -52,38 +69,79 @@ function loadOptions() {
     });
 }
 
-function initGlobalsFromOptions() {
+function resetGlobalFlags() {
+    GLOBAL_isVideoPage = false;
+    GLOBAL_videoCardsLoaded = false;
+    GLOBAL_playerLoaded = false;
+    updateGlobalFlagsFromGlobalOptions()
+}
+
+function updateGlobalFlagsFromGlobalOptions() {
     // Initialize global variables with the option values
     GLOBAL_progressVisible = !GLOBAL_options.hideProgress;
 }
 
 function configurePage() {
-    updateAllVideoDurationsVisibility();
+    configureVideoCards();
 
-    if (GLOBAL_onVideoPage) {
+    if (GLOBAL_isVideoPage) {
         configureVideoPlayer(false);
     }
 }
 
-function updateAllVideoDurationsVisibility() {
-    console.log("OPENEND: Updating All Video Durations visibility to %s", !GLOBAL_options.hideAllVideoDurations);
-    setVisible(document.getElementsByClassName("card__meta--right"), !GLOBAL_options.hideAllVideoDurations)
+/**
+ * On Video page:
+ *
+ * Video card:
+ * <div class="tw-card relative"> ... </div>
+ *
+ * Video stat (length):
+ * <div class="video-preview-card__preview-overlay-stat c-background-overlay c-text-overlay font-size-6 top-0 right-0 z-default inline-flex absolute mg-05">
+ *      <div class="tw-tooltip-wrapper inline-flex">
+ *          <div class="tw-stat" data-test-selector="video-length">
+ *              <span class="tw-stat__icon"><figure class="svg-figure"><svg ...> ... </svg></figure></span>
+ *              <span class="tw-stat__value" data-a-target="tw-stat-value">4:33:57</span>
+ *          </div>
+ *          <div class="tw-tooltip tw-tooltip--down tw-tooltip--align-center" data-a-target="tw-tooltip-label">Länge</div>
+ *      </div>
+ * </div>
+ *
+ */
+function configureVideoCards() {
+    const videoCards = document.getElementsByClassName("tw-card");
+    if (videoCards.length > 0) {
+        console.log("OPENEND: Video cards loaded (maybe without contents yet)");
+
+        const videoStatDivs = document.getElementsByClassName("video-preview-card__preview-overlay-stat");
+        if (videoStatDivs.length > 0) {
+            console.log("OPENEND: Video cards contents loaded");
+            GLOBAL_videoCardsLoaded = true;
+            console.log("OPENEND: Updating All Video Durations visibility to %s", !GLOBAL_options.hideAllVideoDurations);
+            for (let i = 0; i < videoStatDivs.length; ++i) {
+                const videoStatDiv = videoStatDivs[i];
+                const videoLengthDiv = videoStatDiv.querySelector('div[data-test-selector="video-length"]');
+                if (videoLengthDiv) {
+                    setVisible([videoStatDiv], !GLOBAL_options.hideAllVideoDurations)
+                }
+            }
+        }
+    }
 }
 
 function configureVideoPlayer(calledAfterPlayerLoaded) {
     // Update Seek Amount value
-    updateSeekAmountValue();
+    configurePlayerSeekAmountValue();
 
     // Set initial Toggle Progress state
-    updatePlayerProgressBarVisibility();
+    configurePlayerProgressVisibility();
 
     // May set theatre mode
     if (calledAfterPlayerLoaded) {
-        mayEnterTheatreMode();
+        configureTheatreMode();
     }
 }
 
-function updateSeekAmountValue() {
+function configurePlayerSeekAmountValue() {
     const seekAmountElem = document.getElementById("opnd-seek-amount");
     if (seekAmountElem) {
         console.log("OPENEND: Updating Seek Amount value to %s", GLOBAL_options.seekAmount);
@@ -91,16 +149,9 @@ function updateSeekAmountValue() {
     }
 }
 
-function updatePlayerProgressBarVisibility() {
+function configurePlayerProgressVisibility() {
     // Make progress indicators visible / hidden
-    const toggleClasses = [PROGRESS_TOTAL_TIME_DIV_CLASS, PROGRESS_SLIDER_DIV_CLASS];
-    const allElementsToToggle = [];
-    for (let i = 0; i < toggleClasses.length; i++) {
-        const classes = document.getElementsByClassName(toggleClasses[i]);
-        for (let j = 0; j < classes.length; j++) {
-            allElementsToToggle.push(classes[j]);
-        }
-    }
+    const allElementsToToggle = getElementsByClassNames([PROGRESS_TOTAL_TIME_DIV_CLASS, PROGRESS_SLIDER_DIV_CLASS]);
 
     if (allElementsToToggle.length > 0) {
         console.log("OPENEND: Updating Progress visibility to %s", GLOBAL_progressVisible);
@@ -116,16 +167,47 @@ function updatePlayerProgressBarVisibility() {
 }
 
 
-function mayEnterTheatreMode() {
-    if (GLOBAL_options.twitchTheatreMode === true) {
-        const theatreModeBtn = getSingleElementByClassName("js-control-theatre");
+function configureTheatreMode() {
+    const isActive = isTheatreModeActive();
+    if (GLOBAL_options.twitchTheatreMode !== isActive) {
+        const theatreModeBtn = getSingleElementByClassName(THEATRE_MODE_BUTTON_CLASS);
         if (theatreModeBtn) {
-            console.log("OPENEND: Clicking theatreMode button");
+            console.log("OPENEND: Clicking Theatre Mode button to " + (GLOBAL_options.twitchTheatreMode ? "enter" : "exit") + " Theatre Mode");
             theatreModeBtn.click();
         } else {
-            console.warn("OPENEND: Could not enter theatre mode because the button could not be found");
+            console.warn("OPENEND: Could configure Theatre Mode because the button." + THEATRE_MODE_BUTTON_CLASS + " could not be found");
         }
     }
+}
+
+/**
+ * "Exit Theatre Mode" button:
+ * <button class="player-button qa-theatre-mode-button" id="" tabindex="-1" type="button">
+ *     <span><span class="player-tip" data-tip="Kino-Modus beenden"></span><span class="">
+ *         <svg class=""><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#icon_theatre_deactivate"></use></svg>
+ *     </span></span>
+ * </button>
+ *
+ * "Enter Theatre Mode" button:
+ * <button class="player-button qa-theatre-mode-button" id="" tabindex="-1" type="button">
+ *      <span><span class="player-tip" data-tip="Kino-Modus"></span><span class="">
+ *          <svg class=""><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#icon_theatre"></use></svg>
+ *      </span></span>
+ * </button>
+ */
+function isTheatreModeActive() {
+    const theatreModeButton = getSingleElementByClassName(THEATRE_MODE_BUTTON_CLASS);
+    if (theatreModeButton) {
+        const innerHtml = theatreModeButton.innerHTML;
+        if (innerHtml.indexOf('xlink:href="#icon_theatre_deactivate"') !== -1) {
+            return true;
+        }
+        else if (innerHtml.indexOf('xlink:href="#icon_theatre"') !== -1) {
+            return false;
+        }
+    }
+    console.warn("Could not determine if Theatre Mode is active");
+    return false;
 }
 
 function listenForOptionsChanges() {
@@ -144,8 +226,8 @@ function listenForOptionsChanges() {
 }
 
 function determinePage() {
-    GLOBAL_onVideoPage = isVideoPage();
-    console.log("OPENEND: On video page: %s", GLOBAL_onVideoPage);
+    GLOBAL_isVideoPage = isVideoPage();
+    console.log("OPENEND: On video page: %s", GLOBAL_isVideoPage);
 }
 
 function startCheckPageTask() {
@@ -153,7 +235,6 @@ function startCheckPageTask() {
     let oldLocation = createLocationIdentifier(location);
 
     const constCheckPageTask = function () {
-
         // Check for location changes
         const newLocation = createLocationIdentifier(location);
         if (newLocation !== oldLocation) {
@@ -167,15 +248,9 @@ function startCheckPageTask() {
         const checkTime = Date.now();
         if (checkTime - pageChangedTime < ELEMENTS_LOADED_TIMEOUT) {
             if (!GLOBAL_videoCardsLoaded) {
-                // hide total times of videos cards
-                const videoCards = document.getElementsByClassName("card");
-                if (videoCards.length > 0) {
-                    console.log("OPENEND: Video cards loaded");
-                    GLOBAL_videoCardsLoaded = true;
-                    updateAllVideoDurationsVisibility();
-                }
+                configureVideoCards();
             }
-            if (GLOBAL_onVideoPage && !GLOBAL_playerLoaded) {
+            if (GLOBAL_isVideoPage && !GLOBAL_playerLoaded) {
                 // Search for injection container for toolbar
                 const injectionContainer = getSingleElementByClassName("player-seek__time-container");
                 if (injectionContainer) {
@@ -203,11 +278,7 @@ function createLocationIdentifier(location) {
 }
 
 function handlePageChange() {
-    // Reset global page variables
-    GLOBAL_onVideoPage = false;
-    GLOBAL_videoCardsLoaded = false;
-    GLOBAL_playerLoaded = false;
-    GLOBAL_progressVisible = false;
+    resetGlobalFlags()
 
     // Remove old toolbar
     const toolbar = document.getElementById(OPND_TOOLBAR_CLASS);
@@ -235,7 +306,7 @@ function buildToolbar() {
     // Build "Toggle Progress" img
     const toggleProgressImg = document.createElement("img");
     toggleProgressImg.setAttribute("id", "opnd-toggle-progress-img");
-    // src and alt will be set via updatePlayerProgressBarVisibility() after
+    // src and alt will be set via configurePlayerProgressVisibility() after
     // options are
     // loaded
     // Add "Toggle Progress" img to "Toggle Progress" button
@@ -255,7 +326,7 @@ function buildToolbar() {
     const seekAmountInput = document.createElement("input");
     seekAmountInput.setAttribute("type", "text");
     seekAmountInput.setAttribute("id", "opnd-seek-amount");
-    // value will be set via updateSeekAmountValue() after options are loaded
+    // value will be set via configurePlayerSeekAmountValue() after options are loaded
     // Add "Seek Amount" button to toolbar div
     toolbar.appendChild(seekAmountInput);
 
@@ -286,7 +357,7 @@ function handleToggleProgressAction() {
     // Toggle
     GLOBAL_progressVisible = !GLOBAL_progressVisible;
 
-    updatePlayerProgressBarVisibility();
+    configurePlayerProgressVisibility();
 }
 
 
@@ -326,12 +397,23 @@ function seek(forward = true) {
     const newTime = Math.min(maxTime, Math.max(minTime, currentTime + seekAmount));
 
     // Build the new url
-    const newTimeFormatted = formatDuration(newTime);
-    const urlParams = newTimeFormatted.length > 0 ? "?t=" + newTimeFormatted : "";
-    const newTimeUrl = window.location.protocol + "//" + window.location.hostname + window.location.pathname + urlParams;
+    const newTimeUrl = buildCurrentUrlWithTime(newTime);
 
     console.log("OPENEND: Seeking %is: %is -> %is (%s)", seekAmount, currentTime, newTime, newTimeFormatted);
     window.location.assign(newTimeUrl);
+}
+
+
+/* UTIL METHODS */
+/**
+ *
+ * @param time {Number} in seconds
+ * @returns {string} the URL with the time parameter
+ */
+function buildCurrentUrlWithTime(time) {
+    const newTimeFormatted = formatDuration(time);
+    const urlParams = newTimeFormatted.length > 0 ? "?t=" + newTimeFormatted : "";
+    return window.location.protocol + "//" + window.location.hostname + window.location.pathname + urlParams;
 }
 
 /*
@@ -402,8 +484,23 @@ function padLeft(number, width = 2, padChar = "0") {
     return str;
 }
 
+/**
+ *
+ * @param classNames {Array.<string>} the class names
+ * @returns {Array} all elements that have any of the specified class names
+ */
+function getElementsByClassNames(classNames) {
+    const allElements = [];
+    for (let i = 0; i < classNames.length; i++) {
+        const classes = document.getElementsByClassName(classNames[i]);
+        for (let j = 0; j < classes.length; j++) {
+            allElements.push(classes[j]);
+        }
+    }
+    return allElements
+}
 
-/* UTIL METHODS */
+
 function getSingleElementByClassName(className) {
     const elems = document.getElementsByClassName(className);
     if (elems.length === 1) {
@@ -414,14 +511,46 @@ function getSingleElementByClassName(className) {
 
 function setVisible(elements, visible) {
     for (let i = 0; i < elements.length; i++) {
+        const opndContainer = getOrWrapInOpenEndContainer(elements[i]);
         if (visible) {
-            elements[i].classList.remove("opnd-hidden");
+            opndContainer.classList.remove(OPND_HIDDEN_CLASS);
         } else {
-            elements[i].classList.add("opnd-hidden");
+            opndContainer.classList.add(OPND_HIDDEN_CLASS);
         }
     }
 }
 
+function getOrWrapInOpenEndContainer(element) {
+    const container = getOpenEndContainer(element);
+    if(container){
+        return container;
+    }
+    return wrapInOpenEndContainer(element);
+}
+
+function getOpenEndContainer(element) {
+    const parent = element.parentNode;
+    if(parent.classList.contains(OPND_CONTAINER_CLASS)){
+        return parent;
+    }
+    return null;
+}
+
+function wrap(element, wrapper) {
+    element.parentNode.insertBefore(wrapper, element);
+    wrapper.appendChild(element);
+    return wrapper;
+}
+
+function wrapInOpenEndContainer(element) {
+    return wrap(element, createOpenEndContainer())
+}
+
+function createOpenEndContainer() {
+    const opndContainer = document.createElement('div');
+    opndContainer.classList.add(OPND_CONTAINER_CLASS);
+    return opndContainer;
+}
 
 init();
 // window.onload = init;
