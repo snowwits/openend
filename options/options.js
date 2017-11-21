@@ -1,8 +1,3 @@
-const DEFAULT_HIDE_PROGRESS = true;
-const DEFAULT_SEEK_AMOUNT = "10m";
-const DEFAULT_HIDE_ALL_VIDEO_DURATIONS = true;
-const DEFAULT_TWITCH_THEATRE_MODE = false;
-
 // Saves options to chrome.storage.sync.
 function saveOptions() {
     // Read option values from elements
@@ -26,10 +21,10 @@ function saveOptions() {
 function restoreOptions() {
     // Read option values from storage
     chrome.storage.sync.get({
-        hideProgress: DEFAULT_HIDE_PROGRESS,
-        seekAmount: DEFAULT_SEEK_AMOUNT,
-        hideAllVideoDurations: DEFAULT_HIDE_ALL_VIDEO_DURATIONS,
-        twitchTheatreMode: DEFAULT_TWITCH_THEATRE_MODE
+        hideProgress: OPT_HIDE_PROGRESS_DEFAULT,
+        seekAmount: OPT_SEEK_AMOUNT_DEFAULT,
+        hideAllVideoDurations: OPT_HIDE_ALL_VIDEO_DURATIONS_DEFAULT,
+        twitchTheatreMode: OPT_TWITCH_THEATRE_MODE_DEFAULT
     }, function (items) {
         // Set option values to elements
         document.getElementById("hideProgress").checked = items.hideProgress;
@@ -42,10 +37,10 @@ function restoreOptions() {
 // Restores option values using the preferences stored in chrome.storage.
 function restoreDefaultOptions() {
     // Set option values to elements
-    document.getElementById("hideProgress").checked = DEFAULT_HIDE_PROGRESS;
-    document.getElementById("seekAmount").value = DEFAULT_SEEK_AMOUNT;
-    document.getElementById("hideAllVideoDurations").checked = DEFAULT_HIDE_ALL_VIDEO_DURATIONS;
-    document.getElementById("twitchTheatreMode").checked = DEFAULT_TWITCH_THEATRE_MODE;
+    document.getElementById("hideProgress").checked = OPT_HIDE_PROGRESS_DEFAULT;
+    document.getElementById("seekAmount").value = OPT_SEEK_AMOUNT_DEFAULT;
+    document.getElementById("hideAllVideoDurations").checked = OPT_HIDE_ALL_VIDEO_DURATIONS_DEFAULT;
+    document.getElementById("twitchTheatreMode").checked = OPT_TWITCH_THEATRE_MODE_DEFAULT;
     showStatusMsg(chrome.i18n.getMessage("options_restoreDefaults_successMsg"));
 }
 

@@ -14,7 +14,7 @@
         {
             "matches": ["*://*.twitch.tv/*"],
             "css": ["content_scripts/twitch.tv.css"],
-            "js": ["content_scripts/twitch.tv.js"],
+            "js": ["common/common.js", "content_scripts/twitch.tv.js"],
             "run_at": "document_end"
         }
     ],
