@@ -290,11 +290,14 @@ function buildToolbar() {
     // Build "Toggle Progress" img
     const toggleProgressImg = document.createElement("img");
     toggleProgressImg.setAttribute("id", "opnd-toggle-progress-img");
-    // src and alt will be set via configurePlayerProgressVisibility() after
-    // options are
-    // loaded
+    // Attributes src and alt will be set via configurePlayerProgressVisibility() after options are loaded.
     // Add "Toggle Progress" img to "Toggle Progress" button
     toggleProgressBtn.appendChild(toggleProgressImg);
+    // Build "Toggle Progress" label
+    const toggleProgressLbl = document.createElement("span");
+    toggleProgressLbl.innerHTML = " Duration";
+    // Add "Toggle Progress" label to "Toggle Progress" button
+    toggleProgressBtn.appendChild(toggleProgressLbl);
     // Add "Toggle Progress" button to toolbar div
     toolbar.appendChild(toggleProgressBtn);
 
