@@ -1,7 +1,7 @@
 /* Global Constants */
 /* Technical Parameters */
-const CHECK_PAGE_TASK_INTERVAL = 200; // 200ms
-const ELEMENTS_LOADED_TIMEOUT = 15000; // 15s
+const CHECK_PAGE_TASK_INTERVAL = 100; // 200ms
+const ELEMENTS_LOADED_TIMEOUT = 30000; // 30s
 /* Constants for multi used values */
 const PROGRESS_TOTAL_TIME_DIV_CLASS = "player-seek__time--total";
 const PROGRESS_SLIDER_DIV_CLASS = "js-player-slider";
@@ -18,8 +18,8 @@ let GLOBAL_options = {
 /* Global Page Type Flags */
 let GLOBAL_isVideoPage = false;
 /* Global Page Component Loaded Flags */
-let GLOBAL_videoCardsLoaded = false;
-let GLOBAL_playerLoaded = false;
+let GLOBAL_videoCardsConfigured = false;
+let GLOBAL_videoPlayerConfigured = false;
 /* Global Page Component State Flags */
 let GLOBAL_progressVisible = !OPT_HIDE_PROGRESS_DEFAULT;
 
@@ -55,8 +55,8 @@ function loadOptions() {
 
 function resetGlobalFlags() {
     GLOBAL_isVideoPage = false;
-    GLOBAL_videoCardsLoaded = false;
-    GLOBAL_playerLoaded = false;
+    GLOBAL_videoCardsConfigured = false;
+    GLOBAL_videoPlayerConfigured = false;
     updateGlobalFlagsFromGlobalOptions()
 }
 
@@ -66,11 +66,8 @@ function updateGlobalFlagsFromGlobalOptions() {
 }
 
 function configurePage() {
-    configureVideoCards();
-
-    if (GLOBAL_isVideoPage) {
-        configureVideoPlayer(false);
-    }
+    tryConfigureVideoCards();
+    tryConfigureVideoPlayer();
 }
 
 /**
@@ -91,16 +88,11 @@ function configurePage() {
  * </div>
  *
  */
-function configureVideoCards() {
-    const videoCards = document.getElementsByClassName("tw-card");
-    if (videoCards.length > 0) {
-        console.log("OPENEND: Video cards loaded (maybe without contents yet)");
-
+function tryConfigureVideoCards() {
+    if (!GLOBAL_videoCardsConfigured) {
         const videoStatDivs = document.getElementsByClassName("video-preview-card__preview-overlay-stat");
         if (videoStatDivs.length > 0) {
-            console.log("OPENEND: Video cards contents loaded");
-            GLOBAL_videoCardsLoaded = true;
-            console.log("OPENEND: Updating All Video Durations visibility to %s", !GLOBAL_options.hideAllVideoDurations);
+            console.log("OPENEND: Updating all Video Durations' visibilities to %s", !GLOBAL_options.hideAllVideoDurations);
             for (let i = 0; i < videoStatDivs.length; ++i) {
                 const videoStatDiv = videoStatDivs[i];
                 const videoLengthDiv = videoStatDiv.querySelector('div[data-test-selector="video-length"]');
@@ -108,20 +100,31 @@ function configureVideoCards() {
                     setVisible([videoStatDiv], !GLOBAL_options.hideAllVideoDurations)
                 }
             }
+            GLOBAL_videoCardsConfigured = true;
+            console.log("OPENEND: Configured Video Cards");
         }
     }
 }
 
-function configureVideoPlayer(calledAfterPlayerLoaded) {
-    // Update Seek Amount value
-    configurePlayerSeekAmountValue();
+function tryConfigureVideoPlayer() {
+    if (GLOBAL_isVideoPage && !GLOBAL_videoPlayerConfigured) {
+        // Search for injection container for toolbar
+        const injectionContainer = getSingleElementByClassName("player-seek__time-container");
+        if (injectionContainer) {
+            // Inject toolbar
+            injectionContainer.appendChild(buildToolbar());
+            // Update Seek Amount value
+            configurePlayerSeekAmountValue();
 
-    // Set initial Toggle Progress state
-    configurePlayerProgressVisibility();
+            // Set initial Toggle Progress state
+            configurePlayerProgressVisibility();
 
-    // May set theatre mode
-    if (calledAfterPlayerLoaded) {
-        configureTheatreMode();
+            // May set theatre mode
+            configureTheatreMode();
+
+            GLOBAL_videoPlayerConfigured = true;
+            console.log("OPENEND: Configured Twitch Player");
+        }
     }
 }
 
@@ -152,15 +155,16 @@ function configurePlayerProgressVisibility() {
 
 
 function configureTheatreMode() {
-    const isActive = isTheatreModeActive();
-    if (GLOBAL_options.twitchTheatreMode !== isActive) {
-        const theatreModeBtn = getSingleElementByClassName(THEATRE_MODE_BUTTON_CLASS);
-        if (theatreModeBtn) {
+    const theatreModeButton = getSingleElementByClassName(THEATRE_MODE_BUTTON_CLASS);
+    if (theatreModeButton) {
+        const isActive = isTheatreModeActive(theatreModeButton);
+        if (GLOBAL_options.twitchTheatreMode !== isActive) {
             console.log("OPENEND: Clicking Theatre Mode button to " + (GLOBAL_options.twitchTheatreMode ? "enter" : "exit") + " Theatre Mode");
-            theatreModeBtn.click();
-        } else {
-            console.warn("OPENEND: Could configure Theatre Mode because the button." + THEATRE_MODE_BUTTON_CLASS + " could not be found");
+            theatreModeButton.click();
         }
+    }
+    else {
+        console.warn("OPENEND: Could configure Theatre Mode because the button." + THEATRE_MODE_BUTTON_CLASS + " could not be found");
     }
 }
 
@@ -178,17 +182,17 @@ function configureTheatreMode() {
  *          <svg class=""><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#icon_theatre"></use></svg>
  *      </span></span>
  * </button>
+ *
+ * @param theatreModeButton {Node} the theatre mode toggle button node (not null)
+ * @returns {boolean}
  */
-function isTheatreModeActive() {
-    const theatreModeButton = getSingleElementByClassName(THEATRE_MODE_BUTTON_CLASS);
-    if (theatreModeButton) {
-        const innerHtml = theatreModeButton.innerHTML;
-        if (innerHtml.indexOf('xlink:href="#icon_theatre_deactivate"') !== -1) {
-            return true;
-        }
-        else if (innerHtml.indexOf('xlink:href="#icon_theatre"') !== -1) {
-            return false;
-        }
+function isTheatreModeActive(theatreModeButton) {
+    const innerHtml = theatreModeButton.innerHTML;
+    if (innerHtml.indexOf('xlink:href="#icon_theatre_deactivate"') !== -1) {
+        return true;
+    }
+    else if (innerHtml.indexOf('xlink:href="#icon_theatre"') !== -1) {
+        return false;
     }
     console.warn("Could not determine if Theatre Mode is active");
     return false;
@@ -231,21 +235,7 @@ function startCheckPageTask() {
         // Check whether elements are loaded
         const checkTime = Date.now();
         if (checkTime - pageChangedTime < ELEMENTS_LOADED_TIMEOUT) {
-            if (!GLOBAL_videoCardsLoaded) {
-                configureVideoCards();
-            }
-            if (GLOBAL_isVideoPage && !GLOBAL_playerLoaded) {
-                // Search for injection container for toolbar
-                const injectionContainer = getSingleElementByClassName("player-seek__time-container");
-                if (injectionContainer) {
-                    console.log("OPENEND: Twitch Player loaded");
-                    GLOBAL_playerLoaded = true;
-                    // Inject toolbar
-                    injectionContainer.appendChild(buildToolbar());
-                    configureVideoPlayer(true);
-                    console.log("OPENEND: Added Open End toolbar to the Twitch player");
-                }
-            }
+            configurePage();
         }
     };
 
