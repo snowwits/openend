@@ -12,7 +12,7 @@
     "author": "",
     "content_scripts": [
         {
-            "matches": ["*://*.twitch.tv/*videos/*"],
+            "matches": ["*://*.twitch.tv/*"],
             "css": ["content_scripts/twitch.tv.css"],
             "js": ["content_scripts/twitch.tv.js"],
             "run_at": "document_end"
