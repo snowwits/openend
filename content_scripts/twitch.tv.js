@@ -44,7 +44,7 @@ function loadOptions() {
         if ("undefined" === typeof chrome.runtime.lastError) {
             GLOBAL_options = items;
             console.log("OPENEND: Loaded options: %O", GLOBAL_options);
-            updateGlobalFlagsFromGlobalOptions();
+            resetGlobalPageStateFlags();
             configurePage();
             listenForOptionsChanges();
         } else {
@@ -53,14 +53,14 @@ function loadOptions() {
     });
 }
 
-function resetGlobalFlags() {
+function resetGlobalPageFlags() {
     GLOBAL_isVideoPage = false;
-    GLOBAL_videoCardsConfigured = false;
-    GLOBAL_videoPlayerConfigured = false;
-    updateGlobalFlagsFromGlobalOptions()
+    resetGlobalPageStateFlags()
 }
 
-function updateGlobalFlagsFromGlobalOptions() {
+function resetGlobalPageStateFlags() {
+    GLOBAL_videoCardsConfigured = false;
+    GLOBAL_videoPlayerConfigured = false;
     // Initialize global variables with the option values
     GLOBAL_progressVisible = !GLOBAL_options.hideProgress;
 }
@@ -108,23 +108,29 @@ function tryConfigureVideoCards() {
 
 function tryConfigureVideoPlayer() {
     if (GLOBAL_isVideoPage && !GLOBAL_videoPlayerConfigured) {
-        // Search for injection container for toolbar
-        const injectionContainer = getSingleElementByClassName("player-seek__time-container");
-        if (injectionContainer) {
-            // Inject toolbar
-            injectionContainer.appendChild(buildToolbar());
-            // Update Seek Amount value
-            configurePlayerSeekAmountValue();
-
-            // Set initial Toggle Progress state
-            configurePlayerProgressVisibility();
-
-            // May set theatre mode
-            configureTheatreMode();
-
-            GLOBAL_videoPlayerConfigured = true;
-            console.log("OPENEND: Configured Twitch Player");
+        const toolbar = document.getElementById(OPND_TOOLBAR_CLASS);
+        if (!toolbar) {
+            // Search for injection container for toolbar
+            const injectionContainer = getSingleElementByClassName("player-seek__time-container");
+            if (injectionContainer) {
+                // Inject toolbar
+                injectionContainer.appendChild(buildToolbar());
+            } else {
+                console.warn("OPENEND: Could not inject Open End toolbar because injection container could not be found");
+            }
         }
+
+        // Update Seek Amount value
+        configurePlayerSeekAmountValue();
+
+        // Set initial Toggle Progress state
+        configurePlayerProgressVisibility();
+
+        // May set theatre mode
+        configureTheatreMode();
+
+        GLOBAL_videoPlayerConfigured = true;
+        console.log("OPENEND: Configured Twitch Player");
     }
 }
 
@@ -208,6 +214,7 @@ function listenForOptionsChanges() {
                 storageChange.oldValue,
                 storageChange.newValue);
             GLOBAL_options[key] = storageChange.newValue;
+            resetGlobalPageStateFlags();
             configurePage();
         }
     });
@@ -252,7 +259,7 @@ function createLocationIdentifier(location) {
 }
 
 function handlePageChange() {
-    resetGlobalFlags();
+    resetGlobalPageFlags();
 
     // Remove old toolbar
     const toolbar = document.getElementById(OPND_TOOLBAR_CLASS);
