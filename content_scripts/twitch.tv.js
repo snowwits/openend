@@ -108,29 +108,32 @@ function tryConfigureVideoCards() {
 
 function tryConfigureVideoPlayer() {
     if (GLOBAL_isVideoPage && !GLOBAL_videoPlayerConfigured) {
-        const toolbar = document.getElementById(OPND_TOOLBAR_CLASS);
+        let toolbar = document.getElementById(OPND_TOOLBAR_CLASS);
         if (!toolbar) {
             // Search for injection container for toolbar
             const injectionContainer = getSingleElementByClassName("player-seek__time-container");
             if (injectionContainer) {
-                // Inject toolbar
-                injectionContainer.appendChild(buildToolbar());
+                toolbar = buildToolbar();
+                injectionContainer.appendChild(toolbar);
+                console.log("OPENEND: Injected Open End Toolbar");
             } else {
-                console.warn("OPENEND: Could not inject Open End toolbar because injection container could not be found");
+                console.warn("OPENEND: Could not inject Open End Toolbar because injection container could not be found");
             }
         }
 
-        // Update Seek Amount value
-        configurePlayerSeekAmountValue();
+        if(toolbar) {
+            // Update Seek Amount value
+            configurePlayerSeekAmountValue();
 
-        // Set initial Toggle Progress state
-        configurePlayerProgressVisibility();
+            // Set initial Toggle Progress state
+            configurePlayerProgressVisibility();
 
-        // May set theatre mode
-        configureTheatreMode();
+            // May set theatre mode
+            configureTheatreMode();
 
-        GLOBAL_videoPlayerConfigured = true;
-        console.log("OPENEND: Configured Twitch Player");
+            GLOBAL_videoPlayerConfigured = true;
+            console.log("OPENEND: Configured Twitch Player");
+        }
     }
 }
 

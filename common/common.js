@@ -24,6 +24,7 @@ const OPND_TOOLBAR_CLASS = "opnd-toolbar";
 
 /**
  * "01h02m03s" -> 1 * 60 * 60 + 2 * 60 + 3 = 3723
+ * "2" -> "2m" -> 2 * 60 = 120
  *
  * @param durationString {string}
  * @returns {number} the duration in seconds (0 if no match)
@@ -32,15 +33,21 @@ function parseDuration(durationString) {
     if (durationString.length === 0) {
         return 0;
     }
+    // Regex: Either a single number ("2") or a duration string "01h02m03s".
     // literal RegExp /.../ not working somehow
-    const regexDuration = new RegExp("^(?:(\\d+)h)?(?:(\\d+)m)?(?:(\\d+)s)?$");
+    const regexDuration = new RegExp("^(?:(\\d+)|(?:(\\d+)h)?(?:(\\d+)m)?(?:(\\d+)s)?)$");
     const groups = regexDuration.exec(durationString);
     if (groups === null) {
         return 0;
     }
-    const hours = parseDurationPart(groups, 1);
-    const mins = parseDurationPart(groups, 2);
-    const secs = parseDurationPart(groups, 3);
+    // Interpret a single number as minutes
+    const singleNumber = parseDurationPart(groups, 1);
+    if(singleNumber > 0) {
+        return singleNumber * 60;
+    }
+    const hours = parseDurationPart(groups, 2);
+    const mins = parseDurationPart(groups, 3);
+    const secs = parseDurationPart(groups, 4);
     return secs + mins * 60 + hours * 60 * 60;
 }
 
