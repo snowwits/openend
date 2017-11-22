@@ -148,7 +148,7 @@ function configurePlayerProgressVisibility() {
     // Update the toggle img src and alt
     const toggleProgressImg = document.getElementById("opnd-toggle-progress-img");
     if (toggleProgressImg) {
-        toggleProgressImg.src = chrome.runtime.getURL(GLOBAL_progressVisible ? "imgs/hide_white_16.png" : "imgs/view_white_16.png");
+        toggleProgressImg.src = chrome.runtime.getURL(GLOBAL_progressVisible ? "imgs/hide_white_16.png" : "imgs/show_white_16.png");
         toggleProgressImg.alt = chrome.i18n.getMessage(GLOBAL_progressVisible ? "toggleProgress_visible" : "toggleProgress_hidden");
     }
 }
@@ -276,27 +276,41 @@ function buildToolbar() {
     // Build "Toggle Progress" button
     const toggleProgressBtn = document.createElement("button");
     toggleProgressBtn.setAttribute("id", "opnd-toggle-progress");
+    toggleProgressBtn.classList.add("player-button"); // the Twitch player button CSS class
     toggleProgressBtn.onclick = handleToggleProgressAction;
+
+    // Build "Toggle Progress" button content span
+    const toggleProgressContent = document.createElement("span");
+    toggleProgressBtn.appendChild(toggleProgressContent);
+
+    // Build "Toggle Progress" Tooltip span: <span class="player-tip" data-tip="Stummschalten"></span>
+    const toggleProgressTooltip = document.createElement("span");
+    toggleProgressTooltip.classList.add("player-tip");
+    toggleProgressTooltip.setAttribute("data-tip", "Toggle progress");
+    // Add Tooltip span to "Toggle Progress" button content
+    toggleProgressContent.appendChild(toggleProgressTooltip);
+
     // Build "Toggle Progress" img
     const toggleProgressImg = document.createElement("img");
     toggleProgressImg.setAttribute("id", "opnd-toggle-progress-img");
     // Attributes src and alt will be set via configurePlayerProgressVisibility() after options are loaded.
-    // Add "Toggle Progress" img to "Toggle Progress" button
-    toggleProgressBtn.appendChild(toggleProgressImg);
-    // Build "Toggle Progress" label
-    const toggleProgressLbl = document.createElement("span");
-    toggleProgressLbl.innerHTML = " Duration";
-    // Add "Toggle Progress" label to "Toggle Progress" button
-    toggleProgressBtn.appendChild(toggleProgressLbl);
+    // Add "Toggle Progress" img to "Toggle Progress" button content
+    toggleProgressContent.appendChild(toggleProgressImg);
+
     // Add "Toggle Progress" button to toolbar div
     toolbar.appendChild(toggleProgressBtn);
 
     // Build "Seek Back" button
     const seekBackBtn = document.createElement("button");
     seekBackBtn.setAttribute("id", "opnd-seek-back");
-    seekBackBtn.textContent = "<";
     seekBackBtn.onclick = handleSeekBackAction;
-    // Add "Seek Back" button to toolbar div
+    // Build "Seek Back" img
+    const seekBackImg = document.createElement("img");
+    seekBackImg.setAttribute("src", chrome.runtime.getURL("imgs/rewind_white_16.png"));
+    seekBackImg.setAttribute("alt", "<");
+    // Add "Seek Back" img to "Seek Back" button
+    seekBackBtn.appendChild(seekBackImg);
+    // Add "Seek Back" button to Toolbar div
     toolbar.appendChild(seekBackBtn);
 
     // Build "Seek Amount" text field
@@ -310,8 +324,13 @@ function buildToolbar() {
     // Build "Seek Forward" button
     const seekForwardBtn = document.createElement("button");
     seekForwardBtn.setAttribute("id", "opnd-seek-forward");
-    seekForwardBtn.textContent = ">";
     seekForwardBtn.onclick = handleSeekForwardAction;
+    // Build "Seek Forward" img
+    const seekForwardImg = document.createElement("img");
+    seekForwardImg.setAttribute("src", chrome.runtime.getURL("imgs/fast_forward_white_16.png"));
+    seekForwardImg.setAttribute("alt", ">");
+    // Add "Seek Forward" img to "Seek Forward" button
+    seekForwardBtn.appendChild(seekForwardImg);
     // Add "Seek Forward" button to toolbar div
     toolbar.appendChild(seekForwardBtn);
 

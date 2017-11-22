@@ -1,38 +1,39 @@
 /* The whole time & progress div */
 #js-player-seek {
-	/*background: red;*/
+    /*background: red;*/
 }
 
 /* The total time span */
 .player-seek__time--total {
-		/*background: orange;*/
-		/*display: none;*/
+    /*background: orange;*/
+    /*display: none;*/
 }
 
 /* The slider div */
 .js-player-slider {
-		/*background: green;*/
-		/*display: none;*/
+    /*background: green;*/
+    /*display: none;*/
 }
 
 /* OPENEND: Children of the Toolbar span */
-#opnd-toolbar img, #opnd-toolbar button, #opnd-toolbar input {
-	vertical-align: middle;
+#opnd-toolbar span, #opnd-toolbar img, #opnd-toolbar button, #opnd-toolbar input {
+    vertical-align: middle;
+    height: 100%;
 }
 
 /* OPENEND: Toggle Progress button */
 #opnd-toggle-progress {
-	margin-left: 25px;
-	margin-right: 10px;
+    margin-left: 15px;
+    margin-right: 5px;
 }
 
 /* OPENEND: Seek Amount text input */
 #opnd-seek-amount {
-	margin-left: 5px;
-	margin-right: 5px;
-	width: 75px;
+    margin-left: 5px;
+    margin-right: 5px;
+    width: 75px;
 }
 
 .opnd-hidden {
-	display: none !important;
+    display: none;
 }
