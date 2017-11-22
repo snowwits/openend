@@ -392,15 +392,14 @@ function seek(forward = true) {
     // Get the seek amount in seconds
     const seekDirectionFactor = forward ? 1 : -1;
     const seekAmountInputValue = document.getElementById("opnd-seek-amount").value;
-    const seekAmount = parseDuration(seekAmountInputValue) * seekDirectionFactor;
+    const seekAmount = parseDuration(seekAmountInputValue);
     if (seekAmount === 0) {
         console.log("OPENEND: No valid seek amount input value given: %s", seekAmountInputValue);
         return;
     }
 
-    // Add the seek amount to the current time (but require: minTime < newTime <
-    // maxTime)
-    const newTime = Math.min(maxTime, Math.max(minTime, currentTime + seekAmount));
+    // Add/Subtract the seek amount to/from the current time (but require: minTime < newTime < maxTime)
+    const newTime = Math.min(maxTime, Math.max(minTime, currentTime + seekAmount * seekDirectionFactor));
 
     // Build the new url
     const newTimeUrl = buildCurrentUrlWithTime(newTime);
@@ -412,8 +411,8 @@ function seek(forward = true) {
 /* UTIL METHODS */
 /**
  *
- * @param time {Number} in seconds
- * @returns {string} the URL with the time parameter
+ * @param time {!number} in seconds
+ * @returns {!string} the URL with the time parameter
  */
 function buildCurrentUrlWithTime(time) {
     const newTimeFormatted = formatDuration(time);
@@ -421,5 +420,6 @@ function buildCurrentUrlWithTime(time) {
     return window.location.protocol + "//" + window.location.hostname + window.location.pathname + urlParams;
 }
 
+/* INIT */
 init();
 // window.onload = init;

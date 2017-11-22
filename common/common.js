@@ -26,8 +26,8 @@ const OPND_TOOLBAR_CLASS = "opnd-toolbar";
  * "01h02m03s" -> 1 * 60 * 60 + 2 * 60 + 3 = 3723
  * "2" -> "2m" -> 2 * 60 = 120
  *
- * @param durationString {string}
- * @returns {number} the duration in seconds (0 if no match)
+ * @param durationString {!string}
+ * @returns {!number} the duration in seconds (integer, 0 if no match)
  */
 function parseDuration(durationString) {
     if (durationString.length === 0) {
@@ -48,14 +48,14 @@ function parseDuration(durationString) {
     const hours = parseDurationPart(groups, 2);
     const mins = parseDurationPart(groups, 3);
     const secs = parseDurationPart(groups, 4);
-    return secs + mins * 60 + hours * 60 * 60;
+    return secs + mins * 60 + hours * 3600;
 }
 
 /**
  *
- * @param groups {Array.<string>}
- * @param index {Number}
- * @returns {Number}
+ * @param groups {!Array.<string>}
+ * @param index {!number}
+ * @returns {!number} the parsed integer or 0
  */
 function parseDurationPart(groups, index) {
     return typeof groups[index] !== "undefined" ? parseInt(groups[index]) : 0;
@@ -64,8 +64,8 @@ function parseDurationPart(groups, index) {
 /**
  * 3723 = 1 * 60 * 60 + 2 * 60 + 3 -> "01h02m03s"
  *
- * @param duration {Number} the duration in seconds
- * @returns {string}
+ * @param duration {!number} the duration in seconds
+ * @returns {!string}
  */
 function formatDuration(duration) {
     const parts = extractDurationParts(duration);
@@ -85,8 +85,8 @@ function formatDuration(duration) {
 /**
  * 3723 = 1h, 2m, 3s -> [1, 2, 3]
  *
- * @param duration {Number}
- * @returns {[Number,Number,Number]}
+ * @param duration {!number}
+ * @returns {[!number,!number,!number]}
  */
 function extractDurationParts(duration) {
     let amount = duration;
