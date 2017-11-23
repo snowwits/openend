@@ -9,7 +9,7 @@
         "message": "Videodauer anzeigen"
     },
     "playerJumpBackward": {
-        "message": "$JUMP_TIME$ zurück springen",
+        "message": "$JUMP_TIME$ zurückspringen",
         "placeholders": {
             "jump_time": {
                 "content": "$1",
@@ -18,7 +18,7 @@
         }
     },
     "playerJumpForward": {
-        "message": "$JUMP_TIME$ vor springen",
+        "message": "$JUMP_TIME$ vorspringen",
         "placeholders": {
             "jump_time": {
                 "content": "$1",
