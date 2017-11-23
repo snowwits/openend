@@ -113,6 +113,9 @@ function tryConfigurePlayer() {
             // Update Jump Distance value
             configurePlayerJumpDistanceValue();
 
+            //
+            configurePlayerJumpButtons();
+
             // Set initial Show/Hide Duration state
             configurePlayerDurationVisible();
 
@@ -131,6 +134,10 @@ function configurePlayerJumpDistanceValue() {
         console.log("OPENEND: Updating Player Jump Distance value to %s", GLOBAL_options.playerJumpDistance);
         jumpDistanceElem.value = GLOBAL_options.playerJumpDistance;
     }
+}
+
+function configurePlayerJumpButtons() {
+    handleJumpDistanceInputValueChange();
 }
 
 function configurePlayerDurationVisible() {
@@ -334,6 +341,9 @@ function buildPlayerToolbar() {
     const jumpDistanceInput = document.createElement("input");
     jumpDistanceInput.type = "text";
     jumpDistanceInput.id = OPND_PLAYER_JUMP_DISTANCE_INPUT_ID;
+    // TODO: Figure out how to check the jump distance string and how to display the error message
+    //jumpDistanceInput.pattern = DURATION_PATTERN;
+    //jumpDistanceInput.title = chrome.i18n.getMessage("playerJump_errMsg");
     toolbar.appendChild(jumpDistanceInput);
 
     // Build "Jump Forward" button
@@ -348,20 +358,17 @@ function buildPlayerToolbar() {
         }
         handleJumpDistanceInputValueChange();
     });
-    // Trigger once initially:
-    handleJumpDistanceInputValueChange();
 
     return toolbar;
 }
 
 function handleJumpDistanceInputValueChange() {
-    console.log("OPND: handleJumpDistanceInputValueChange()");
     const jumpDistanceInput = document.getElementById(OPND_PLAYER_JUMP_DISTANCE_INPUT_ID);
     const playerJumpBackwardTooltipSpan = document.getElementById(OPND_PLAYER_JUMP_BACKWARD_TOOLTIP_SPAN_ID);
     const playerJumpForwardTooltipSpan = document.getElementById(OPND_PLAYER_JUMP_FORWARD_TOOLTIP_SPAN_ID);
 
-    if(jumpDistanceInput && playerJumpBackwardTooltipSpan && playerJumpForwardTooltipSpan){
-        const jumpDistanceInputValue = jumpDistanceInput.value;
+    if (jumpDistanceInput && playerJumpBackwardTooltipSpan && playerJumpForwardTooltipSpan) {
+        const jumpDistanceInputValue = normalizeDurationString(jumpDistanceInput.value);
 
         const backwardMsg = chrome.i18n.getMessage("playerJumpBackward", jumpDistanceInputValue);
         playerJumpBackwardTooltipSpan.setAttribute(TWITCH_PLAYER_TOOLTIP_SPAN_TEXT_ATTR, backwardMsg);
@@ -442,22 +449,28 @@ function handlePlayerJumpForwardAction() {
 }
 
 function playerJump(forward = true) {
-    const slider = getSingleElementByClassName(TWITCH_PROGRESS_SLIDER_DIV_CLASS);
-    if (!slider) {
-        console.error("OPENEND: Time jump failed: div.%s not available", TWITCH_PROGRESS_SLIDER_DIV_CLASS);
+    const sliderDiv = getSingleElementByClassName(TWITCH_PROGRESS_SLIDER_DIV_CLASS);
+    if (!sliderDiv) {
+        console.error("OPENEND: Time jump failed: slider not available", TWITCH_PROGRESS_SLIDER_DIV_CLASS);
+        return;
     }
 
     // Get min, max, current time in seconds
-    const minTime = parseInt(slider.getAttribute("aria-valuemin"));
-    const maxTime = parseInt(slider.getAttribute("aria-valuemax"));
-    const currentTime = parseInt(slider.getAttribute("aria-valuenow"));
+    const minTime = parseInt(sliderDiv.getAttribute("aria-valuemin"));
+    const maxTime = parseInt(sliderDiv.getAttribute("aria-valuemax"));
+    const currentTime = parseInt(sliderDiv.getAttribute("aria-valuenow"));
+
+    if (maxTime === 0) {
+        console.error("OPENEND: Time jump failed: video duration not available");
+        return;
+    }
 
     // Get the jump distance in seconds
     const jumpDirection = forward ? 1 : -1;
     const jumpDistanceInputValue = document.getElementById(OPND_PLAYER_JUMP_DISTANCE_INPUT_ID).value;
     const jumpDistance = parseDuration(jumpDistanceInputValue);
     if (jumpDistance === 0) {
-        console.log("OPENEND: No valid jump distance given: %s", jumpDistanceInputValue);
+        console.log("OPENEND: Time jump failed: No valid jump distance given: %s", jumpDistanceInputValue);
         return;
     }
 

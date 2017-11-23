@@ -32,7 +32,20 @@ const OPND_PLAYER_JUMP_BACKWARD_TOOLTIP_SPAN_ID = "opnd-player-jump-backward-too
 const OPND_PLAYER_JUMP_FORWARD_BTN_ID = "opnd-player-jump-forward-btn";
 const OPND_PLAYER_JUMP_FORWARD_TOOLTIP_SPAN_ID = "opnd-player-jump-forward-tooltip";
 
+const DURATION_PATTERN = "^(?:(\\d+)|(?:(\\d+)h)?(?:(\\d+)m)?(?:(\\d+)s)?)$";
 
+/**
+ * Suffixes the given duration string with a "m" as single numbers are interpreted as minutes.
+ *
+ * @param durationString {!string}
+ * @returns {!string}
+ */
+function normalizeDurationString(durationString) {
+    if(new RegExp("^\\d+$").test(durationString)){
+        return durationString + "m"
+    }
+    return durationString;
+}
 
 /**
  * "01h02m03s" -> 1 * 60 * 60 + 2 * 60 + 3 = 3723
@@ -47,7 +60,7 @@ function parseDuration(durationString) {
     }
     // Regex: Either a single number ("2") or a duration string "01h02m03s".
     // literal RegExp /.../ not working somehow
-    const regexDuration = new RegExp("^(?:(\\d+)|(?:(\\d+)h)?(?:(\\d+)m)?(?:(\\d+)s)?)$");
+    const regexDuration = new RegExp(DURATION_PATTERN);
     const groups = regexDuration.exec(durationString);
     if (groups === null) {
         return 0;
