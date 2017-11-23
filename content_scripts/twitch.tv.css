@@ -15,20 +15,10 @@
     /*display: none;*/
 }
 
-/* OPENEND: Children of the Toolbar span */
-#opnd-toolbar span, #opnd-toolbar img, #opnd-toolbar button, #opnd-toolbar input {
-    vertical-align: middle;
-    height: 100%;
-}
-
-/* OPENEND: Toggle Progress button */
-#opnd-toggle-progress {
-    margin-left: 15px;
-    margin-right: 5px;
-}
-
-/* OPENEND: Seek Amount text input */
-#opnd-seek-amount {
+#opnd-player-jump-distance-input {
+    height: 2em;
+    line-height: 2em;
+    float: left;
     margin-left: 5px;
     margin-right: 5px;
     width: 75px;

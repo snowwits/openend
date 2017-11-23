@@ -1,17 +1,19 @@
 // Saves options to chrome.storage.sync.
 function saveOptions() {
     // Read option values from elements
-    const hideProgress = document.getElementById("hideProgress").checked;
-    const seekAmount = document.getElementById("seekAmount").value;
-    const hideAllVideoDurations = document.getElementById("hideAllVideoDurations").checked;
-    const twitchTheatreMode = document.getElementById("twitchTheatreMode").checked;
+    const playerHideDuration = document.getElementById("playerHideDuration").checked;
+    const playerJumpDistance = document.getElementById("playerJumpDistance").value;
+    const playerTheatreMode = document.getElementById("playerTheatreMode").checked;
+    const videoListHideDuration = document.getElementById("videoListHideDuration").checked;
+    const videoListHideTitle = document.getElementById("videoListHideTitle").checked;
 
     // Store option values to storage
     chrome.storage.sync.set({
-        hideProgress: hideProgress,
-        seekAmount: seekAmount,
-        hideAllVideoDurations: hideAllVideoDurations,
-        twitchTheatreMode: twitchTheatreMode
+        playerHideDuration: playerHideDuration,
+        playerJumpDistance: playerJumpDistance,
+        playerTheatreMode: playerTheatreMode,
+        videoListHideDuration: videoListHideDuration,
+        videoListHideTitle: videoListHideTitle
     }, function () {
         showStatusMsg(chrome.i18n.getMessage("options_save_successMsg"));
     });
@@ -21,26 +23,29 @@ function saveOptions() {
 function restoreOptions() {
     // Read option values from storage
     chrome.storage.sync.get({
-        hideProgress: OPT_HIDE_PROGRESS_DEFAULT,
-        seekAmount: OPT_SEEK_AMOUNT_DEFAULT,
-        hideAllVideoDurations: OPT_HIDE_ALL_VIDEO_DURATIONS_DEFAULT,
-        twitchTheatreMode: OPT_TWITCH_THEATRE_MODE_DEFAULT
+        playerHideDuration: OPT_PLAYER_HIDE_DURATION_DEFAULT,
+        playerJumpDistance: OPT_PLAYER_JUMP_DISTANCE_DEFAULT,
+        playerTheatreMode: OPT_PLAYER_THEATRE_MODE_DEFAULT,
+        videoListHideDuration: OPT_VIDEO_LIST_HIDE_DURATION_DEFAULT,
+        videoListHideTitle: OPT_VIDEO_LIST_HIDE_TITLE_DEFAULT
     }, function (items) {
         // Set option values to elements
-        document.getElementById("hideProgress").checked = items.hideProgress;
-        document.getElementById("seekAmount").value = items.seekAmount;
-        document.getElementById("hideAllVideoDurations").checked = items.hideAllVideoDurations;
-        document.getElementById("twitchTheatreMode").checked = items.twitchTheatreMode;
+        document.getElementById("playerHideDuration").checked = items.playerHideDuration;
+        document.getElementById("playerJumpDistance").value = items.playerJumpDistance;
+        document.getElementById("playerTheatreMode").checked = items.playerTheatreMode;
+        document.getElementById("videoListHideDuration").checked = items.videoListHideDuration;
+        document.getElementById("videoListHideTitle").checked = items.videoListHideTitle;
     });
 }
 
 // Restores option values using the preferences stored in chrome.storage.
 function restoreDefaultOptions() {
     // Set option values to elements
-    document.getElementById("hideProgress").checked = OPT_HIDE_PROGRESS_DEFAULT;
-    document.getElementById("seekAmount").value = OPT_SEEK_AMOUNT_DEFAULT;
-    document.getElementById("hideAllVideoDurations").checked = OPT_HIDE_ALL_VIDEO_DURATIONS_DEFAULT;
-    document.getElementById("twitchTheatreMode").checked = OPT_TWITCH_THEATRE_MODE_DEFAULT;
+    document.getElementById("playerHideDuration").checked = OPT_PLAYER_HIDE_DURATION_DEFAULT;
+    document.getElementById("playerJumpDistance").value = OPT_PLAYER_JUMP_DISTANCE_DEFAULT;
+    document.getElementById("playerTheatreMode").checked = OPT_PLAYER_THEATRE_MODE_DEFAULT;
+    document.getElementById("videoListHideDuration").checked = OPT_VIDEO_LIST_HIDE_DURATION_DEFAULT;
+    document.getElementById("videoListHideTitle").checked = OPT_VIDEO_LIST_HIDE_TITLE_DEFAULT;
     showStatusMsg(chrome.i18n.getMessage("options_restoreDefaults_successMsg"));
 }
 
@@ -56,13 +61,20 @@ function showStatusMsg(msg) {
 // Init elements
 // General
 document.getElementById("generalLabel").innerHTML = chrome.i18n.getMessage("options_general");
-document.getElementById("hideProgressLabel").innerHTML = chrome.i18n.getMessage("options_hideProgress");
-document.getElementById("seekAmountLabel").innerHTML = chrome.i18n.getMessage("options_seekAmount");
-document.getElementById("hideAllVideoDurationsLabel").innerHTML = chrome.i18n.getMessage("options_hideAllVideoDurations");
+
+// Player
+document.getElementById("playerLabel").innerHTML = chrome.i18n.getMessage("options_player");
+document.getElementById("playerHideDurationLabel").innerHTML = chrome.i18n.getMessage("options_player_hideDuration");
+document.getElementById("playerJumpDistanceLabel").innerHTML = chrome.i18n.getMessage("options_player_jumpDistance");
+document.getElementById("playerTheatreModeLabel").innerHTML = chrome.i18n.getMessage("options_player_theatreMode");
+
+// Video List
+document.getElementById("videoListLabel").innerHTML = chrome.i18n.getMessage("options_videoList");
+document.getElementById("videoListHideDurationLabel").innerHTML = chrome.i18n.getMessage("options_videoList_hideDuration");
+document.getElementById("videoListHideTitleLabel").innerHTML = chrome.i18n.getMessage("options_videoList_hideTitle");
 
 // Twitch
 document.getElementById("twitchLabel").innerHTML = chrome.i18n.getMessage("options_twitch");
-document.getElementById("twitchTheatreModeLabel").innerHTML = chrome.i18n.getMessage("options_twitchTheatreMode");
 
 // Controls
 const saveBtn = document.getElementById("save");

@@ -1,39 +1,71 @@
 {
     "manifest_description": {
-        "message": "Hides the progress bars and length of videos on Twitch.tv to prevent spoilers when watching sports or esports.",
-        "description": "Description of the Chrome Extension."
+        "message": "Hides the length and title of videos on Twitch.tv to prevent spoilers when watching sports or esports.",
+        "description": "Extension description."
     },
-    "toggleProgress_visible": {
-        "message": "Hide progress",
-        "description": "Label of the Toggle Progress button for the visible state."
+    "playerShowHideDuration_visible": {
+        "message": "Hide duration",
+        "description": "Label of the Show/Hide Duration button for the visible state."
     },
-    "toggleProgress_hidden": {
-        "message": "Show progress",
-        "description": "Label of the Toggle Progress button for the hidden state."
+    "playerShowHideDuration_hidden": {
+        "message": "Show duration",
+        "description": "Label of the Show/Hide Duration button for the hidden state."
+    },
+    "playerJumpBackward": {
+        "message": "Jump $JUMP_TIME$ backward",
+        "description": "Label of the Jump Backward button.",
+        "placeholders": {
+            "jump_time": {
+                "content": "$1",
+                "example": "2m"
+            }
+        }
+    },
+    "playerJumpForward": {
+        "message": "Jump $JUMP_TIME$ forward",
+        "description": "Label of the Jump Forward button.",
+        "placeholders": {
+            "jump_time": {
+                "content": "$1",
+                "example": "2m"
+            }
+        }
     },
     "options_general": {
         "message": "General",
         "description": "Label of the General options section."
     },
-    "options_hideProgress": {
-        "message": "Initially hide the video's progress",
-        "description": "Label of the Hide Progress option."
+    "options_player": {
+        "message": "Video player",
+        "description": "Label of the Player options section."
     },
-    "options_seekAmount": {
-        "message": "Default seek amount",
-        "description": "Label of the Seek Amount option."
+    "options_player_hideDuration": {
+        "message": "Hide the video duration",
+        "description": "Label of the Player: Hide Duration option."
     },
-    "options_hideAllVideoDurations": {
-        "message": "Hide durations of all videos",
-        "description": "Label of the Hide All Video Durations option."
+    "options_player_jumpDistance": {
+        "message": "Distance of time jumps",
+        "description": "Label of the Player: Jump Distance option."
+    },
+    "options_player_theatreMode": {
+        "message": "Start in theatre mode",
+        "description": "Label of the Player: Theatre Mode option."
+    },
+    "options_videoList": {
+        "message": "Video List items",
+        "description": "Label of the Video List options section."
+    },
+    "options_videoList_hideDuration": {
+        "message": "Hide the video duration",
+        "description": "Label of the Video List: Hide Duration option."
+    },
+    "options_videoList_hideTitle": {
+        "message": "Hide the video title",
+        "description": "Label of the Video List: Hide Title option."
     },
     "options_twitch": {
         "message": "Twitch",
         "description": "Label of the Twitch options section."
-    },
-    "options_twitchTheatreMode": {
-        "message": "Start in theatre mode",
-        "description": "Label of the Twitch Theatre Mode option."
     },
     "options_save": {
         "message": "Save",

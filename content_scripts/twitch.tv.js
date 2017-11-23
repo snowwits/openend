@@ -2,26 +2,49 @@
 /* Technical Parameters */
 const CHECK_PAGE_TASK_INTERVAL = 100; // 200ms
 const ELEMENTS_LOADED_TIMEOUT = 30000; // 30s
-/* Constants for multi used values */
-const PROGRESS_TOTAL_TIME_DIV_CLASS = "player-seek__time--total";
-const PROGRESS_SLIDER_DIV_CLASS = "js-player-slider";
-const THEATRE_MODE_BUTTON_CLASS = "qa-theatre-mode-button";
+
+/* Constants element IDs and classes */
+const TWITCH_PROGRESS_TOTAL_TIME_DIV_CLASS = "player-seek__time--total";
+const TWITCH_PROGRESS_SLIDER_DIV_CLASS = "js-player-slider";
+const TWITCH_THEATRE_MODE_BTN_CLASS = "qa-theatre-mode-button";
+/**
+ *  The Twitch player button CSS class.
+ * @type {string}
+ */
+const TWITCH_PLAYER_BTN_CLASS = "player-button";
+/**
+ *  Tooltip span: <span class="player-tip" data-tip="Mute"></span>
+ * @type {string}
+ */
+const TWITCH_PLAYER_TOOLTIP_SPAN_CLASS = "player-tip";
+const TWITCH_PLAYER_TOOLTIP_SPAN_TEXT_ATTR = "data-tip";
 
 /* Global Variables */
 /* Global Cached Options */
 let GLOBAL_options = {
-    hideProgress: OPT_HIDE_PROGRESS_DEFAULT,
-    seekAmount: OPT_SEEK_AMOUNT_DEFAULT,
-    hideAllVideoDurations: OPT_HIDE_ALL_VIDEO_DURATIONS_DEFAULT,
-    twitchTheatreMode: OPT_TWITCH_THEATRE_MODE_DEFAULT
+    playerHideDuration: OPT_PLAYER_HIDE_DURATION_DEFAULT,
+    playerJumpDistance: OPT_PLAYER_JUMP_DISTANCE_DEFAULT,
+    playerTheatreMode: OPT_PLAYER_THEATRE_MODE_DEFAULT,
+    videoListHideDuration: OPT_VIDEO_LIST_HIDE_DURATION_DEFAULT,
+    videoListHideTitle: OPT_VIDEO_LIST_HIDE_TITLE_DEFAULT
 };
+
 /* Global Page Type Flags */
-let GLOBAL_isVideoPage = false;
+const PageType = {
+    UNKNOWN: -1,
+    VIDEOS: 1,
+    VIDEO: 2,
+    name: {
+        1: "Videos",
+        2: "Video"
+    }
+};
+let GLOBAL_pageType = PageType.UNKNOWN;
 /* Global Page Component Loaded Flags */
-let GLOBAL_videoCardsConfigured = false;
-let GLOBAL_videoPlayerConfigured = false;
+let GLOBAL_playerConfigured = false;
+let GLOBAL_videoListItemsConfigured = false;
 /* Global Page Component State Flags */
-let GLOBAL_progressVisible = !OPT_HIDE_PROGRESS_DEFAULT;
+let GLOBAL_playerDurationVisible = !OPT_PLAYER_HIDE_DURATION_DEFAULT;
 
 /* Functions */
 
@@ -30,16 +53,17 @@ function init() {
     console.log("OPENEND: Initializing...");
 
     loadOptions();
-    determinePage();
+    determinePageType();
     startCheckPageTask();
 }
 
 function loadOptions() {
     chrome.storage.sync.get({
-        hideProgress: OPT_HIDE_PROGRESS_DEFAULT,
-        seekAmount: OPT_SEEK_AMOUNT_DEFAULT,
-        hideAllVideoDurations: OPT_HIDE_ALL_VIDEO_DURATIONS_DEFAULT,
-        twitchTheatreMode: OPT_TWITCH_THEATRE_MODE_DEFAULT
+        playerHideDuration: OPT_PLAYER_HIDE_DURATION_DEFAULT,
+        playerJumpDistance: OPT_PLAYER_JUMP_DISTANCE_DEFAULT,
+        playerTheatreMode: OPT_PLAYER_THEATRE_MODE_DEFAULT,
+        videoListHideDuration: OPT_VIDEO_LIST_HIDE_DURATION_DEFAULT,
+        videoListHideTitle: OPT_VIDEO_LIST_HIDE_TITLE_DEFAULT
     }, function (items) {
         if ("undefined" === typeof chrome.runtime.lastError) {
             GLOBAL_options = items;
@@ -54,66 +78,30 @@ function loadOptions() {
 }
 
 function resetGlobalPageFlags() {
-    GLOBAL_isVideoPage = false;
+    GLOBAL_pageType = false;
     resetGlobalPageStateFlags()
 }
 
 function resetGlobalPageStateFlags() {
-    GLOBAL_videoCardsConfigured = false;
-    GLOBAL_videoPlayerConfigured = false;
+    GLOBAL_playerConfigured = false;
+    GLOBAL_videoListItemsConfigured = false;
     // Initialize global variables with the option values
-    GLOBAL_progressVisible = !GLOBAL_options.hideProgress;
+    GLOBAL_playerDurationVisible = !GLOBAL_options.playerHideDuration;
 }
 
 function configurePage() {
+    tryConfigurePlayer();
     tryConfigureVideoCards();
-    tryConfigureVideoPlayer();
 }
 
-/**
- * On Video page:
- *
- * Video card:
- * <div class="tw-card relative"> ... </div>
- *
- * Video stat (length):
- * <div class="video-preview-card__preview-overlay-stat c-background-overlay c-text-overlay font-size-6 top-0 right-0 z-default inline-flex absolute mg-05">
- *      <div class="tw-tooltip-wrapper inline-flex">
- *          <div class="tw-stat" data-test-selector="video-length">
- *              <span class="tw-stat__icon"><figure class="svg-figure"><svg ...> ... </svg></figure></span>
- *              <span class="tw-stat__value" data-a-target="tw-stat-value">4:33:57</span>
- *          </div>
- *          <div class="tw-tooltip tw-tooltip--down tw-tooltip--align-center" data-a-target="tw-tooltip-label">Länge</div>
- *      </div>
- * </div>
- *
- */
-function tryConfigureVideoCards() {
-    if (!GLOBAL_videoCardsConfigured) {
-        const videoStatDivs = document.getElementsByClassName("video-preview-card__preview-overlay-stat");
-        if (videoStatDivs.length > 0) {
-            console.log("OPENEND: Updating all Video Durations' visibilities to %s", !GLOBAL_options.hideAllVideoDurations);
-            for (let i = 0; i < videoStatDivs.length; ++i) {
-                const videoStatDiv = videoStatDivs[i];
-                const videoLengthDiv = videoStatDiv.querySelector('div[data-test-selector="video-length"]');
-                if (videoLengthDiv) {
-                    setVisible([videoStatDiv], !GLOBAL_options.hideAllVideoDurations)
-                }
-            }
-            GLOBAL_videoCardsConfigured = true;
-            console.log("OPENEND: Configured Video Cards");
-        }
-    }
-}
-
-function tryConfigureVideoPlayer() {
-    if (GLOBAL_isVideoPage && !GLOBAL_videoPlayerConfigured) {
-        let toolbar = document.getElementById(OPND_TOOLBAR_CLASS);
+function tryConfigurePlayer() {
+    if (GLOBAL_pageType === PageType.VIDEO && !GLOBAL_playerConfigured) {
+        let toolbar = document.getElementById(OPND_PLAYER_TOOLBAR_ID);
         if (!toolbar) {
-            // Search for injection container for toolbar
-            const injectionContainer = getSingleElementByClassName("player-seek__time-container");
+            // Search for injection container for toolbar (the left button panel)
+            const injectionContainer = getSingleElementByClassName("player-buttons-left");
             if (injectionContainer) {
-                toolbar = buildToolbar();
+                toolbar = buildPlayerToolbar();
                 injectionContainer.appendChild(toolbar);
                 console.log("OPENEND: Injected Open End Toolbar");
             } else {
@@ -121,59 +109,64 @@ function tryConfigureVideoPlayer() {
             }
         }
 
-        if(toolbar) {
-            // Update Seek Amount value
-            configurePlayerSeekAmountValue();
+        if (toolbar) {
+            // Update Jump Distance value
+            configurePlayerJumpDistanceValue();
 
-            // Set initial Toggle Progress state
-            configurePlayerProgressVisibility();
+            // Set initial Show/Hide Duration state
+            configurePlayerDurationVisible();
 
             // May set theatre mode
             configureTheatreMode();
 
-            GLOBAL_videoPlayerConfigured = true;
+            GLOBAL_playerConfigured = true;
             console.log("OPENEND: Configured Twitch Player");
         }
     }
 }
 
-function configurePlayerSeekAmountValue() {
-    const seekAmountElem = document.getElementById("opnd-seek-amount");
-    if (seekAmountElem) {
-        console.log("OPENEND: Updating Seek Amount value to %s", GLOBAL_options.seekAmount);
-        seekAmountElem.value = GLOBAL_options.seekAmount;
+function configurePlayerJumpDistanceValue() {
+    const jumpDistanceElem = document.getElementById(OPND_PLAYER_JUMP_DISTANCE_INPUT_ID);
+    if (jumpDistanceElem) {
+        console.log("OPENEND: Updating Player Jump Distance value to %s", GLOBAL_options.playerJumpDistance);
+        jumpDistanceElem.value = GLOBAL_options.playerJumpDistance;
     }
 }
 
-function configurePlayerProgressVisibility() {
+function configurePlayerDurationVisible() {
     // Make progress indicators visible / hidden
-    const allElementsToToggle = getElementsByClassNames([PROGRESS_TOTAL_TIME_DIV_CLASS, PROGRESS_SLIDER_DIV_CLASS]);
+    const allElementsToToggle = getElementsByClassNames([TWITCH_PROGRESS_TOTAL_TIME_DIV_CLASS, TWITCH_PROGRESS_SLIDER_DIV_CLASS]);
 
     if (allElementsToToggle.length > 0) {
-        console.log("OPENEND: Updating Progress visibility to %s", GLOBAL_progressVisible);
-        setVisible(allElementsToToggle, GLOBAL_progressVisible)
+        console.log("OPENEND: Updating visibility of Player Duration to %s", GLOBAL_playerDurationVisible);
+        setVisible(allElementsToToggle, GLOBAL_playerDurationVisible)
     }
 
-    // Update the toggle img src and alt
-    const toggleProgressImg = document.getElementById("opnd-toggle-progress-img");
-    if (toggleProgressImg) {
-        toggleProgressImg.src = chrome.runtime.getURL(GLOBAL_progressVisible ? "imgs/hide_white_16.png" : "imgs/show_white_16.png");
-        toggleProgressImg.alt = chrome.i18n.getMessage(GLOBAL_progressVisible ? "toggleProgress_visible" : "toggleProgress_hidden");
+    // Update the Player Progress Visibility img src and alt
+    const tooltip = chrome.i18n.getMessage(GLOBAL_playerDurationVisible ? "playerShowHideDuration_visible" : "playerShowHideDuration_hidden");
+    const showHidePlayerDurationImg = document.getElementById(OPND_PLAYER_SHOW_HIDE_DURATION_IMG_ID);
+    if (showHidePlayerDurationImg) {
+        showHidePlayerDurationImg.src = chrome.runtime.getURL(GLOBAL_playerDurationVisible ? "imgs/hide_white_16.png" : "imgs/show_white_16.png");
+        showHidePlayerDurationImg.alt = tooltip
+    }
+
+    const showHidePlayerDurationTooltipSpan = document.getElementById(OPND_PLAYER_SHOW_HIDE_DURATION_TOOLTIP_SPAN_ID);
+    if (showHidePlayerDurationTooltipSpan) {
+        showHidePlayerDurationTooltipSpan.setAttribute(TWITCH_PLAYER_TOOLTIP_SPAN_TEXT_ATTR, tooltip);
     }
 }
 
-
 function configureTheatreMode() {
-    const theatreModeButton = getSingleElementByClassName(THEATRE_MODE_BUTTON_CLASS);
-    if (theatreModeButton) {
-        const isActive = isTheatreModeActive(theatreModeButton);
-        if (GLOBAL_options.twitchTheatreMode !== isActive) {
-            console.log("OPENEND: Clicking Theatre Mode button to " + (GLOBAL_options.twitchTheatreMode ? "enter" : "exit") + " Theatre Mode");
-            theatreModeButton.click();
+    const theatreModeBtn = getSingleElementByClassName(TWITCH_THEATRE_MODE_BTN_CLASS);
+    if (theatreModeBtn) {
+        const isActive = isTheatreModeActive(theatreModeBtn);
+        if (GLOBAL_options.playerTheatreMode !== isActive) {
+            console.log("OPENEND: " + (GLOBAL_options.playerTheatreMode ? "Entering" : "Exiting") + " Player Theatre Mode");
+            theatreModeBtn.click();
         }
     }
     else {
-        console.warn("OPENEND: Could configure Theatre Mode because the button." + THEATRE_MODE_BUTTON_CLASS + " could not be found");
+        console.warn("OPENEND: Could not configure Player Theatre Mode because the button." + TWITCH_THEATRE_MODE_BTN_CLASS + " could not be found");
     }
 }
 
@@ -207,6 +200,42 @@ function isTheatreModeActive(theatreModeButton) {
     return false;
 }
 
+/**
+ * On Video page:
+ *
+ * Video card:
+ * <div class="tw-card relative"> ... </div>
+ *
+ * Video stat (length):
+ * <div class="video-preview-card__preview-overlay-stat c-background-overlay c-text-overlay font-size-6 top-0 right-0 z-default inline-flex absolute mg-05">
+ *      <div class="tw-tooltip-wrapper inline-flex">
+ *          <div class="tw-stat" data-test-selector="video-length">
+ *              <span class="tw-stat__icon"><figure class="svg-figure"><svg ...> ... </svg></figure></span>
+ *              <span class="tw-stat__value" data-a-target="tw-stat-value">4:33:57</span>
+ *          </div>
+ *          <div class="tw-tooltip tw-tooltip--down tw-tooltip--align-center" data-a-target="tw-tooltip-label">Länge</div>
+ *      </div>
+ * </div>
+ *
+ */
+function tryConfigureVideoCards() {
+    if (!GLOBAL_videoListItemsConfigured) {
+        const videoStatDivs = document.getElementsByClassName("video-preview-card__preview-overlay-stat");
+        if (videoStatDivs.length > 0) {
+            console.log("OPENEND: Updating visibility of all Video List item durations to %s", !GLOBAL_options.videoListHideDuration);
+            for (let i = 0; i < videoStatDivs.length; ++i) {
+                const videoStatDiv = videoStatDivs[i];
+                const videoLengthDiv = videoStatDiv.querySelector('div[data-test-selector="video-length"]');
+                if (videoLengthDiv) {
+                    setVisible([videoStatDiv], !GLOBAL_options.videoListHideDuration)
+                }
+            }
+            GLOBAL_videoListItemsConfigured = true;
+            console.log("OPENEND: Configured Video List items");
+        }
+    }
+}
+
 function listenForOptionsChanges() {
     chrome.storage.onChanged.addListener(function (changes, namespace) {
         for (const key in changes) {
@@ -223,9 +252,23 @@ function listenForOptionsChanges() {
     });
 }
 
-function determinePage() {
-    GLOBAL_isVideoPage = isVideoPage();
-    console.log("OPENEND: On video page: %s", GLOBAL_isVideoPage);
+function determinePageType() {
+    if (isVideoPage()) {
+        GLOBAL_pageType = PageType.VIDEO;
+    } else if (isVideosPage()) {
+        GLOBAL_pageType = PageType.VIDEOS;
+    } else {
+        GLOBAL_pageType = PageType.UNKNOWN;
+    }
+    console.log("OPENEND: Page type: %s", PageType.name[GLOBAL_pageType]);
+}
+
+function isVideoPage() {
+    return new RegExp("twitch.tv/videos/\\d+").test(window.location.href);
+}
+
+function isVideosPage() {
+    return new RegExp(".twitch.tv/[^/]+/videos/all").test(window.location.href);
 }
 
 function startCheckPageTask() {
@@ -265,123 +308,143 @@ function handlePageChange() {
     resetGlobalPageFlags();
 
     // Remove old toolbar
-    const toolbar = document.getElementById(OPND_TOOLBAR_CLASS);
+    const toolbar = document.getElementById(OPND_PLAYER_TOOLBAR_ID);
     if (toolbar) {
         toolbar.parentNode.removeChild(toolbar);
     }
 
     // Determine page
-    determinePage();
+    determinePageType();
 }
 
-function isVideoPage() {
-    return new RegExp("twitch.tv/videos/\\d+").test(window.location.href);
-}
-
-function buildToolbar() {
+function buildPlayerToolbar() {
     // Build toolbar div
     const toolbar = document.createElement("div");
-    toolbar.setAttribute("id", OPND_TOOLBAR_CLASS);
+    toolbar.setAttribute("id", OPND_PLAYER_TOOLBAR_ID);
 
-    // Build "Toggle Progress" button
-    const toggleProgressBtn = document.createElement("button");
-    toggleProgressBtn.setAttribute("id", "opnd-toggle-progress");
-    toggleProgressBtn.classList.add("player-button"); // the Twitch player button CSS class
-    toggleProgressBtn.onclick = handleToggleProgressAction;
+    // Build "Progress Visibility" button
+    const progressVisibilityBtn = buildPlayerToolbarButton(OPND_PLAYER_SHOW_HIDE_DURATION_BTN_ID, handlePlayerShowHideDurationAction, OPND_PLAYER_SHOW_HIDE_DURATION_TOOLTIP_SPAN_ID, null, OPND_PLAYER_SHOW_HIDE_DURATION_IMG_ID);
+    toolbar.appendChild(progressVisibilityBtn);
 
-    // Build "Toggle Progress" button content span
-    const toggleProgressContent = document.createElement("span");
-    toggleProgressBtn.appendChild(toggleProgressContent);
+    // Build "Jump Back" button
+    const jumpBackwardBtn = buildPlayerToolbarButton(OPND_PLAYER_JUMP_BACKWARD_BTN_ID, handlePlayerJumpBackwardAction, OPND_PLAYER_JUMP_BACKWARD_TOOLTIP_SPAN_ID, "playerJumpBackward", null, "imgs/rewind_white_16.png");
+    toolbar.appendChild(jumpBackwardBtn);
 
-    // Build "Toggle Progress" Tooltip span: <span class="player-tip" data-tip="Stummschalten"></span>
-    const toggleProgressTooltip = document.createElement("span");
-    toggleProgressTooltip.classList.add("player-tip");
-    toggleProgressTooltip.setAttribute("data-tip", "Toggle progress");
-    // Add Tooltip span to "Toggle Progress" button content
-    toggleProgressContent.appendChild(toggleProgressTooltip);
+    // Build "Jump Distance" text input
+    const jumpDistanceInput = document.createElement("input");
+    jumpDistanceInput.type = "text";
+    jumpDistanceInput.id = OPND_PLAYER_JUMP_DISTANCE_INPUT_ID;
+    toolbar.appendChild(jumpDistanceInput);
 
-    // Build "Toggle Progress" img
-    const toggleProgressImg = document.createElement("img");
-    toggleProgressImg.setAttribute("id", "opnd-toggle-progress-img");
-    // Attributes src and alt will be set via configurePlayerProgressVisibility() after options are loaded.
-    // Add "Toggle Progress" img to "Toggle Progress" button content
-    toggleProgressContent.appendChild(toggleProgressImg);
+    // Build "Jump Forward" button
+    const jumpForwardBtn = buildPlayerToolbarButton(OPND_PLAYER_JUMP_FORWARD_BTN_ID, handlePlayerJumpForwardAction, OPND_PLAYER_JUMP_FORWARD_TOOLTIP_SPAN_ID, "playerJumpForward", null, "imgs/fast_forward_white_16.png");
+    toolbar.appendChild(jumpForwardBtn);
 
-    // Add "Toggle Progress" button to toolbar div
-    toolbar.appendChild(toggleProgressBtn);
-
-    // Build "Seek Back" button
-    const seekBackBtn = document.createElement("button");
-    seekBackBtn.setAttribute("id", "opnd-seek-back");
-    seekBackBtn.onclick = handleSeekBackAction;
-    // Build "Seek Back" img
-    const seekBackImg = document.createElement("img");
-    seekBackImg.setAttribute("src", chrome.runtime.getURL("imgs/rewind_white_16.png"));
-    seekBackImg.setAttribute("alt", "<");
-    // Add "Seek Back" img to "Seek Back" button
-    seekBackBtn.appendChild(seekBackImg);
-    // Add "Seek Back" button to Toolbar div
-    toolbar.appendChild(seekBackBtn);
-
-    // Build "Seek Amount" text field
-    const seekAmountInput = document.createElement("input");
-    seekAmountInput.setAttribute("type", "text");
-    seekAmountInput.setAttribute("id", "opnd-seek-amount");
-    // value will be set via configurePlayerSeekAmountValue() after options are loaded
-    // Add "Seek Amount" button to toolbar div
-    toolbar.appendChild(seekAmountInput);
-
-    // Build "Seek Forward" button
-    const seekForwardBtn = document.createElement("button");
-    seekForwardBtn.setAttribute("id", "opnd-seek-forward");
-    seekForwardBtn.onclick = handleSeekForwardAction;
-    // Build "Seek Forward" img
-    const seekForwardImg = document.createElement("img");
-    seekForwardImg.setAttribute("src", chrome.runtime.getURL("imgs/fast_forward_white_16.png"));
-    seekForwardImg.setAttribute("alt", ">");
-    // Add "Seek Forward" img to "Seek Forward" button
-    seekForwardBtn.appendChild(seekForwardImg);
-    // Add "Seek Forward" button to toolbar div
-    toolbar.appendChild(seekForwardBtn);
-
-    // Pressing Enter in the "Seek Amount" text field should trigger the "Seek
-    // Forward" button
-    seekAmountInput.addEventListener("keyup", function (event) {
+    // Pressing Enter in the "Jump Distance" text input should trigger the "Jump Forward" button
+    jumpDistanceInput.addEventListener("keyup", function (event) {
         event.preventDefault();
         if (event.keyCode === 13) { // 13 = ENTER
-            seekForwardBtn.click();
+            jumpForwardBtn.click();
         }
+        handleJumpDistanceInputValueChange();
     });
+    // Trigger once initially:
+    handleJumpDistanceInputValueChange();
 
     return toolbar;
 }
 
+function handleJumpDistanceInputValueChange() {
+    console.log("OPND: handleJumpDistanceInputValueChange()");
+    const jumpDistanceInput = document.getElementById(OPND_PLAYER_JUMP_DISTANCE_INPUT_ID);
+    const playerJumpBackwardTooltipSpan = document.getElementById(OPND_PLAYER_JUMP_BACKWARD_TOOLTIP_SPAN_ID);
+    const playerJumpForwardTooltipSpan = document.getElementById(OPND_PLAYER_JUMP_FORWARD_TOOLTIP_SPAN_ID);
+
+    if(jumpDistanceInput && playerJumpBackwardTooltipSpan && playerJumpForwardTooltipSpan){
+        const jumpDistanceInputValue = jumpDistanceInput.value;
+
+        const backwardMsg = chrome.i18n.getMessage("playerJumpBackward", jumpDistanceInputValue);
+        playerJumpBackwardTooltipSpan.setAttribute(TWITCH_PLAYER_TOOLTIP_SPAN_TEXT_ATTR, backwardMsg);
+
+        const forwardMsg = chrome.i18n.getMessage("playerJumpForward", jumpDistanceInputValue);
+        playerJumpForwardTooltipSpan.setAttribute(TWITCH_PLAYER_TOOLTIP_SPAN_TEXT_ATTR, forwardMsg);
+    }
+}
+
+/**
+ *
+ * @param id {!string}
+ * @param onclick {!function}
+ * @param tooltipId {?string}
+ * @param tooltipTxtMsgName {?string} il8n message name for the tooltip text and image alt
+ * @param imgId {?string}
+ * @param imgSrc {?string} relative URL in the extension directory
+ * @returns {!Element}
+ */
+function buildPlayerToolbarButton(id, onclick, tooltipId = null, tooltipTxtMsgName = null, imgId = null, imgSrc = null) {
+    // Build button
+    const btn = document.createElement("button");
+    btn.id = id;
+    btn.classList.add(TWITCH_PLAYER_BTN_CLASS);
+    btn.onclick = onclick;
+
+    // Build button content span
+    const content = document.createElement("span");
+    btn.appendChild(content);
+
+    // Build tooltip
+    const tooltipTxtMsg = tooltipTxtMsgName !== null ? chrome.i18n.getMessage(tooltipTxtMsgName) : null;
+    const tooltip = document.createElement("span");
+    tooltip.id = tooltipId;
+    tooltip.classList.add(TWITCH_PLAYER_TOOLTIP_SPAN_CLASS);
+    if (tooltipTxtMsg !== null) {
+        tooltip.setAttribute(TWITCH_PLAYER_TOOLTIP_SPAN_TEXT_ATTR, tooltipTxtMsg);
+    }
+    content.appendChild(tooltip);
+
+    // Build img
+    const img = document.createElement("img");
+    img.id = imgId;
+    if (imgSrc !== null) {
+        img.src = chrome.runtime.getURL(imgSrc);
+    }
+    if (tooltipTxtMsg !== null) {
+        img.alt = chrome.i18n.getMessage(tooltipTxtMsg);
+    }
+    content.appendChild(img);
+
+    // const svg = document.createElement("svg");
+    // svg.innerHTML='<svg viewBox="0 0 30 30" id="icon_settings" width="100%" height="100%"><path clip-rule="evenodd" d="M13.3589744,7 L16.6410256,7 L18.0769231,9.8 L21.3589744,9.8 L23,12.2 L21.3589744,15 L23,17.8 L21.3589744,20.2 L18.0769231,20.2 L16.6410256,23 L13.3589744,23 L11.9230769,20.2 L8.64102564,20.2 L7,17.8 L8.64102564,15 L7,12.2 L8.64102564,9.8 L11.9230769,9.8 L13.3589744,7 Z M15,17.8 C16.5860485,17.8 17.8717949,16.5463973 17.8717949,15 C17.8717949,13.4536027 16.5860485,12.2 15,12.2 C13.4139515,12.2 12.1282051,13.4536027 12.1282051,15 C12.1282051,16.5463973 13.4139515,17.8 15,17.8 Z" fill-rule="evenodd"></path></svg>';
+
+    return btn;
+}
+
 /* PROGRESS */
-function handleToggleProgressAction() {
-    console.log("OPENEND: Handling Toggle Progress action");
+function handlePlayerShowHideDurationAction() {
+    console.log("OPENEND: Handling action [Player: Show/Hide Duration]");
 
     // Toggle
-    GLOBAL_progressVisible = !GLOBAL_progressVisible;
+    GLOBAL_playerDurationVisible = !GLOBAL_playerDurationVisible;
 
-    configurePlayerProgressVisibility();
+    configurePlayerDurationVisible();
 }
 
 
-/* SEEKING */
-function handleSeekBackAction() {
-    console.log("OPENEND: Handling Seek Back action");
-    seek(false);
+/* Player: Jump */
+function handlePlayerJumpBackwardAction() {
+    console.log("OPENEND: Handling action [Player: Jump Backward]");
+    playerJump(false);
 }
 
-function handleSeekForwardAction() {
-    console.log("OPENEND: Handling Seek Forward action");
-    seek(true);
+function handlePlayerJumpForwardAction() {
+    console.log("OPENEND: Handling action [Player: Jump Forward]");
+    playerJump(true);
 }
 
-function seek(forward = true) {
-    const slider = getSingleElementByClassName(PROGRESS_SLIDER_DIV_CLASS);
+function playerJump(forward = true) {
+    const slider = getSingleElementByClassName(TWITCH_PROGRESS_SLIDER_DIV_CLASS);
     if (!slider) {
-        console.error("OPENEND: Seeking failed: div.%s not available", PROGRESS_SLIDER_DIV_CLASS);
+        console.error("OPENEND: Time jump failed: div.%s not available", TWITCH_PROGRESS_SLIDER_DIV_CLASS);
     }
 
     // Get min, max, current time in seconds
@@ -389,21 +452,21 @@ function seek(forward = true) {
     const maxTime = parseInt(slider.getAttribute("aria-valuemax"));
     const currentTime = parseInt(slider.getAttribute("aria-valuenow"));
 
-    // Get the seek amount in seconds
-    const seekDirectionFactor = forward ? 1 : -1;
-    const seekAmountInputValue = document.getElementById("opnd-seek-amount").value;
-    const seekAmount = parseDuration(seekAmountInputValue);
-    if (seekAmount === 0) {
-        console.log("OPENEND: No valid seek amount input value given: %s", seekAmountInputValue);
+    // Get the jump distance in seconds
+    const jumpDirection = forward ? 1 : -1;
+    const jumpDistanceInputValue = document.getElementById(OPND_PLAYER_JUMP_DISTANCE_INPUT_ID).value;
+    const jumpDistance = parseDuration(jumpDistanceInputValue);
+    if (jumpDistance === 0) {
+        console.log("OPENEND: No valid jump distance given: %s", jumpDistanceInputValue);
         return;
     }
 
-    // Add/Subtract the seek amount to/from the current time (but require: minTime < newTime < maxTime)
-    const newTime = Math.min(maxTime, Math.max(minTime, currentTime + seekAmount * seekDirectionFactor));
+    // Add/Subtract the jump distance to/from the current time (but require: minTime < newTime < maxTime)
+    const newTime = Math.min(maxTime, Math.max(minTime, currentTime + jumpDistance * jumpDirection));
 
     // Build the new url
     const newTimeUrl = buildCurrentUrlWithTime(newTime);
-    console.log("OPENEND: Seeking %is: %is -> %is (%s)", seekAmount, currentTime, newTime, newTimeUrl);
+    console.log("OPENEND: Jumping %is: %is -> %is (%s)", jumpDistance, currentTime, newTime, newTimeUrl);
     window.location.assign(newTimeUrl);
 }
 

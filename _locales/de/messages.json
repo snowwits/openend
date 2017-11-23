@@ -1,77 +1,68 @@
 {
     "manifest_description": {
-        "message": "Versteckt die Fortschrittsanzeige und Gesamtdauer von Videos auf Twitch.tv, um den Benutzer beim Schauen von Sport- oder E-Sport-Videos vor Spoilern zu schützen.",
-        "description": "Extension description."
+        "message": "Versteckt die Gesamtdauer und den Titel von Videos auf Twitch.tv, um den Zuschauer von Sport- oder E-Sport-Videos vor Spoilern zu schützen."
     },
-    "toggleProgress_visible": {
-        "message": "Videofortschritt verstecken",
-        "description": "Label of the Toggle Progress button for the visible state."
+    "playerShowHideDuration_visible": {
+        "message": "Videodauer verstecken"
     },
-    "toggleProgress_hidden": {
-        "message": "Videofortschritt anzeigen",
-        "description": "Label of the Toggle Progress button for the hidden state."
+    "playerShowHideDuration_hidden": {
+        "message": "Videodauer anzeigen"
+    },
+    "playerJumpBackward": {
+        "message": "$JUMP_TIME$ zurück springen",
+        "placeholders": {
+            "jump_time": {
+                "content": "$1",
+                "example": "2m"
+            }
+        }
+    },
+    "playerJumpForward": {
+        "message": "$JUMP_TIME$ vor springen",
+        "placeholders": {
+            "jump_time": {
+                "content": "$1",
+                "example": "2m"
+            }
+        }
     },
     "options_general": {
-        "message": "Allgemein",
-        "description": "Label of the General options section."
+        "message": "Allgemein"
     },
-    "options_hideProgress": {
-        "message": "Videofortschritt initial verstecken",
-        "description": "Label of the Hide Progress option."
+    "options_player": {
+        "message": "Video-Player"
     },
-    "options_seekAmount": {
-        "message": "Standardwert fürs Spulen",
-        "description": "Label of the Seek Amount option."
+    "options_player_hideDuration": {
+        "message": "Videodauer verstecken"
     },
-    "options_hideAllVideoDurations": {
-        "message": "Dauer aller Videos verstecken",
-        "description": "Label of the Hide All Video Durations option."
+    "options_player_jumpDistance": {
+        "message": "Länge von Zeitsprüngen"
+    },
+    "options_player_theatreMode": {
+        "message": "Im Theater-Modus starten"
+    },
+    "options_videoList": {
+        "message": "Video-Listeneinträge"
+    },
+    "options_videoList_hideDuration": {
+        "message": "Videodauer verstecken"
+    },
+    "options_videoList_hideTitle": {
+        "message": "Videotitel verstecken"
     },
     "options_twitch": {
-        "message": "Twitch",
-        "description": "Label of the Twitch options section."
-    },
-    "options_twitchTheatreMode": {
-        "message": "Im Theater-Modus starten",
-        "description": "Label of the Twitch Theatre Mode option."
+        "message": "Twitch"
     },
     "options_save": {
-        "message": "Speichern",
-        "description": "Label of the Save button."
+        "message": "Speichern"
     },
     "options_save_successMsg": {
-        "message": "Optionen gespeichert.",
-        "description": "Message to be displayed after a successful Save action."
+        "message": "Optionen gespeichert."
     },
     "options_restoreDefaults": {
-        "message": "Standardwerte wiederherstellen",
-        "description": "Label of the Restore Defaults button."
+        "message": "Standardwerte wiederherstellen"
     },
     "options_restoreDefaults_successMsg": {
-        "message": "Standardwerte wiederhergestellt.",
-        "description": "Message to be displayed after a successful Restore Defaults action."
-    },
-    "hello": {
-        "message": "Hello, $USER$",
-        "description": "Greet the user",
-        "placeholders": {
-            "user": {
-                "content": "$1",
-                "example": "Cira"
-            }
-        }
-    },
-    "bye": {
-        "message": "Goodbye, $USER$. Come back to $OUR_SITE$ soon!",
-        "description": "Say goodbye to the user",
-        "placeholders": {
-            "our_site": {
-                "content": "Example.com"
-            },
-            "user": {
-                "content": "$1",
-                "example": "Cira"
-            }
-        }
+        "message": "Standardwerte wiederhergestellt."
     }
 }

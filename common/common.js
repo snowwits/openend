@@ -1,8 +1,9 @@
 /* Option Defaults */
-const OPT_HIDE_PROGRESS_DEFAULT = true;
-const OPT_SEEK_AMOUNT_DEFAULT = "2m";
-const OPT_HIDE_ALL_VIDEO_DURATIONS_DEFAULT = true;
-const OPT_TWITCH_THEATRE_MODE_DEFAULT = false;
+const OPT_PLAYER_HIDE_DURATION_DEFAULT = true;
+const OPT_PLAYER_JUMP_DISTANCE_DEFAULT = "2m";
+const OPT_PLAYER_THEATRE_MODE_DEFAULT = false;
+const OPT_VIDEO_LIST_HIDE_DURATION_DEFAULT = true;
+const OPT_VIDEO_LIST_HIDE_TITLE_DEFAULT = true;
 
 /**
  * The CSS class of Open End container div elements. To not interfere with the page CSS style, we wrap every element we want to hide in a custom container div and then hide that container.
@@ -16,10 +17,21 @@ const OPND_CONTAINER_CLASS = "opnd-container";
 const OPND_HIDDEN_CLASS = "opnd-hidden";
 
 /**
- * The CSS class of Open End toolbars.
+ * The ID of the Open End Player Toolbar.
  * @type {string}
  */
-const OPND_TOOLBAR_CLASS = "opnd-toolbar";
+const OPND_PLAYER_TOOLBAR_ID = "opnd-player-toolbar";
+
+
+const OPND_PLAYER_SHOW_HIDE_DURATION_BTN_ID = "opnd-player-show-hide-duration-btn";
+const OPND_PLAYER_SHOW_HIDE_DURATION_IMG_ID = "opnd-player-show-hide-duration-img";
+const OPND_PLAYER_SHOW_HIDE_DURATION_TOOLTIP_SPAN_ID = "opnd-player-show-hide-duration-tooltip";
+const OPND_PLAYER_JUMP_DISTANCE_INPUT_ID = "opnd-player-jump-distance-input";
+const OPND_PLAYER_JUMP_BACKWARD_BTN_ID = "opnd-player-jump-backward-btn";
+const OPND_PLAYER_JUMP_BACKWARD_TOOLTIP_SPAN_ID = "opnd-player-jump-backward-tooltip";
+const OPND_PLAYER_JUMP_FORWARD_BTN_ID = "opnd-player-jump-forward-btn";
+const OPND_PLAYER_JUMP_FORWARD_TOOLTIP_SPAN_ID = "opnd-player-jump-forward-tooltip";
+
 
 
 /**
@@ -42,7 +54,7 @@ function parseDuration(durationString) {
     }
     // Interpret a single number as minutes
     const singleNumber = parseDurationPart(groups, 1);
-    if(singleNumber > 0) {
+    if (singleNumber > 0) {
         return singleNumber * 60;
     }
     const hours = parseDurationPart(groups, 2);
