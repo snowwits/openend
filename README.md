@@ -3,7 +3,7 @@ Chrome extension that hides the duration and title of videos on Twitch.tv to pre
 
 ## Description 
 When you are watching videos of e-sport or sport events the duration and titles of videos can often give away the ending. For example, if you are watching a best-of-3 series and the video has almost reached its end during second match, you know that it will be a 2:0 victory.
-Or if you are scrolling through a video list to find the semifinals videos and accidentally read the finalists names in the grand finale video title, the excitement for the semifinals fades away.
+Or if you are scrolling through a video list to find the semifinals videos and accidentally read the finalists names in the grand final video title, the excitement for the semifinals fades away.
 
 Open End prevents those kinds of spoilers by hiding certain information on Twitch.tv. Its features include:
 
