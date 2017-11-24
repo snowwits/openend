@@ -1,4 +1,4 @@
-#Roadmap and Version Notes
+# Roadmap and Version Notes
 ## Roadmap (Planned Features)
 ### Short Term
 - Support for hiding other video's titles
