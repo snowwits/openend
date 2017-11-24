@@ -1,6 +1,6 @@
 {
     "manifest_description": {
-        "message": "Hides the length and title of videos on Twitch.tv to prevent spoilers when watching sports or esports.",
+        "message": "Hides the length and title of videos on Twitch.tv to prevent spoilers when watching sports or e-sports videos.",
         "description": "Extension description."
     },
     "playerShowHideDuration_visible": {
@@ -33,7 +33,7 @@
     },
     "playerJump_errMsg": {
         "message": "Jump distance format: \"2\" for 2 minutes or \"1h2m3s\" for 1 hour, 2 minutes and 3 seconds",
-        "description": "The error message to be displayed the jump distance is invalid."
+        "description": "The error message to be displayed the Jump Distance is invalid."
     },
     "options_general": {
         "message": "General",

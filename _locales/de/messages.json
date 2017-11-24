@@ -1,9 +1,9 @@
 {
     "manifest_description": {
-        "message": "Versteckt die Gesamtdauer und den Titel von Videos auf Twitch.tv, um den Zuschauer von Sport- oder E-Sport-Videos vor Spoilern zu schützen."
+        "message": "Versteckt die Dauer und den Titel von Videos auf Twitch.tv, um vor Spoilern beim Gucken von Sport- oder E-Sport-Videos schützen."
     },
     "playerShowHideDuration_visible": {
-        "message": "Videodauer verstecken"
+        "message": "Videodauer verbergen"
     },
     "playerShowHideDuration_hidden": {
         "message": "Videodauer anzeigen"
@@ -36,7 +36,7 @@
         "message": "Video-Player"
     },
     "options_player_hideDuration": {
-        "message": "Videodauer verstecken"
+        "message": "Videodauer verbergen"
     },
     "options_player_jumpDistance": {
         "message": "Länge von Zeitsprüngen"
@@ -48,10 +48,10 @@
         "message": "Video-Listeneinträge"
     },
     "options_videoList_hideDuration": {
-        "message": "Videodauer verstecken"
+        "message": "Videodauer verbergen"
     },
     "options_videoList_hideTitle": {
-        "message": "Videotitel verstecken"
+        "message": "Videotitel verbergen"
     },
     "options_twitch": {
         "message": "Twitch"
