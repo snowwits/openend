@@ -21,13 +21,7 @@ const TWITCH_PLAYER_TOOLTIP_SPAN_TEXT_ATTR = "data-tip";
 
 /* Global Variables */
 /* Global Cached Options */
-let GLOBAL_options = {
-    playerHideDuration: OPT_PLAYER_HIDE_DURATION_DEFAULT,
-    playerJumpDistance: OPT_PLAYER_JUMP_DISTANCE_DEFAULT,
-    playerTheatreMode: OPT_PLAYER_THEATRE_MODE_DEFAULT,
-    videoListHideDuration: OPT_VIDEO_LIST_HIDE_DURATION_DEFAULT,
-    videoListHideTitle: OPT_VIDEO_LIST_HIDE_TITLE_DEFAULT
-};
+let GLOBAL_options = getDefaultOptionsCopy();
 
 /* Global Page Type Flags */
 const PageType = {
@@ -58,13 +52,7 @@ function init() {
 }
 
 function loadOptions() {
-    chrome.storage.sync.get({
-        playerHideDuration: OPT_PLAYER_HIDE_DURATION_DEFAULT,
-        playerJumpDistance: OPT_PLAYER_JUMP_DISTANCE_DEFAULT,
-        playerTheatreMode: OPT_PLAYER_THEATRE_MODE_DEFAULT,
-        videoListHideDuration: OPT_VIDEO_LIST_HIDE_DURATION_DEFAULT,
-        videoListHideTitle: OPT_VIDEO_LIST_HIDE_TITLE_DEFAULT
-    }, function (items) {
+    chrome.storage.sync.get(getDefaultOptionsCopy(), function (items) {
         if ("undefined" === typeof chrome.runtime.lastError) {
             GLOBAL_options = items;
             console.log("OPENEND: Loaded options: %O", GLOBAL_options);
@@ -153,7 +141,7 @@ function configurePlayerDurationVisible() {
     const tooltip = chrome.i18n.getMessage(GLOBAL_playerDurationVisible ? "playerShowHideDuration_visible" : "playerShowHideDuration_hidden");
     const showHidePlayerDurationImg = document.getElementById(OPND_PLAYER_SHOW_HIDE_DURATION_IMG_ID);
     if (showHidePlayerDurationImg) {
-        showHidePlayerDurationImg.src = chrome.runtime.getURL(GLOBAL_playerDurationVisible ? "imgs/hide_white_16.png" : "imgs/show_white_16.png");
+        showHidePlayerDurationImg.src = chrome.runtime.getURL(GLOBAL_playerDurationVisible ? "imgs/hide_white.svg" : "imgs/show_white.svg");
         showHidePlayerDurationImg.alt = tooltip
     }
 
@@ -334,7 +322,7 @@ function buildPlayerToolbar() {
     toolbar.appendChild(progressVisibilityBtn);
 
     // Build "Jump Back" button
-    const jumpBackwardBtn = buildPlayerToolbarButton(OPND_PLAYER_JUMP_BACKWARD_BTN_ID, handlePlayerJumpBackwardAction, OPND_PLAYER_JUMP_BACKWARD_TOOLTIP_SPAN_ID, "playerJumpBackward", null, "imgs/rewind_white_16.png");
+    const jumpBackwardBtn = buildPlayerToolbarButton(OPND_PLAYER_JUMP_BACKWARD_BTN_ID, handlePlayerJumpBackwardAction, OPND_PLAYER_JUMP_BACKWARD_TOOLTIP_SPAN_ID, "playerJumpBackward", null, "imgs/jump_backward_white.svg");
     toolbar.appendChild(jumpBackwardBtn);
 
     // Build "Jump Distance" text input
@@ -347,7 +335,7 @@ function buildPlayerToolbar() {
     toolbar.appendChild(jumpDistanceInput);
 
     // Build "Jump Forward" button
-    const jumpForwardBtn = buildPlayerToolbarButton(OPND_PLAYER_JUMP_FORWARD_BTN_ID, handlePlayerJumpForwardAction, OPND_PLAYER_JUMP_FORWARD_TOOLTIP_SPAN_ID, "playerJumpForward", null, "imgs/fast_forward_white_16.png");
+    const jumpForwardBtn = buildPlayerToolbarButton(OPND_PLAYER_JUMP_FORWARD_BTN_ID, handlePlayerJumpForwardAction, OPND_PLAYER_JUMP_FORWARD_TOOLTIP_SPAN_ID, "playerJumpForward", null, "imgs/jump_forward_white.svg");
     toolbar.appendChild(jumpForwardBtn);
 
     // Pressing Enter in the "Jump Distance" text input should trigger the "Jump Forward" button
@@ -418,6 +406,7 @@ function buildPlayerToolbarButton(id, onclick, tooltipId = null, tooltipTxtMsgNa
     if (tooltipTxtMsg !== null) {
         img.alt = chrome.i18n.getMessage(tooltipTxtMsg);
     }
+
     content.appendChild(img);
 
     // const svg = document.createElement("svg");

@@ -2,12 +2,12 @@
 <!-- Generator: Adobe Illustrator 16.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
 <svg version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
-	 width="382.5px" height="382.5px" viewBox="0 0 382.5 382.5" style="enable-background:new 0 0 382.5 382.5;" xml:space="preserve"
-	>
+	 width="510px" height="510px" viewBox="0 0 510 510" style="enable-background:new 0 0 510 510;" xml:space="preserve">
 <g>
-	<g id="text-format">
-		<path d="M12.75,331.5v51h357v-51H12.75z M127.5,224.4H255l22.95,56.1h53.55L211.65,0H173.4L51,280.5h53.55L127.5,224.4z
-			 M191.25,51l48.45,127.5h-94.35L191.25,51z"/>
+	<g id="access-time" fill="#FFFFFF">
+		<path style="fill-opacity:0.9;" d="M255,0C114.75,0,0,114.75,0,255s114.75,255,255,255s255-114.75,255-255S395.25,0,255,0z
+			 M255,459c-112.2,0-204-91.8-204-204S142.8,51,255,51s204,91.8,204,204S367.2,459,255,459z"/>
+		<polygon style="fill-opacity:0.9;" points="267.75,127.5 229.5,127.5 229.5,280.5 362.1,362.1 382.5,328.95 267.75,260.1 		"/>
 	</g>
 </g>
 <g>

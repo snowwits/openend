@@ -15,15 +15,25 @@
     /*display: none;*/
 }
 
+.opnd-hidden {
+    display: none;
+}
+
+#opnd-player-toolbar img {
+    width: 2em;
+    height: 2em;
+}
+
+#opnd-player-toolbar.opnd-hidden{
+    margin-bottom: 2em;
+}
+
 #opnd-player-jump-distance-input {
     height: 2em;
     line-height: 2em;
     float: left;
+    margin-top: 0.125em; /* 0.25em / 2 */
     margin-left: 5px;
     margin-right: 5px;
     width: 75px;
-}
-
-.opnd-hidden {
-    display: none;
 }

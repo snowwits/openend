@@ -34,6 +34,20 @@ const OPND_PLAYER_JUMP_FORWARD_TOOLTIP_SPAN_ID = "opnd-player-jump-forward-toolt
 
 const DURATION_PATTERN = "^(?:(\\d+)|(?:(\\d+)h)?(?:(\\d+)m)?(?:(\\d+)s)?)$";
 
+function getDefaultOptionsCopy() {
+    return {
+        playerHideDuration: OPT_PLAYER_HIDE_DURATION_DEFAULT,
+        playerJumpDistance: OPT_PLAYER_JUMP_DISTANCE_DEFAULT,
+        playerTheatreMode: OPT_PLAYER_THEATRE_MODE_DEFAULT,
+        videoListHideDuration: OPT_VIDEO_LIST_HIDE_DURATION_DEFAULT,
+        videoListHideTitle: OPT_VIDEO_LIST_HIDE_TITLE_DEFAULT
+    }
+}
+
+function deepCopy(obj) {
+  return  JSON.parse(JSON.stringify(obj));
+}
+
 /**
  * Suffixes the given duration string with a "m" as single numbers are interpreted as minutes.
  *
@@ -41,7 +55,7 @@ const DURATION_PATTERN = "^(?:(\\d+)|(?:(\\d+)h)?(?:(\\d+)m)?(?:(\\d+)s)?)$";
  * @returns {!string}
  */
 function normalizeDurationString(durationString) {
-    if(new RegExp("^\\d+$").test(durationString)){
+    if (new RegExp("^\\d+$").test(durationString)) {
         return durationString + "m"
     }
     return durationString;

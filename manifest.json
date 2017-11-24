@@ -5,9 +5,9 @@
     "default_locale": "en",
     "description": "__MSG_manifest_description__",
     "icons": {
-        "16": "imgs/icon_16.png",
-        "48": "imgs/icon_48.png",
-        "128": "imgs/icon_128.png"
+        "16": "imgs/icon_black_16.png",
+        "48": "imgs/icon_black_48.png",
+        "128": "imgs/icon_black_128.png"
     },
     "author": "",
     "content_scripts": [
