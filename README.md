@@ -1,5 +1,5 @@
 # Open End
-Chrome extension that hides the length and title of videos on Twitch.tv to prevent spoilers when watching sports or e-sports videos.
+Chrome extension that hides the duration and title of videos on Twitch.tv to prevent spoilers when watching sports or e-sports videos.
 
 ## Description 
 When you are watching videos of e-sport or sport events the duration and titles of videos can often give away the ending. For example, if you are watching a Best-of-3 series and the video has almost reached its end in the second match, you know that it will be a 2:0 victory.
