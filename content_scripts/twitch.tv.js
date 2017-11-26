@@ -487,4 +487,3 @@ function buildCurrentUrlWithTime(time) {
 
 /* INIT */
 init();
-// window.onload = init;
