@@ -96,7 +96,7 @@
         "description": "Label of the Hide Title option."
     },
     "options_sfm_videoList_hidePreview": {
-        "message": "Hide the video title",
+        "message": "Hide the video preview",
         "description": "Label of the Hide Preview option."
     },
     "options_general": {
