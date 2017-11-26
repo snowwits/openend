@@ -1,0 +1,27 @@
+<!doctype html>
+<!--
+ This page is shown when the extension button is clicked, because the
+ "browser_action" field in manifest.json contains the "default_popup" key with
+ value "popup.html".
+ -->
+<html>
+  <head>
+    <title>Open End Popup</title>
+    <link rel="stylesheet" type="text/css" href="popup.css">
+    <script src="popup.js"></script>
+  </head>
+
+  <body>
+    <h1>Background Color Changer</h1>
+    <div id="container">
+      <span>Choose a color</span>
+      <select id="dropdown">
+        <option selected disabled hidden value=''></option>
+        <option value="white">White</option>
+        <option value="pink">Pink</option>
+        <option value="green">Green</option>
+        <option value="yellow">Yellow</option>
+      </select>
+    </div>
+  </body>
+</html>

@@ -3,52 +3,84 @@
 <head>
     <title>Open End Options</title>
     <link rel="stylesheet" type="text/css" href="options.css">
+    <script src="../common/common.js"></script>
+    <script src="options.js"></script>
 </head>
 
 <body>
 
-<h3 id="generalLabel"></h3>
 
-<h3 id="playerLabel"></h3>
-<table>
-    <tr>
-        <td><label id="playerHideDurationLabel" for="playerHideDuration"></label></td>
-        <td><input type="checkbox" id="playerHideDuration"></td>
-    </tr>
-    <tr>
-        <td><label id="playerJumpDistanceLabel" for="playerJumpDistance"></label></td>
-        <td><input type="text" id="playerJumpDistance"></input></td>
-    </tr>
-    <tr>
-        <td><label id="playerTheatreModeLabel" for="playerTheatreMode"></label></td>
-        <td><input type="checkbox" id="playerTheatreMode"></td>
-    </tr>
-</table>
+<h3 id="sfm_activate-label"></h3>
 
-<h3 id="videoListLabel"></h3>
-<table>
-    <tr>
-        <td><label id="videoListHideDurationLabel" for="videoListHideDuration"></label></td>
-        <td><input type="checkbox" id="videoListHideDuration"></td>
-    </tr>
-    <tr>
-        <td><label id="videoListHideTitleLabel" for="videoListHideTitle"></label></td>
-        <td><input type="checkbox" id="videoListHideTitle"></td>
-    </tr>
-</table>
+<div>
+    <input type="radio" id="sfm_activate_never" name="sfm_activate" value="never">
+    <label id="sfm_activate_never-label" for="sfm_activate_never"></label>
+    <br>
+    <input type="radio" id="sfm_activate_always" name="sfm_activate" value="always">
+    <label id="sfm_activate_always-label" for="sfm_activate_always"></label>
+    <br>
+    <input type="radio" id="sfm_activate_custom" name="sfm_activate" value="custom">
+    <label id="sfm_activate_custom-label" for="sfm_activate_custom"></label>
+</div>
+<div>
+    <div>
+        <!-- We need to set the background to white in here to override the Chrome's default
+        (grey, looks like it's disabled) -->
+        <select id="sfm_channels" multiple size="6" style="background: white;"></select>
+        <button id="sfm_removeChannel"></button>
+    </div>
+    <div>
+        <input type="text" id="sfm_channelToAdd">
+        <button id="sfm_addChannel"></button>
+    </div>
+</div>
 
-<h3 id="twitchLabel"></h3>
+
+<h3 id="sfm_configure-label"></h3>
+
+<h4 id="sfm_player-label"></h4>
+<div>
+    <label id="sfm_player_hideDuration-label" for="sfm_player_hideDuration"></label>
+    <input type="checkbox" id="sfm_player_hideDuration">
+</div>
+<div>
+    <label id="sfm_player_jumpDistance-label" for="sfm_player_jumpDistance"></label>
+    <input type="text" id="sfm_player_jumpDistance">
+</div>
+
+<h4 id="sfm_videoList-label"></h4>
+<div>
+    <label id="sfm_videoList_hideDuration-label" for="sfm_videoList_hideDuration"></label>
+    <input type="checkbox" id="sfm_videoList_hideDuration">
+</div>
+<div>
+    <label id="sfm_videoList_hideTitle-label" for="sfm_videoList_hideTitle"></label>
+    <input type="checkbox" id="sfm_videoList_hideTitle">
+</div>
+<div>
+    <label id="sfm_videoList_hidePreview-label" for="sfm_videoList_hidePreview"></label>
+    <input type="checkbox" id="sfm_videoList_hidePreview">
+</div>
+
+
+<h3 id="general-label"></h3>
+<div>
+    <label id="general_theatreMode-label" for="general_theatreMode"></label>
+    <input type="checkbox" id="general_theatreMode">
+</div>
 
 <hr/>
 
-<div>
-    <button id="save"></button>
-    <button id="restoreDefaults"></button>
-    <span id="status"></span>
-</div>
 
-<script src="../common/common.js"></script>
-<script src="options.js"></script>
+<div>
+    <div>
+        <button id="save"></button>
+        <button id="restoreDefaults"></button>
+    </div>
+    <div>
+        <span id="status"></span>
+    </div>
+</div>
 
 </body>
 </html>

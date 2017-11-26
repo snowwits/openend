@@ -25,20 +25,16 @@ let GLOBAL_options = getDefaultOptionsCopy();
 
 /* Global Page Type Flags */
 const PageType = {
-    UNKNOWN: -1,
-    VIDEOS: 1,
-    VIDEO: 2,
-    name: {
-        1: "Videos",
-        2: "Video"
-    }
+    UNKNOWN: "unknown",
+    VIDEOS: "videos",
+    VIDEO: "video"
 };
 let GLOBAL_pageType = PageType.UNKNOWN;
 /* Global Page Component Loaded Flags */
 let GLOBAL_playerConfigured = false;
 let GLOBAL_videoListItemsConfigured = false;
 /* Global Page Component State Flags */
-let GLOBAL_playerDurationVisible = !OPT_PLAYER_HIDE_DURATION_DEFAULT;
+let GLOBAL_playerDurationVisible = !OPT_SFM_PLAYER_HIDE_DURATION_DEFAULT;
 
 /* Functions */
 
@@ -53,20 +49,20 @@ function init() {
 
 function loadOptions() {
     chrome.storage.sync.get(getDefaultOptionsCopy(), function (items) {
-        if ("undefined" === typeof chrome.runtime.lastError) {
-            GLOBAL_options = items;
-            console.log("OPENEND: Loaded options: %O", GLOBAL_options);
-            resetGlobalPageStateFlags();
-            configurePage();
-            listenForOptionsChanges();
-        } else {
+        if (chrome.runtime.lastError) {
             console.error("OPENEND: Failed to load options: %s", chrome.runtime.lastError);
+            return;
         }
+        GLOBAL_options = items;
+        console.log("OPENEND: Loaded options: %O", GLOBAL_options);
+        resetGlobalPageStateFlags();
+        configurePage();
+        listenForOptionsChanges();
     });
 }
 
 function resetGlobalPageFlags() {
-    GLOBAL_pageType = false;
+    GLOBAL_pageType = PageType.UNKNOWN;
     resetGlobalPageStateFlags()
 }
 
@@ -74,7 +70,7 @@ function resetGlobalPageStateFlags() {
     GLOBAL_playerConfigured = false;
     GLOBAL_videoListItemsConfigured = false;
     // Initialize global variables with the option values
-    GLOBAL_playerDurationVisible = !GLOBAL_options.playerHideDuration;
+    GLOBAL_playerDurationVisible = !GLOBAL_options.sfmPlayerHideDuration;
 }
 
 function configurePage() {
@@ -119,8 +115,8 @@ function tryConfigurePlayer() {
 function configurePlayerJumpDistanceValue() {
     const jumpDistanceElem = document.getElementById(OPND_PLAYER_JUMP_DISTANCE_INPUT_ID);
     if (jumpDistanceElem) {
-        console.log("OPENEND: Updating Player Jump Distance value to %s", GLOBAL_options.playerJumpDistance);
-        jumpDistanceElem.value = GLOBAL_options.playerJumpDistance;
+        console.log("OPENEND: Updating Player Jump Distance value to %s", GLOBAL_options.sfmPlayerJumpDistance);
+        jumpDistanceElem.value = GLOBAL_options.sfmPlayerJumpDistance;
     }
 }
 
@@ -155,8 +151,8 @@ function configureTheatreMode() {
     const theatreModeBtn = getSingleElementByClassName(TWITCH_THEATRE_MODE_BTN_CLASS);
     if (theatreModeBtn) {
         const isActive = isTheatreModeActive(theatreModeBtn);
-        if (GLOBAL_options.playerTheatreMode !== isActive) {
-            console.log("OPENEND: " + (GLOBAL_options.playerTheatreMode ? "Entering" : "Exiting") + " Player Theatre Mode");
+        if (GLOBAL_options.generalTheatreMode !== isActive) {
+            console.log("OPENEND: " + (GLOBAL_options.generalTheatreMode ? "Entering" : "Exiting") + " Player Theatre Mode");
             theatreModeBtn.click();
         }
     }
@@ -217,12 +213,12 @@ function tryConfigureVideoCards() {
     if (!GLOBAL_videoListItemsConfigured) {
         const videoStatDivs = document.getElementsByClassName("video-preview-card__preview-overlay-stat");
         if (videoStatDivs.length > 0) {
-            console.log("OPENEND: Updating visibility of all Video List item durations to %s", !GLOBAL_options.videoListHideDuration);
+            console.log("OPENEND: Updating visibility of all Video List item durations to %s", !GLOBAL_options.sfmVideoListHideDuration);
             for (let i = 0; i < videoStatDivs.length; ++i) {
                 const videoStatDiv = videoStatDivs[i];
                 const videoLengthDiv = videoStatDiv.querySelector('div[data-test-selector="video-length"]');
                 if (videoLengthDiv) {
-                    setVisible([videoStatDiv], !GLOBAL_options.videoListHideDuration)
+                    setVisible([videoStatDiv], !GLOBAL_options.sfmVideoListHideDuration)
                 }
             }
             GLOBAL_videoListItemsConfigured = true;
@@ -255,7 +251,7 @@ function determinePageType() {
     } else {
         GLOBAL_pageType = PageType.UNKNOWN;
     }
-    console.log("OPENEND: Page type: %s", PageType.name[GLOBAL_pageType]);
+    console.log("OPENEND: Page type: %s", GLOBAL_pageType);
 }
 
 function isVideoPage() {

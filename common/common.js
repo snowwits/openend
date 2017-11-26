@@ -1,9 +1,18 @@
+const SfmActive = {
+    NEVER: "never",
+    ALWAYS: "always",
+    CUSTOM: "custom"
+};
+
 /* Option Defaults */
-const OPT_PLAYER_HIDE_DURATION_DEFAULT = true;
-const OPT_PLAYER_JUMP_DISTANCE_DEFAULT = "2m";
-const OPT_PLAYER_THEATRE_MODE_DEFAULT = false;
-const OPT_VIDEO_LIST_HIDE_DURATION_DEFAULT = true;
-const OPT_VIDEO_LIST_HIDE_TITLE_DEFAULT = true;
+const OPT_SFM_ACTIVE_DEFAULT = SfmActive.ALWAYS;
+const OPT_SFM_CHANNELS_DEFAULT = [];
+const OPT_SFM_PLAYER_HIDE_DURATION_DEFAULT = true;
+const OPT_SFM_PLAYER_JUMP_DISTANCE_DEFAULT = "2m";
+const OPT_SFM_VIDEO_LIST_HIDE_DURATION_DEFAULT = true;
+const OPT_SFM_VIDEO_LIST_HIDE_TITLE_DEFAULT = true;
+const OPT_SFM_VIDEO_LIST_HIDE_PREVIEW_DEFAULT = true;
+const OPT_GENERAL_THEATRE_MODE_DEFAULT = false;
 
 /**
  * The CSS class of Open End container div elements. To not interfere with the page CSS style, we wrap every element we want to hide in a custom container div and then hide that container.
@@ -36,16 +45,15 @@ const DURATION_PATTERN = "^(?:(\\d+)|(?:(\\d+)h)?(?:(\\d+)m)?(?:(\\d+)s)?)$";
 
 function getDefaultOptionsCopy() {
     return {
-        playerHideDuration: OPT_PLAYER_HIDE_DURATION_DEFAULT,
-        playerJumpDistance: OPT_PLAYER_JUMP_DISTANCE_DEFAULT,
-        playerTheatreMode: OPT_PLAYER_THEATRE_MODE_DEFAULT,
-        videoListHideDuration: OPT_VIDEO_LIST_HIDE_DURATION_DEFAULT,
-        videoListHideTitle: OPT_VIDEO_LIST_HIDE_TITLE_DEFAULT
+        sfmActivate: OPT_SFM_ACTIVE_DEFAULT,
+        sfmChannels: OPT_SFM_CHANNELS_DEFAULT,
+        sfmPlayerHideDuration: OPT_SFM_PLAYER_HIDE_DURATION_DEFAULT,
+        sfmPlayerJumpDistance: OPT_SFM_PLAYER_JUMP_DISTANCE_DEFAULT,
+        sfmVideoListHideDuration: OPT_SFM_VIDEO_LIST_HIDE_DURATION_DEFAULT,
+        sfmVideoListHideTitle: OPT_SFM_VIDEO_LIST_HIDE_TITLE_DEFAULT,
+        sfmVideoListHidePreview: OPT_SFM_VIDEO_LIST_HIDE_PREVIEW_DEFAULT,
+        generalTheatreMode: OPT_GENERAL_THEATRE_MODE_DEFAULT
     }
-}
-
-function deepCopy(obj) {
-  return  JSON.parse(JSON.stringify(obj));
 }
 
 /**
@@ -217,4 +225,132 @@ function createOpndContainer() {
     const opndContainer = document.createElement('div');
     opndContainer.classList.add(OPND_CONTAINER_CLASS);
     return opndContainer;
+}
+
+/*
+ * ====================================================================
+ * Input element setter and retriever
+ * ====================================================================
+ */
+/**
+ *
+ * @param checkboxId the id of the checkbox element
+ * @return {boolean}
+ */
+function getCheckboxValue(checkboxId) {
+    return document.getElementById(checkboxId).checked;
+}
+
+/**
+ *
+ * @param textInputId the id of the text input element
+ * @return {string}
+ */
+function getTextInputValue(textInputId) {
+    return document.getElementById(textInputId).value;
+}
+
+/**
+ *
+ * @param radioName the name of all radio inputs in the group
+ */
+function getRadioValue(radioName) {
+    return document.querySelector('input[name = "' + radioName + '"]:checked').value;
+}
+
+function getSelectOptionValues(selectId) {
+    const select = document.getElementById("sfm_channels");
+    const optionValues = [];
+    for (let i = 0; i < select.length; i++) {
+        const option = select[i];
+        optionValues.push(option.value);
+    }
+    return optionValues;
+}
+
+/**
+ *
+ * @param checkboxId {string} the id of the checkbox element
+ * @param checked {boolean} whether the checkbox should be checked
+ */
+function setCheckboxValue(checkboxId, checked) {
+    document.getElementById(checkboxId).checked = checked;
+}
+
+/**
+ *
+ * @param textInputId {string} the id of the text input element
+ * @param value {string} the value to set to the text input element
+ */
+function setTextInputValue(textInputId, value) {
+    document.getElementById(textInputId).value = value;
+}
+
+/**
+ *
+ * @param radioName {string} the name of all radio inputs in the group
+ * @param selectedValue {string} the value of the selected radio
+ */
+function setRadioValues(radioName, selectedValue) {
+    const allRadios = document.querySelectorAll('input[type="radio"][name = "' + radioName + '"]');
+    for (let i = 0; i < allRadios.length; i++) {
+        const radio = allRadios[i];
+        radio.checked = radio.value === selectedValue;
+    }
+}
+
+/**
+ *
+ * @param selectId {string} the id of the select element
+ * @param optionValues {Array.<string>} an array with all values
+ */
+function setSelectOptions(selectId, optionValues) {
+    const selectElem = document.getElementById(selectId);
+    clearSelectOptions(selectElem);
+    for (let i = 0; i < optionValues.length; i++) {
+        const optionValue = optionValues[i];
+        addSelectOption(selectElem, optionValue);
+    }
+}
+
+function clearSelectOptions(selectElem) {
+    selectElem.options.length = 0;
+}
+
+function addSelectOption(selectElem, optionValue) {
+    const optionElem = document.createElement("option");
+    optionElem.value = optionValue;
+    optionElem.innerHTML = optionValue;
+    selectElem.add(optionElem);
+}
+
+function removeSelectedOptions(selectId) {
+    const selectElem = document.getElementById(selectId);
+    const removalIndices = [];
+    for (let i=0; i<selectElem.selectedOptions.length; i++) {
+        removalIndices.push(selectElem.selectedOptions[i].index);
+    }
+    // Remove from end to start so the indices of the options to remove stay the same
+    for (let i = removalIndices.length-1; i>=0; i--) {
+        const removalIndex = removalIndices[i];
+        selectElem.remove(removalIndex);
+    }
+}
+
+/**
+ *
+ * @param labelId the id of the label element
+ * @param messageName the message name of the localized label text
+ */
+function setMsgToInnerHtml(labelId, messageName) {
+    document.getElementById(labelId).innerHTML = chrome.i18n.getMessage(messageName);
+}
+
+/**
+ *
+ * @param elementId the id of the element
+ * @param messageName the message name of the localized title
+ */
+function setMsgToTitle(elementId, messageName) {
+    document.getElementById(elementId).title = chrome.i18n.getMessage(messageName);
 }

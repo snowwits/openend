@@ -10,7 +10,16 @@
         "64": "imgs/icon_twitch-purple_64.png",
         "128": "imgs/icon_twitch-purple_128.png"
     },
-    "author": "",
+    "author": "snowwits@gmail.com",
+    "browser_action": {
+        "default_icon": {
+            "16": "imgs/icon_twitch-purple_16.png",
+            "32": "imgs/icon_twitch-purple_32.png",
+            "64": "imgs/icon_twitch-purple_64.png",
+            "128": "imgs/icon_twitch-purple_128.png"
+        },
+        "default_popup": "browser_action/popup.html"
+    },
     "content_scripts": [
         {
             "matches": ["*://*.twitch.tv/*"],

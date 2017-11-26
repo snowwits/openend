@@ -1,46 +1,61 @@
+function addChannel() {
+    const channelValue = getTextInputValue("sfm_channelToAdd");
+    const selectElem = document.getElementById("sfm_channels");
+    addSelectOption(selectElem, channelValue);
+
+    console.log("SELECT: %O", selectElem);
+}
+
+function removeChannels() {
+    removeSelectedOptions("sfm_channels");
+}
+
 // Saves options to chrome.storage.sync.
 function saveOptions() {
-    // Read option values from elements
-    const playerHideDuration = document.getElementById("playerHideDuration").checked;
-    const playerJumpDistance = document.getElementById("playerJumpDistance").value;
-    const playerTheatreMode = document.getElementById("playerTheatreMode").checked;
-    const videoListHideDuration = document.getElementById("videoListHideDuration").checked;
-    const videoListHideTitle = document.getElementById("videoListHideTitle").checked;
-
     // Store option values to storage
-    chrome.storage.sync.set({
-        playerHideDuration: playerHideDuration,
-        playerJumpDistance: playerJumpDistance,
-        playerTheatreMode: playerTheatreMode,
-        videoListHideDuration: videoListHideDuration,
-        videoListHideTitle: videoListHideTitle
-    }, function () {
+    chrome.storage.sync.set(getOptionsFromInputValues(), function () {
         showStatusMsg(chrome.i18n.getMessage("options_save_successMsg"));
     });
 }
 
 // Restores option values using the preferences stored in chrome.storage.
-function restoreOptions() {
+function restoreStoredOptions() {
     // Read option values from storage
     chrome.storage.sync.get(getDefaultOptionsCopy(), function (items) {
-        // Set option values to elements
-        document.getElementById("playerHideDuration").checked = items.playerHideDuration;
-        document.getElementById("playerJumpDistance").value = items.playerJumpDistance;
-        document.getElementById("playerTheatreMode").checked = items.playerTheatreMode;
-        document.getElementById("videoListHideDuration").checked = items.videoListHideDuration;
-        document.getElementById("videoListHideTitle").checked = items.videoListHideTitle;
+        console.log(chrome.runtime.lastError);
+        setOptionsToInputValues(items);
     });
 }
 
 // Restores option values using the preferences stored in chrome.storage.
 function restoreDefaultOptions() {
-    // Set option values to elements
-    document.getElementById("playerHideDuration").checked = OPT_PLAYER_HIDE_DURATION_DEFAULT;
-    document.getElementById("playerJumpDistance").value = OPT_PLAYER_JUMP_DISTANCE_DEFAULT;
-    document.getElementById("playerTheatreMode").checked = OPT_PLAYER_THEATRE_MODE_DEFAULT;
-    document.getElementById("videoListHideDuration").checked = OPT_VIDEO_LIST_HIDE_DURATION_DEFAULT;
-    document.getElementById("videoListHideTitle").checked = OPT_VIDEO_LIST_HIDE_TITLE_DEFAULT;
+    setOptionsToInputValues(getDefaultOptionsCopy());
     showStatusMsg(chrome.i18n.getMessage("options_restoreDefaults_successMsg"));
+}
+
+function getOptionsFromInputValues() {
+    return {
+        sfmActivate: getRadioValue("sfm_activate"),
+        sfmChannels: getSelectOptionValues("sfm_channels"),
+        sfmPlayerHideDuration: getCheckboxValue("sfm_player_hideDuration"),
+        sfmPlayerJumpDistance: getTextInputValue("sfm_player_jumpDistance"),
+        sfmVideoListHideDuration: getCheckboxValue("sfm_videoList_hideDuration"),
+        sfmVideoListHideTitle: getCheckboxValue("sfm_videoList_hideTitle"),
+        sfmVideoListHidePreview: getCheckboxValue("sfm_videoList_hidePreview"),
+        generalTheatreMode: getCheckboxValue("general_theatreMode"),
+    };
+}
+
+function setOptionsToInputValues(options) {
+    // Set option values to elements
+    setRadioValues("sfm_activate", options.sfmActivate);
+    setSelectOptions("sfm_channels", options.sfmChannels);
+    setCheckboxValue("sfm_player_hideDuration", options.sfmPlayerHideDuration);
+    setTextInputValue("sfm_player_jumpDistance", options.sfmPlayerJumpDistance);
+    setCheckboxValue("sfm_videoList_hideDuration", options.sfmVideoListHideDuration);
+    setCheckboxValue("sfm_videoList_hideTitle", options.sfmVideoListHideTitle);
+    setCheckboxValue("sfm_videoList_hidePreview", options.sfmVideoListHidePreview);
+    setCheckboxValue("general_theatreMode", options.generalTheatreMode);
 }
 
 function showStatusMsg(msg) {
@@ -52,30 +67,49 @@ function showStatusMsg(msg) {
     }, 750);
 }
 
-// Init elements
-// General
-document.getElementById("generalLabel").innerHTML = chrome.i18n.getMessage("options_general");
+function init() {
+    // Init elements
+    // Activate Spoiler-Free Mode
+    setMsgToInnerHtml("sfm_activate-label", "options_sfm_activate");
+    setMsgToInnerHtml("sfm_activate_always-label", "options_sfm_activate_always");
+    setMsgToInnerHtml("sfm_activate_never-label", "options_sfm_activate_never");
+    setMsgToInnerHtml("sfm_activate_custom-label", "options_sfm_activate_custom");
+    setMsgToTitle("sfm_channels","options_sfm_channels");
+    setMsgToTitle("sfm_channelToAdd","options_sfm_channelToAdd");
+    setMsgToInnerHtml("sfm_addChannel", "options_sfm_addChannel");
+    const addChannelBtn = document.getElementById("sfm_addChannel");
+    addChannelBtn.onclick = addChannel;
+    setMsgToInnerHtml("sfm_removeChannel", "options_sfm_removeChannels");
+    const removeChannelsBtn = document.getElementById("sfm_removeChannel");
+    removeChannelsBtn.onclick = removeChannels;
 
-// Player
-document.getElementById("playerLabel").innerHTML = chrome.i18n.getMessage("options_player");
-document.getElementById("playerHideDurationLabel").innerHTML = chrome.i18n.getMessage("options_player_hideDuration");
-document.getElementById("playerJumpDistanceLabel").innerHTML = chrome.i18n.getMessage("options_player_jumpDistance");
-document.getElementById("playerTheatreModeLabel").innerHTML = chrome.i18n.getMessage("options_player_theatreMode");
+    // Configure Spoiler-Free Mode
+    setMsgToInnerHtml("sfm_configure-label", "options_sfm_configure");
+    // Player
+    setMsgToInnerHtml("sfm_player-label", "options_sfm_player");
+    setMsgToInnerHtml("sfm_player_hideDuration-label", "options_sfm_player_hideDuration");
+    setMsgToInnerHtml("sfm_player_jumpDistance-label", "options_sfm_player_jumpDistance");
+    // Video List
+    setMsgToInnerHtml("sfm_videoList-label", "options_sfm_videoList");
+    setMsgToInnerHtml("sfm_videoList_hideDuration-label", "options_sfm_videoList_hideDuration");
+    setMsgToInnerHtml("sfm_videoList_hideTitle-label", "options_sfm_videoList_hideTitle");
+    setMsgToInnerHtml("sfm_videoList_hidePreview-label", "options_sfm_videoList_hidePreview");
 
-// Video List
-document.getElementById("videoListLabel").innerHTML = chrome.i18n.getMessage("options_videoList");
-document.getElementById("videoListHideDurationLabel").innerHTML = chrome.i18n.getMessage("options_videoList_hideDuration");
-document.getElementById("videoListHideTitleLabel").innerHTML = chrome.i18n.getMessage("options_videoList_hideTitle");
+    // Twitch
+    setMsgToInnerHtml("general-label", "options_general");
+    setMsgToInnerHtml("general_theatreMode-label", "options_general_theatreMode");
 
-// Twitch
-document.getElementById("twitchLabel").innerHTML = chrome.i18n.getMessage("options_twitch");
+    // Controls
+    const saveBtn = document.getElementById("save");
+    saveBtn.innerHTML = chrome.i18n.getMessage("options_save");
+    saveBtn.onclick = saveOptions;
 
-// Controls
-const saveBtn = document.getElementById("save");
-saveBtn.innerHTML = chrome.i18n.getMessage("options_save");
-saveBtn.onclick = saveOptions;
+    const restoreDefaultsBtn = document.getElementById("restoreDefaults");
+    restoreDefaultsBtn.innerHTML = chrome.i18n.getMessage("options_restoreDefaults");
+    restoreDefaultsBtn.onclick = restoreDefaultOptions;
 
-const restoreDefaultsBtn = document.getElementById("restoreDefaults");
-restoreDefaultsBtn.innerHTML = chrome.i18n.getMessage("options_restoreDefaults");
-restoreDefaultsBtn.onclick = restoreDefaultOptions;
-document.addEventListener("DOMContentLoaded", restoreOptions);
+    restoreStoredOptions();
+}
+
+document.addEventListener('DOMContentLoaded', init);
+

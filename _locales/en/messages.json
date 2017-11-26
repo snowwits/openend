@@ -35,37 +35,77 @@
         "message": "Jump distance format: \"2\" for 2 minutes or \"1h2m3s\" for 1 hour, 2 minutes and 3 seconds",
         "description": "The error message to be displayed the Jump Distance is invalid."
     },
+    "options_sfm_activate": {
+        "message": "Activate Spoiler-Free Mode",
+        "description": "Label of the Activate Spoiler-Free Mode options section."
+    },
+    "options_sfm_activate_never": {
+        "message": "Never",
+        "description": "Label of the Never Activate Spoiler-Free Mode option."
+    },
+    "options_sfm_activate_always": {
+        "message": "Always",
+        "description": "Label of the Always Activate Spoiler-Free Mode option."
+    },
+    "options_sfm_activate_custom": {
+        "message": "Only on the following channels:",
+        "description": "Label of the Custom Activate Spoiler-Free Mode option."
+    },
+    "options_sfm_channelToAdd": {
+        "message": "Channel to add to the Spoiler-Free Mode channels",
+        "description": "Label of the Channel To Add text input tooltip."
+    },
+    "options_sfm_addChannel": {
+        "message": "Add channel",
+        "description": "Label of the Add Channel button."
+    },
+    "options_sfm_channels": {
+        "message": "Spoiler-Free Mode channels",
+        "description": "Label of the Channels text area tooltip."
+    },
+    "options_sfm_removeChannels": {
+        "message": "Remove selected channels",
+        "description": "Label of the Remove Channels button."
+    },
+    "options_sfm_configure": {
+        "message": "Configure Spoiler-Free Mode",
+        "description": "Label of the Configure Spoiler-Free Mode options section."
+    },
+    "options_sfm_player": {
+        "message": "Video player",
+        "description": "Label of the Player options sub-section."
+    },
+    "options_sfm_player_hideDuration": {
+        "message": "Hide the video duration",
+        "description": "Label of the Hide Duration option."
+    },
+    "options_sfm_player_jumpDistance": {
+        "message": "Distance of time jumps",
+        "description": "Label of the Jump Distance option."
+    },
+    "options_sfm_videoList": {
+        "message": "Video List items",
+        "description": "Label of the Video List options sub-section."
+    },
+    "options_sfm_videoList_hideDuration": {
+        "message": "Hide the video duration",
+        "description": "Label of the Hide Duration option."
+    },
+    "options_sfm_videoList_hideTitle": {
+        "message": "Hide the video title",
+        "description": "Label of the Hide Title option."
+    },
+    "options_sfm_videoList_hidePreview": {
+        "message": "Hide the video title",
+        "description": "Label of the Hide Preview option."
+    },
     "options_general": {
         "message": "General",
         "description": "Label of the General options section."
     },
-    "options_player": {
-        "message": "Video player",
-        "description": "Label of the Player options section."
-    },
-    "options_player_hideDuration": {
-        "message": "Hide the video duration",
-        "description": "Label of the Player: Hide Duration option."
-    },
-    "options_player_jumpDistance": {
-        "message": "Distance of time jumps",
-        "description": "Label of the Player: Jump Distance option."
-    },
-    "options_player_theatreMode": {
+    "options_general_theatreMode": {
         "message": "Start in theatre mode",
         "description": "Label of the Player: Theatre Mode option."
-    },
-    "options_videoList": {
-        "message": "Video List items",
-        "description": "Label of the Video List options section."
-    },
-    "options_videoList_hideDuration": {
-        "message": "Hide the video duration",
-        "description": "Label of the Video List: Hide Duration option."
-    },
-    "options_videoList_hideTitle": {
-        "message": "Hide the video title",
-        "description": "Label of the Video List: Hide Title option."
     },
     "options_twitch": {
         "message": "Twitch",
