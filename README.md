@@ -14,9 +14,9 @@ Open End prevents those kinds of spoilers by hiding certain information on Twitc
 - Provides quick video navigation features to mitigate the lack of a seek bar
 
 ### Special Features
+- Custom channel list to auto-enable the Spoiler-Free Mode only on certain channels
 - You can toggle the visibility of any hideable element directly on the page (no need to refresh the page)
 - Option changes are directly applied (no need to refresh the page)
-- Custom channel list to auto-enable the Spoiler-Free Mode only on certain channels
 - Auto-enter the Theatre Mode
 
 ### Limitations
