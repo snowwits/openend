@@ -29,29 +29,59 @@
     "playerJump_errMsg": {
         "message": "Format: \"2\" für zwei Minuten oder \"1h2m3s\" for 1 Stunde, 2 Minuten and 3 Sekunden"
     },
+   "options_sfm_activate": {
+        "message": "Spoilerfreien Modus aktivieren"
+    },
+    "options_sfm_activate_never": {
+        "message": "Nie"
+    },
+    "options_sfm_activate_always": {
+        "message": "Immer"
+    },
+    "options_sfm_activate_custom": {
+        "message": "Nur auf den folgenden Kanälen:"
+    },
+    "options_sfm_channelToAdd": {
+        "message": "Hinzuzufügender Kanal"
+    },
+    "options_sfm_addChannel": {
+        "message": "Kanal hinzufügen"
+    },
+    "options_sfm_channels": {
+        "message": "Kanäle im spoilerfreien Modus"
+    },
+    "options_sfm_removeChannels": {
+        "message": "Ausgewählte Kanäle entfernen"
+    },
+    "options_sfm_configure": {
+        "message": "Spoilerfreien Modus einrichten"
+    },
+    "options_sfm_player": {
+        "message": "Video-Player"
+    },
+    "options_sfm_player_hideDuration": {
+        "message": "Videodauer verbergen"
+    },
+    "options_sfm_player_jumpDistance": {
+        "message": "Länge der Zeitsprünge"
+    },
+    "options_sfm_videoList": {
+        "message": "Einträge in Videolisten"
+    },
+    "options_sfm_videoList_hideDuration": {
+        "message": "Videodauer verbergen"
+    },
+    "options_sfm_videoList_hideTitle": {
+        "message": "Videotitel verbergen"
+    },
+    "options_sfm_videoList_hidePreview": {
+        "message": "Videovorschau verbergen"
+    },
     "options_general": {
         "message": "Allgemein"
     },
-    "options_player": {
-        "message": "Video-Player"
-    },
-    "options_player_hideDuration": {
-        "message": "Videodauer verbergen"
-    },
-    "options_player_jumpDistance": {
-        "message": "Länge von Zeitsprüngen"
-    },
-    "options_player_theatreMode": {
-        "message": "Im Theater-Modus starten"
-    },
-    "options_videoList": {
-        "message": "Video-Listeneinträge"
-    },
-    "options_videoList_hideDuration": {
-        "message": "Videodauer verbergen"
-    },
-    "options_videoList_hideTitle": {
-        "message": "Videotitel verbergen"
+    "options_general_theatreMode": {
+        "message": "Videos im Theater-Modus starten"
     },
     "options_twitch": {
         "message": "Twitch"

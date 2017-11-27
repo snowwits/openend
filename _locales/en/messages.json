@@ -52,7 +52,7 @@
         "description": "Label of the Custom Activate Spoiler-Free Mode option."
     },
     "options_sfm_channelToAdd": {
-        "message": "Channel to add to the Spoiler-Free Mode channels",
+        "message": "Channel to add",
         "description": "Label of the Channel To Add text input tooltip."
     },
     "options_sfm_addChannel": {
@@ -80,11 +80,11 @@
         "description": "Label of the Hide Duration option."
     },
     "options_sfm_player_jumpDistance": {
-        "message": "Distance of time jumps",
+        "message": "Time jump distance",
         "description": "Label of the Jump Distance option."
     },
     "options_sfm_videoList": {
-        "message": "Video List items",
+        "message": "Items in video lists",
         "description": "Label of the Video List options sub-section."
     },
     "options_sfm_videoList_hideDuration": {
@@ -104,7 +104,7 @@
         "description": "Label of the General options section."
     },
     "options_general_theatreMode": {
-        "message": "Start in theatre mode",
+        "message": "Start videos in theatre mode",
         "description": "Label of the Player: Theatre Mode option."
     },
     "options_twitch": {

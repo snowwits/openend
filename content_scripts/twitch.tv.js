@@ -1,7 +1,7 @@
 /* Global Constants */
 /* Technical Parameters */
 const CHECK_PAGE_TASK_INTERVAL = 100; // 200ms
-const ELEMENTS_LOADED_TIMEOUT = 30000; // 30s
+const PAGE_CONFIGURATION_TIMEOUT = 10000; // TODO: change to 30s
 
 /* Constants element IDs and classes */
 const TWITCH_PROGRESS_TOTAL_TIME_DIV_CLASS = "player-seek__time--total";
@@ -31,8 +31,10 @@ const PageType = {
 };
 let GLOBAL_pageType = PageType.UNKNOWN;
 /* Global Page Component Loaded Flags */
+let GLOBAL_channel = null;
 let GLOBAL_playerConfigured = false;
 let GLOBAL_videoListItemsConfigured = false;
+let GLOBAL_pageConfigurationFailedMsgPrinted = false;
 /* Global Page Component State Flags */
 let GLOBAL_playerDurationVisible = !OPT_SFM_PLAYER_HIDE_DURATION_DEFAULT;
 
@@ -67,13 +69,20 @@ function resetGlobalPageFlags() {
 }
 
 function resetGlobalPageStateFlags() {
+    GLOBAL_channel = null;
     GLOBAL_playerConfigured = false;
     GLOBAL_videoListItemsConfigured = false;
+    GLOBAL_pageConfigurationFailedMsgPrinted = false;
     // Initialize global variables with the option values
     GLOBAL_playerDurationVisible = !GLOBAL_options.sfmPlayerHideDuration;
 }
 
+function isPageConfigurationDone() {
+    return GLOBAL_channel !== null && GLOBAL_playerConfigured && GLOBAL_videoListItemsConfigured;
+}
+
 function configurePage() {
+    determineChannel();
     tryConfigurePlayer();
     tryConfigureVideoCards();
 }
@@ -278,8 +287,12 @@ function startCheckPageTask() {
 
         // Check whether elements are loaded
         const checkTime = Date.now();
-        if (checkTime - pageChangedTime < ELEMENTS_LOADED_TIMEOUT) {
+        if (checkTime - pageChangedTime < PAGE_CONFIGURATION_TIMEOUT) {
             configurePage();
+        }
+        else if (!GLOBAL_pageConfigurationFailedMsgPrinted && !isPageConfigurationDone()) {
+            console.warn("OPND: Failed to determine and configure the page state before the timeout (%d ms)", PAGE_CONFIGURATION_TIMEOUT);
+            GLOBAL_pageConfigurationFailedMsgPrinted = true;
         }
     };
 
@@ -306,6 +319,52 @@ function handlePageChange() {
 
     // Determine page
     determinePageType();
+}
+
+/**
+ * Not in theatre mode:
+ <a data-target="channel-header__channel-link" data-a-target="user-channel-header-item" class="channel-header__user align-items-center flex flex-shrink-0 flex-nowrap pd-r-2 pd-y-05" href="/mdz_jimmy">
+ ...
+ </a>
+ *
+ * In theatre mode:
+ * <div class="player-streaminfo__meta-container">
+ *      <div class="player-streaminfo__name">
+ *          <a class="player-text-link player-text-link--no-color qa-display-name" href="https://www.twitch.tv/videos/204717910" target="_blank">MDZ_jimmY</a>
+ *      </div>
+ *      <div class="player-streaminfo__title qa-stream-title">Ranked [Ryu] ☆ Road to Ultra Diamond!</div><div class="player-streaminfo__game"></div>
+ * </div>
+ */
+function determineChannel() {
+    if (GLOBAL_channel === null) {
+
+        let channelName = null;
+        // Not in theatre mode:
+        const channelHeaderAnchor = getSingleElementByClassName("channel-header__user");
+        if (channelHeaderAnchor) {
+            const href = channelHeaderAnchor.href;
+            if (href) {
+                const indexLastSlash = href.lastIndexOf("/");
+                channelName = href;
+            }
+        } else {
+            // In theatre mode:
+            const playerNameDiv = getSingleElementByClassName("player-streaminfo__name");
+            if (playerNameDiv) {
+                const playerLink = playerNameDiv.getElementsByTagName("a")[0];
+                if (playerLink) {
+                    channelName = playerLink.textContent;
+                }
+            }
+        }
+
+        if (channelName !== null && channelName.length > 0) {
+            const indexLastSlash = channelName.lastIndexOf("/");
+            channelName = channelName.substr(indexLastSlash+1).toLowerCase();
+            console.log("OPND: Channel: %s", channelName);
+            GLOBAL_channel = channelName;
+        }
+    }
 }
 
 function buildPlayerToolbar() {
