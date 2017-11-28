@@ -32,6 +32,10 @@ const PageType = {
 };
 let GLOBAL_pageType = PageType.UNKNOWN;
 /* Global Page Component Loaded Flags */
+/**
+ *
+ * @type {?Channel}
+ */
 let GLOBAL_channel = null;
 let GLOBAL_playerConfigured = false;
 let GLOBAL_videoListItemsConfigured = false;
@@ -45,6 +49,7 @@ let GLOBAL_playerDurationVisible = !OPT_SFM_PLAYER_HIDE_DURATION_DEFAULT;
 function init() {
     console.log("OPENEND: Initializing...");
 
+    resetGlobalPageFlags();
     loadOptions();
     determinePageType();
     startCheckPageTask();
@@ -65,17 +70,33 @@ function loadOptions() {
 }
 
 function resetGlobalPageFlags() {
-    GLOBAL_pageType = PageType.UNKNOWN;
+    GLOBAL_pageType = null;
+    updateChannel(null);
     resetGlobalPageStateFlags()
 }
 
 function resetGlobalPageStateFlags() {
-    GLOBAL_channel = null;
     GLOBAL_playerConfigured = false;
     GLOBAL_videoListItemsConfigured = false;
     GLOBAL_pageConfigurationFailedMsgPrinted = false;
     // Initialize global variables with the option values
     GLOBAL_playerDurationVisible = !GLOBAL_options.sfmPlayerHideDuration;
+}
+
+/**
+ *
+ * @param channel {?Channel}
+ */
+function updateChannel(channel) {
+    GLOBAL_channel = channel;
+    const channelQualifiedName = GLOBAL_channel !== null ? GLOBAL_channel.qualifiedName : LCL_CURRENT_CHANNEL_DEFAULT;
+    chrome.storage.local.set({[LCL_CURRENT_CHANNEL_NAME]: channelQualifiedName}, function () {
+        if (chrome.runtime.lastError) {
+            console.warn("Failed to update the channel on the local storage");
+        }
+        console.log("OPENEND: [local] storage: Set [%s] to [%s]", LCL_CURRENT_CHANNEL_NAME, channelQualifiedName);
+    });
+    console.log("OPENEND: Updated channel to %o", GLOBAL_channel);
 }
 
 function isPageConfigurationDone() {
@@ -256,25 +277,23 @@ function listenForOptionsChanges() {
 function determinePageType() {
     // TODO(create setter for the GLOBAL_variables that log the updated value so we have that in one place)
     let channel = isChannelPage();
-    if(channel !== null){
+    if (channel !== null) {
         GLOBAL_pageType = PageType.CHANNEL;
-        GLOBAL_channel = channel;
         console.log("OPENEND: Page type: %s", GLOBAL_pageType);
-        console.log("OPENEND: Channel: %s", GLOBAL_channel);
+        updateChannel(channel);
         return;
     }
     const videoId = isVideoPage();
-    if(videoId !== null) {
+    if (videoId !== null) {
         GLOBAL_pageType = PageType.VIDEO;
         console.log("OPENEND: Page type: %s", GLOBAL_pageType);
         return;
     }
     channel = isChannelVideosPage();
-    if(channel !== null) {
+    if (channel !== null) {
         GLOBAL_pageType = PageType.CHANNEL_VIDEOS;
-        GLOBAL_channel = channel;
         console.log("OPENEND: Page type: %s", GLOBAL_pageType);
-        console.log("OPENEND: Channel: %s", GLOBAL_channel);
+        updateChannel(channel);
         return;
     }
     GLOBAL_pageType = PageType.UNKNOWN;
@@ -284,29 +303,20 @@ function determinePageType() {
 /**
  * https://www.twitch.tv/playoverwatch
  *
- * @return {?string} the channel name if it is a channel page
+ * @return {?Channel} the Channel if it is a channel page
  */
 function isChannelPage() {
-    const match = new RegExp("twitch.tv/([^/]+)(?:/)?$").exec(window.location.href);
-    if(match !== null)
-    {
-        return match[1];
-    }
-    return null;
+    return TWITCH_PLATFORM.parseChannelUrl(window.location.hostname, window.location.pathname);
 }
 
+
 /**
- * * https://www.twitch.tv/playoverwatch/videos/all
+ * https://www.twitch.tv/playoverwatch/videos/all
  *
- * @return {?string} the channel name if it is a videos page
+ * @return {?Channel} the Channel if it is a channel videos page
  */
 function isChannelVideosPage() {
-    const match = new RegExp("twitch.tv/([^/]+)/videos/all(?:/)?$").exec(window.location.href);
-    if(match !== null)
-    {
-        return match[1];
-    }
-    return null;
+    return TWITCH_PLATFORM.parseChannelVideosUrl(window.location.href);
 }
 
 /**
@@ -316,8 +326,7 @@ function isChannelVideosPage() {
  */
 function isVideoPage() {
     const match = new RegExp("twitch.tv/videos/(\\d+)(?:/)?$").exec(window.location.href);
-    if(match !== null)
-    {
+    if (match !== null) {
         return match[1];
     }
     return null;
@@ -344,7 +353,7 @@ function startCheckPageTask() {
             configurePage();
         }
         else if (!GLOBAL_pageConfigurationFailedMsgPrinted && !isPageConfigurationDone()) {
-            console.warn("OPND: Failed to determine and configure the page state before the timeout (%d ms)", PAGE_CONFIGURATION_TIMEOUT);
+            console.warn("OPENEND: Page configuration timeout reached (%d ms)", PAGE_CONFIGURATION_TIMEOUT);
             GLOBAL_pageConfigurationFailedMsgPrinted = true;
         }
     };
@@ -358,7 +367,7 @@ function createLocationIdentifier(location) {
     // Don't include the fragment (#) because a changed fragment does not
     // indicate a page change
     // See https://developer.mozilla.org/en-US/docs/Web/API/Location
-    return location.pathname + location.search;
+    return location.hostname + location.pathname + location.search;
 }
 
 function handlePageChange() {
@@ -375,48 +384,21 @@ function handlePageChange() {
 }
 
 /**
- * Not in theatre mode:
- <a data-target="channel-header__channel-link" data-a-target="user-channel-header-item" class="channel-header__user align-items-center flex flex-shrink-0 flex-nowrap pd-r-2 pd-y-05" href="/mdz_jimmy">
- ...
- </a>
- *
- * In theatre mode:
- * <div class="player-streaminfo__meta-container">
- *      <div class="player-streaminfo__name">
- *          <a class="player-text-link player-text-link--no-color qa-display-name" href="https://www.twitch.tv/videos/204717910" target="_blank">MDZ_jimmY</a>
- *      </div>
- *      <div class="player-streaminfo__title qa-stream-title">Ranked [Ryu] ☆ Road to Ultra Diamond!</div><div class="player-streaminfo__game"></div>
- * </div>
+ * <a data-target="channel-header__channel-link" data-a-target="user-channel-header-item" class="channel-header__user align-items-center flex flex-shrink-0 flex-nowrap pd-r-2 pd-y-05" href="/mdz_jimmy">
+ * ...
+ * </a>
  */
 function determineChannel() {
     if (GLOBAL_channel === null) {
-
-        let channelName = null;
-        // Not in theatre mode:
-        const channelHeaderAnchor = getSingleElementByClassName("channel-header__user");
-        if (channelHeaderAnchor) {
-            const href = channelHeaderAnchor.href;
-            if (href) {
-                const indexLastSlash = href.lastIndexOf("/");
-                channelName = href;
+        const channelLinkAnchor = document.querySelector("a[data-target=channel-header__channel-link]");
+        if (channelLinkAnchor) {
+            const channel = TWITCH_PLATFORM.parseChannelUrl(channelLinkAnchor.hostname, channelLinkAnchor.pathname);
+            if(channel !== null) {
+                updateChannel(channel);
             }
-        } else {
-            // TODO(is this really necessary or does the first condition always trigger?)
-            // In theatre mode:
-            const playerNameDiv = getSingleElementByClassName("player-streaminfo__name");
-            if (playerNameDiv) {
-                const playerLink = playerNameDiv.getElementsByTagName("a")[0];
-                if (playerLink) {
-                    channelName = playerLink.textContent;
-                }
+            else{
+                console.warn("Failed to parse channel from hostname=%s and pathname=%s", channelLinkAnchor.hostname, channelLinkAnchor.pathname);
             }
-        }
-
-        if (channelName !== null && channelName.length > 0) {
-            const indexLastSlash = channelName.lastIndexOf("/");
-            channelName = channelName.substr(indexLastSlash+1).toLowerCase();
-            console.log("OPENEND: Channel: %s", channelName);
-            GLOBAL_channel = channelName;
         }
     }
 }

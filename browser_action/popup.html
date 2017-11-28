@@ -5,23 +5,20 @@
  value "popup.html".
  -->
 <html>
-  <head>
+<head>
     <title>Open End Popup</title>
     <link rel="stylesheet" type="text/css" href="popup.css">
+    <script src="../common/common.js"></script>
     <script src="popup.js"></script>
-  </head>
+</head>
 
-  <body>
-    <h1>Background Color Changer</h1>
-    <div id="container">
-      <span>Choose a color</span>
-      <select id="dropdown">
-        <option selected disabled hidden value=''></option>
-        <option value="white">White</option>
-        <option value="pink">Pink</option>
-        <option value="green">Green</option>
-        <option value="yellow">Yellow</option>
-      </select>
-    </div>
-  </body>
+<body>
+<h2>Open End</h2>
+<div>
+    <span id="currentChannelLabel"></span>
+</div>
+<div>
+    <button id="addRemoveChannelBtn" class="opnd-hidden" data-channel="" data-mode=""></button>
+</div>
+</body>
 </html>

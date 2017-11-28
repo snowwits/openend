@@ -4,6 +4,14 @@ const SfmActive = {
     CUSTOM: "custom"
 };
 
+/**
+ * The key for the local storage item "currentChannel". The value is the qualified name of the channel.
+ * @type {string}
+ */
+const LCL_CURRENT_CHANNEL_NAME = "currentChannel";
+const LCL_CURRENT_CHANNEL_DEFAULT = "";
+
+
 /* Option Defaults */
 const OPT_SFM_ACTIVE_DEFAULT = SfmActive.ALWAYS;
 const OPT_SFM_CHANNELS_DEFAULT = [];
@@ -43,6 +51,178 @@ const OPND_PLAYER_JUMP_FORWARD_TOOLTIP_SPAN_ID = "opnd-player-jump-forward-toolt
 
 const DURATION_PATTERN = "^(?:(\\d+)|(?:(\\d+)h)?(?:(\\d+)m)?(?:(\\d+)s)?)$";
 
+
+/*
+ * CLASS DECLARATIONS
+ */
+class Platform {
+    /**
+     * @returns {!string} the name
+     */
+    get name() {
+        throw new Error("Not implemented");
+    }
+
+    /**
+     * @returns {!string} the display name
+     */
+    get displayName() {
+        throw new Error("Not implemented");
+    }
+
+    /**
+     *
+     * @param channel {!Channel} the channel
+     * @returns {!string} the full channel url
+     */
+    buildChannelUrl(channel) {
+        throw new Error("Not implemented");
+    }
+
+    /**
+     *
+     * @param qualifiedChannelName {!string}
+     */
+    parseChannelQualifiedName(qualifiedChannelName) {
+        throw new Error("Not implemented");
+    }
+
+    /**
+     *
+     * @param hostname {!string} hostname of the URL
+     * @param pathname {!string} pathname of the URL
+     * @returns {?Channel} the parsed Channel or null
+     */
+    parseChannelUrl(hostname, pathname) {
+        throw new Error("Not implemented");
+    }
+}
+
+const TWITCH_PLATFORM_CLS = class TwitchPlatform extends Platform {
+
+    /**
+     * @override
+     */
+    get name() {
+        return "twitch.tv";
+    }
+
+    /**
+     * @override
+     */
+    get displayName() {
+        return "Twitch.tv";
+    }
+
+    /**
+     * @override
+     */
+    buildChannelUrl(channel) {
+        return "https://www.twitch.tv/" + channel.name;
+    }
+
+    /**
+     * "twitch.tv/playoverwatch"
+     *
+     * @override
+     */
+    parseChannelQualifiedName(qualifiedChannelName) {
+        const platformPrefix = this.name + "/";
+        const isTwitchChannel = qualifiedChannelName.startsWith(platformPrefix);
+        if (isTwitchChannel) {
+            const channelName = qualifiedChannelName.substr(platformPrefix.length);
+            return new Channel(this, channelName);
+        }
+        return null;
+    }
+
+    /**
+     * TODO: make a general method that takes [hostname, pathname, maybe search] and returns the URL type {CHANNEL, CHANNEL_VIDEOS, CHANNEL_UNKNOWN_SUB_DIR, VIDEO, UNKNOWN} and relevant parts like [channelName, videoId, timeStamp]
+     * "https://www.twitch.tv/playoverwatch"
+     *
+     * @override
+     */
+    parseChannelUrl(hostname, pathname) {
+        // Host has to be twitch and no sub-host like "clips.twitch.tv" or "app.twitch.tv"
+        if ("www.twitch.tv" !== hostname && "twitch.tv" !== hostname) {
+            return null;
+        }
+        // "/directory" is a special path
+        if ("/directory" === pathname) {
+            return null;
+        }
+        if (new RegExp("^/[^/]+$").test(pathname)) {
+            return new Channel(this, pathname.substring(1));
+        }
+        return null;
+    }
+
+    /**
+     * "https://www.twitch.tv/playoverwatch/videos/all"
+     *
+     * @param url {!string} the channel URL to parse
+     * @returns {?Channel} the parsed Channel or null
+     */
+    parseChannelVideosUrl(url) {
+        const match = new RegExp("twitch.tv/([^/]+)/videos/all(?:/)?$").exec(url);
+        if (match !== null) {
+            return new Channel(this, match[1]);
+        }
+        return null;
+    }
+};
+
+const TWITCH_PLATFORM = new TWITCH_PLATFORM_CLS();
+
+/**
+ *
+ * @type {Array.<Platform>}
+ */
+const ALL_PLATFORMS = [TWITCH_PLATFORM];
+
+class Channel {
+    /**
+     *
+     * @param platform {!Platform}
+     * @param name {!string}
+     */
+    constructor(platform, name) {
+        this.platform = platform;
+        this.name = name;
+    }
+
+    get qualifiedName() {
+        return this.platform.name + "/" + this.name;
+    }
+
+
+    get displayName() {
+        return this.name + " (" + this.platform.displayName + ")";
+    }
+
+    get url() {
+        this.platform.buildChannelUrl(this);
+    }
+}
+
+/**
+ *
+ * @param channelQualifiedName the qualified name of the channel
+ * @returns {?Channel} the parsed Channel or null if no platform could parse the qualified name
+ */
+function parseChannelQualifiedName(channelQualifiedName) {
+    for (let i = 0; i < ALL_PLATFORMS.length; i++) {
+        const channel = ALL_PLATFORMS[i].parseChannelQualifiedName(channelQualifiedName);
+        if (channel !== null) {
+            return channel;
+        }
+    }
+    return null;
+}
+
+/*
+ * FUNCTIONS
+ */
 function getDefaultOptionsCopy() {
     return {
         sfmActivate: OPT_SFM_ACTIVE_DEFAULT,
@@ -327,11 +507,11 @@ function addSelectOption(selectElem, optionValue) {
 function removeSelectedOptions(selectId) {
     const selectElem = document.getElementById(selectId);
     const removalIndices = [];
-    for (let i=0; i<selectElem.selectedOptions.length; i++) {
+    for (let i = 0; i < selectElem.selectedOptions.length; i++) {
         removalIndices.push(selectElem.selectedOptions[i].index);
     }
     // Remove from end to start so the indices of the options to remove stay the same
-    for (let i = removalIndices.length-1; i>=0; i--) {
+    for (let i = removalIndices.length - 1; i >= 0; i--) {
         const removalIndex = removalIndices[i];
         selectElem.remove(removalIndex);
     }
