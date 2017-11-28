@@ -25,9 +25,10 @@ let GLOBAL_options = getDefaultOptionsCopy();
 
 /* Global Page Type Flags */
 const PageType = {
-    UNKNOWN: "unknown",
-    VIDEOS: "videos",
-    VIDEO: "video"
+    CHANNEL: "CHANNEL",
+    CHANNEL_VIDEOS: "CHANNEL_VIDEOS",
+    VIDEO: "VIDEO",
+    UNKNOWN: "UNKNOWN",
 };
 let GLOBAL_pageType = PageType.UNKNOWN;
 /* Global Page Component Loaded Flags */
@@ -253,23 +254,75 @@ function listenForOptionsChanges() {
 }
 
 function determinePageType() {
-    if (isVideoPage()) {
-        GLOBAL_pageType = PageType.VIDEO;
-    } else if (isVideosPage()) {
-        GLOBAL_pageType = PageType.VIDEOS;
-    } else {
-        GLOBAL_pageType = PageType.UNKNOWN;
+    // TODO(create setter for the GLOBAL_variables that log the updated value so we have that in one place)
+    let channel = isChannelPage();
+    if(channel !== null){
+        GLOBAL_pageType = PageType.CHANNEL;
+        GLOBAL_channel = channel;
+        console.log("OPENEND: Page type: %s", GLOBAL_pageType);
+        console.log("OPENEND: Channel: %s", GLOBAL_channel);
+        return;
     }
+    const videoId = isVideoPage();
+    if(videoId !== null) {
+        GLOBAL_pageType = PageType.VIDEO;
+        console.log("OPENEND: Page type: %s", GLOBAL_pageType);
+        return;
+    }
+    channel = isChannelVideosPage();
+    if(channel !== null) {
+        GLOBAL_pageType = PageType.CHANNEL_VIDEOS;
+        GLOBAL_channel = channel;
+        console.log("OPENEND: Page type: %s", GLOBAL_pageType);
+        console.log("OPENEND: Channel: %s", GLOBAL_channel);
+        return;
+    }
+    GLOBAL_pageType = PageType.UNKNOWN;
     console.log("OPENEND: Page type: %s", GLOBAL_pageType);
 }
 
-function isVideoPage() {
-    return new RegExp("twitch.tv/videos/\\d+").test(window.location.href);
+/**
+ * https://www.twitch.tv/playoverwatch
+ *
+ * @return {?string} the channel name if it is a channel page
+ */
+function isChannelPage() {
+    const match = new RegExp("twitch.tv/([^/]+)(?:/)?$").exec(window.location.href);
+    if(match !== null)
+    {
+        return match[1];
+    }
+    return null;
 }
 
-function isVideosPage() {
-    return new RegExp(".twitch.tv/[^/]+/videos/all").test(window.location.href);
+/**
+ * * https://www.twitch.tv/playoverwatch/videos/all
+ *
+ * @return {?string} the channel name if it is a videos page
+ */
+function isChannelVideosPage() {
+    const match = new RegExp("twitch.tv/([^/]+)/videos/all(?:/)?$").exec(window.location.href);
+    if(match !== null)
+    {
+        return match[1];
+    }
+    return null;
 }
+
+/**
+ * https://www.twitch.tv/videos/187486679
+ *
+ * @return {?string} the video ID if it is a video url
+ */
+function isVideoPage() {
+    const match = new RegExp("twitch.tv/videos/(\\d+)(?:/)?$").exec(window.location.href);
+    if(match !== null)
+    {
+        return match[1];
+    }
+    return null;
+}
+
 
 function startCheckPageTask() {
     let pageChangedTime = Date.now();
@@ -348,6 +401,7 @@ function determineChannel() {
                 channelName = href;
             }
         } else {
+            // TODO(is this really necessary or does the first condition always trigger?)
             // In theatre mode:
             const playerNameDiv = getSingleElementByClassName("player-streaminfo__name");
             if (playerNameDiv) {
@@ -361,7 +415,7 @@ function determineChannel() {
         if (channelName !== null && channelName.length > 0) {
             const indexLastSlash = channelName.lastIndexOf("/");
             channelName = channelName.substr(indexLastSlash+1).toLowerCase();
-            console.log("OPND: Channel: %s", channelName);
+            console.log("OPENEND: Channel: %s", channelName);
             GLOBAL_channel = channelName;
         }
     }
