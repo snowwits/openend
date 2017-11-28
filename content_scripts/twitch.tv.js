@@ -37,9 +37,10 @@ let GLOBAL_pageType = PageType.UNKNOWN;
  * @type {?Channel}
  */
 let GLOBAL_channel = null;
-let GLOBAL_playerConfigured = false;
-let GLOBAL_videoListItemsConfigured = false;
+let GLOBAL_sfmPlayerConfigured = false;
+let GLOBAL_sfmVideoListItemsConfigured = false;
 let GLOBAL_pageConfigurationFailedMsgPrinted = false;
+let GLOBAL_theatreModeConfigured = false;
 /* Global Page Component State Flags */
 let GLOBAL_playerDurationVisible = !OPT_SFM_PLAYER_HIDE_DURATION_DEFAULT;
 
@@ -76,9 +77,10 @@ function resetGlobalPageFlags() {
 }
 
 function resetGlobalPageStateFlags() {
-    GLOBAL_playerConfigured = false;
-    GLOBAL_videoListItemsConfigured = false;
+    GLOBAL_sfmPlayerConfigured = false;
+    GLOBAL_sfmVideoListItemsConfigured = false;
     GLOBAL_pageConfigurationFailedMsgPrinted = false;
+    GLOBAL_theatreModeConfigured = false;
     // Initialize global variables with the option values
     GLOBAL_playerDurationVisible = !GLOBAL_options.sfmPlayerHideDuration;
 }
@@ -100,17 +102,18 @@ function updateChannel(channel) {
 }
 
 function isPageConfigurationDone() {
-    return GLOBAL_channel !== null && GLOBAL_playerConfigured && GLOBAL_videoListItemsConfigured;
+    return GLOBAL_channel !== null && GLOBAL_sfmPlayerConfigured && GLOBAL_sfmVideoListItemsConfigured && GLOBAL_theatreModeConfigured;
 }
 
 function configurePage() {
     determineChannel();
-    tryConfigurePlayer();
-    tryConfigureVideoCards();
+    configureSfmPlayer();
+    configureSfmVideoListItems();
+    configureTheatreMode();
 }
 
-function tryConfigurePlayer() {
-    if (GLOBAL_pageType === PageType.VIDEO && !GLOBAL_playerConfigured) {
+function configureSfmPlayer() {
+    if (GLOBAL_pageType === PageType.VIDEO && !GLOBAL_sfmPlayerConfigured) {
         let toolbar = document.getElementById(OPND_PLAYER_TOOLBAR_ID);
         if (!toolbar) {
             // Search for injection container for toolbar (the left button panel)
@@ -134,10 +137,7 @@ function tryConfigurePlayer() {
             // Set initial Show/Hide Duration state
             configurePlayerDurationVisible();
 
-            // May set theatre mode
-            configureTheatreMode();
-
-            GLOBAL_playerConfigured = true;
+            GLOBAL_sfmPlayerConfigured = true;
             console.log("OPENEND: Configured Twitch Player");
         }
     }
@@ -179,16 +179,19 @@ function configurePlayerDurationVisible() {
 }
 
 function configureTheatreMode() {
-    const theatreModeBtn = getSingleElementByClassName(TWITCH_THEATRE_MODE_BTN_CLASS);
-    if (theatreModeBtn) {
-        const isActive = isTheatreModeActive(theatreModeBtn);
-        if (GLOBAL_options.generalTheatreMode !== isActive) {
-            console.log("OPENEND: " + (GLOBAL_options.generalTheatreMode ? "Entering" : "Exiting") + " Player Theatre Mode");
-            theatreModeBtn.click();
+    if (!GLOBAL_theatreModeConfigured) {
+        const theatreModeBtn = getSingleElementByClassName(TWITCH_THEATRE_MODE_BTN_CLASS);
+        if (theatreModeBtn) {
+            const isActive = isTheatreModeActive(theatreModeBtn);
+            if (GLOBAL_options.generalTheatreMode !== isActive) {
+                console.log("OPENEND: " + (GLOBAL_options.generalTheatreMode ? "Entering" : "Exiting") + " Player Theatre Mode");
+                theatreModeBtn.click();
+            }
+            GLOBAL_theatreModeConfigured = true;
         }
-    }
-    else {
-        console.warn("OPENEND: Could not configure Player Theatre Mode because the button." + TWITCH_THEATRE_MODE_BTN_CLASS + " could not be found");
+        else {
+            console.warn("OPENEND: Could not configure Player Theatre Mode because the button." + TWITCH_THEATRE_MODE_BTN_CLASS + " could not be found");
+        }
     }
 }
 
@@ -240,8 +243,8 @@ function isTheatreModeActive(theatreModeButton) {
  * </div>
  *
  */
-function tryConfigureVideoCards() {
-    if (!GLOBAL_videoListItemsConfigured) {
+function configureSfmVideoListItems() {
+    if (!GLOBAL_sfmVideoListItemsConfigured) {
         const videoStatDivs = document.getElementsByClassName("video-preview-card__preview-overlay-stat");
         if (videoStatDivs.length > 0) {
             console.log("OPENEND: Updating visibility of all Video List item durations to %s", !GLOBAL_options.sfmVideoListHideDuration);
@@ -252,7 +255,7 @@ function tryConfigureVideoCards() {
                     setVisible([videoStatDiv], !GLOBAL_options.sfmVideoListHideDuration)
                 }
             }
-            GLOBAL_videoListItemsConfigured = true;
+            GLOBAL_sfmVideoListItemsConfigured = true;
             console.log("OPENEND: Configured Video List items");
         }
     }
@@ -393,10 +396,10 @@ function determineChannel() {
         const channelLinkAnchor = document.querySelector("a[data-target=channel-header__channel-link]");
         if (channelLinkAnchor) {
             const channel = TWITCH_PLATFORM.parseChannelUrl(channelLinkAnchor.hostname, channelLinkAnchor.pathname);
-            if(channel !== null) {
+            if (channel !== null) {
                 updateChannel(channel);
             }
-            else{
+            else {
                 console.warn("Failed to parse channel from hostname=%s and pathname=%s", channelLinkAnchor.hostname, channelLinkAnchor.pathname);
             }
         }

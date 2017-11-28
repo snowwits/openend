@@ -1,3 +1,5 @@
+const MESSAGE_DISPLAY_DURATION = 1000; // 1s
+
 function addChannel() {
     const channelValue = getTextInputValue("sfm_channelToAdd");
     const selectElem = document.getElementById("sfm_channels");
@@ -35,7 +37,7 @@ function restoreDefaultOptions() {
 
 function getOptionsFromInputValues() {
     return {
-        sfmActivate: getRadioValue("sfm_activate"),
+        sfmActive: getRadioValue("sfm_active"),
         sfmChannels: getSelectOptionValues("sfm_channels"),
         sfmPlayerHideDuration: getCheckboxValue("sfm_player_hideDuration"),
         sfmPlayerJumpDistance: getTextInputValue("sfm_player_jumpDistance"),
@@ -48,7 +50,7 @@ function getOptionsFromInputValues() {
 
 function setOptionsToInputValues(options) {
     // Set option values to elements
-    setRadioValues("sfm_activate", options.sfmActivate);
+    setRadioValues("sfm_active", options.sfmActive);
     setSelectOptions("sfm_channels", options.sfmChannels);
     setCheckboxValue("sfm_player_hideDuration", options.sfmPlayerHideDuration);
     setTextInputValue("sfm_player_jumpDistance", options.sfmPlayerJumpDistance);
@@ -64,24 +66,40 @@ function showStatusMsg(msg) {
     status.innerHTML = msg;
     setTimeout(function () {
         status.innerHTML = "";
-    }, 750);
+    }, MESSAGE_DISPLAY_DURATION);
 }
 
 function init() {
     // Init elements
     // Activate Spoiler-Free Mode
-    setMsgToInnerHtml("sfm_activate-label", "options_sfm_activate");
-    setMsgToInnerHtml("sfm_activate_always-label", "options_sfm_activate_always");
-    setMsgToInnerHtml("sfm_activate_never-label", "options_sfm_activate_never");
-    setMsgToInnerHtml("sfm_activate_custom-label", "options_sfm_activate_custom");
-    setMsgToTitle("sfm_channels","options_sfm_channels");
-    setMsgToTitle("sfm_channelToAdd","options_sfm_channelToAdd");
+    setMsgToInnerHtml("sfm_active-label", "options_sfm_activate");
+    setMsgToInnerHtml("sfm_active_always-label", "options_sfm_activate_always");
+    setMsgToInnerHtml("sfm_active_never-label", "options_sfm_activate_never");
+    setMsgToInnerHtml("sfm_active_custom-label", "options_sfm_activate_custom");
+
+    // SFM channels select
+    setMsgToTitle("sfm_channels", "options_sfm_channels");
+    const channelsSelect = document.getElementById("sfm_channels");
+
+    // Channel to add text input
+    setMsgToTitle("sfm_channelToAdd", "options_sfm_channelToAdd");
+
+    // Add channel button
     setMsgToInnerHtml("sfm_addChannel", "options_sfm_addChannel");
     const addChannelBtn = document.getElementById("sfm_addChannel");
     addChannelBtn.onclick = addChannel;
+
+    // Remove channels btn
     setMsgToInnerHtml("sfm_removeChannel", "options_sfm_removeChannels");
     const removeChannelsBtn = document.getElementById("sfm_removeChannel");
     removeChannelsBtn.onclick = removeChannels;
+
+    // Active/Deactivate remove channels btn based on channels selection
+    const handleSelectedChannelsChange = () => {
+        removeChannelsBtn.disabled = channelsSelect.selectedOptions.length === 0;
+    };
+    channelsSelect.onchange = handleSelectedChannelsChange;
+    handleSelectedChannelsChange();
 
     // Configure Spoiler-Free Mode
     setMsgToInnerHtml("sfm_configure-label", "options_sfm_configure");

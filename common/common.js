@@ -225,7 +225,7 @@ function parseChannelQualifiedName(channelQualifiedName) {
  */
 function getDefaultOptionsCopy() {
     return {
-        sfmActivate: OPT_SFM_ACTIVE_DEFAULT,
+        sfmActive: OPT_SFM_ACTIVE_DEFAULT,
         sfmChannels: OPT_SFM_CHANNELS_DEFAULT,
         sfmPlayerHideDuration: OPT_SFM_PLAYER_HIDE_DURATION_DEFAULT,
         sfmPlayerJumpDistance: OPT_SFM_PLAYER_JUMP_DISTANCE_DEFAULT,
