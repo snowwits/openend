@@ -35,6 +35,10 @@
         "message": "Jump distance format: \"2\" for 2 minutes or \"1h2m3s\" for 1 hour, 2 minutes and 3 seconds",
         "description": "The error message to be displayed the Jump Distance is invalid."
     },
+    "menu_open_options":{
+        "message": "Options...",
+        "description": "Label of the Options... button on the browser_action popup menu."
+    },
     "options_sfm_activate": {
         "message": "Activate Spoiler-Free Mode",
         "description": "Label of the Activate Spoiler-Free Mode options section."

@@ -29,7 +29,10 @@
     "playerJump_errMsg": {
         "message": "Format: \"2\" für zwei Minuten oder \"1h2m3s\" for 1 Stunde, 2 Minuten and 3 Sekunden"
     },
-   "options_sfm_activate": {
+    "menu_open_options": {
+        "message": "Optionen..."
+    },
+    "options_sfm_activate": {
         "message": "Spoilerfreien Modus aktivieren"
     },
     "options_sfm_activate_never": {

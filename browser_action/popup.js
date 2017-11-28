@@ -70,9 +70,21 @@ function handleAddRemoveChannelAction() {
     }
 }
 
+function handleOpenOptionsAction() {
+    chrome.runtime.openOptionsPage(() => {
+        if (chrome.runtime.lastError) {
+            console.error("OPENEND: Failed to open the options page: %s", chrome.runtime.lastError);
+        }
+    });
+}
+
 document.addEventListener("DOMContentLoaded", () => {
     const addRemoveChannelBtn = document.getElementById("addRemoveChannelBtn");
     addRemoveChannelBtn.onclick = handleAddRemoveChannelAction;
+
+    const openOptionsBtn = document.getElementById("openOptionsBtn");
+    openOptionsBtn.innerHTML = chrome.i18n.getMessage("menu_open_options");
+    openOptionsBtn.onclick = handleOpenOptionsAction;
 
     chrome.storage.local.get(LCL_CURRENT_CHANNEL_NAME, function (items) {
         if (chrome.runtime.lastError) {
