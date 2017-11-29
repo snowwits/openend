@@ -3,6 +3,9 @@ const AddRemoveMode = {
     REMOVE: "REMOVE"
 };
 
+// TODO: Disinguish between different tabs (currently there is only one currentChannel item that is shared between tabs)
+// Solution: content_script sends message to event script that knows the tab and can store the currentChannel with the tabId ([tabIdxyz]: {currentChannel: "playoverwatch"}. If a tab is removed, that entry needs to be removed as well. When the popup is opened it checks the local storage like it does now.
+
 function updateUiAfterLocalStorageRead(items) {
     let currentChannelText = LCL_CURRENT_CHANNEL_NAME in items ? items[LCL_CURRENT_CHANNEL_NAME] : LCL_CURRENT_CHANNEL_DEFAULT;
     let currentChannel = parseChannelQualifiedName(currentChannelText);
