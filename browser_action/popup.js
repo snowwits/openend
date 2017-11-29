@@ -3,11 +3,14 @@ const AddRemoveMode = {
     REMOVE: "REMOVE"
 };
 
-// TODO: Disinguish between different tabs (currently there is only one currentChannel item that is shared between tabs)
-// Solution: content_script sends message to event script that knows the tab and can store the currentChannel with the tabId ([tabIdxyz]: {currentChannel: "playoverwatch"}. If a tab is removed, that entry needs to be removed as well. When the popup is opened it checks the local storage like it does now.
+/**
+ *
+ * @param tabInfo {?TabInfo}
+ */
+function updateUiAfterTabInfoUpdate(tabInfo) {
+    console.log("OPENEND: Updating UI after tab info received: %o", tabInfo);
 
-function updateUiAfterLocalStorageRead(items) {
-    let currentChannelText = LCL_CURRENT_CHANNEL_NAME in items ? items[LCL_CURRENT_CHANNEL_NAME] : LCL_CURRENT_CHANNEL_DEFAULT;
+    let currentChannelText = tabInfo && TAB_INFO_CURRENT_CHANNEL_NAME in tabInfo ? tabInfo[TAB_INFO_CURRENT_CHANNEL_NAME] : TAB_INFO_CURRENT_CHANNEL_DEFAULT;
     let currentChannel = parseChannelQualifiedName(currentChannelText);
 
     // First hide the button (maybe show it again later)
@@ -81,6 +84,28 @@ function handleOpenOptionsAction() {
     });
 }
 
+/**
+ * Get the current URL.
+ *
+ * @param {function(tabs.Tab)} callback called when current tab is found
+ */
+function getCurrentTab(callback) {
+    // Query filter to be passed to chrome.tabs.query - see https://developer.chrome.com/extensions/tabs#method-query
+    const queryInfo = {
+        active: true,
+        currentWindow: true
+    };
+
+    chrome.tabs.query(queryInfo, (tabs) => {
+        // chrome.tabs.query invokes the callback with a list of tabs that match the
+        // query. When the popup is opened, there is certainly a window and at least
+        // one tab, so we can safely assume that |tabs| is a non-empty array.
+        // A window can only have one active tab at a time, so the array consists of
+        // exactly one tab.
+        callback(tabs[0]);
+    });
+}
+
 document.addEventListener("DOMContentLoaded", () => {
     const addRemoveChannelBtn = document.getElementById("addRemoveChannelBtn");
     addRemoveChannelBtn.onclick = handleAddRemoveChannelAction;
@@ -89,21 +114,29 @@ document.addEventListener("DOMContentLoaded", () => {
     openOptionsBtn.innerHTML = chrome.i18n.getMessage("menu_open_options");
     openOptionsBtn.onclick = handleOpenOptionsAction;
 
-    chrome.storage.local.get(LCL_CURRENT_CHANNEL_NAME, function (items) {
-        if (chrome.runtime.lastError) {
-            console.error("OPENEND: Failed to read [%s] from [local] storage: %s", LCL_CURRENT_CHANNEL_NAME, chrome.runtime.lastError);
+    getCurrentTab((tab) => {
+        if(!tab.id){
+            console.error("Current tab has no ID: %o", tab);
             return;
         }
-        updateUiAfterLocalStorageRead(items);
-    });
+        const tabInfoKey = createTabInfoKey(tab.id);
+        console.log("OPENEND: tabInfoKey: %o", tabInfoKey);
 
-    chrome.storage.onChanged.addListener(function (changes, namespace) {
-        console.log("Storage changes %o in namespace [%s]", changes, namespace);
-        if ("local" === namespace) {
-            updateUiAfterLocalStorageRead({[LCL_CURRENT_CHANNEL_NAME]: changes[LCL_CURRENT_CHANNEL_NAME].newValue});
-        } else if ("sync" === namespace) {
-            updateUiAfterSyncStorageChange(changes);
-        }
+        chrome.storage.local.get(tabInfoKey, function (items) {
+            if (chrome.runtime.lastError) {
+                console.error("OPENEND: Failed to read [%s] from [local] storage: %s", tabInfoKey, chrome.runtime.lastError);
+                return;
+            }
+            updateUiAfterTabInfoUpdate(items[tabInfoKey]);
+        });
+
+        chrome.storage.onChanged.addListener(function (changes, namespace) {
+            console.log("Storage changes %o in namespace [%s]", changes, namespace);
+            if ("local" === namespace) {
+                updateUiAfterTabInfoUpdate(changes[tabInfoKey].newValue);
+            } else if ("sync" === namespace) {
+                updateUiAfterSyncStorageChange(changes);
+            }
+        });
     });
-})
-;
+});

@@ -1,7 +1,8 @@
 {
     "manifest_version": 2,
     "name": "Open End",
-    "version": "1.0.0",
+    "version": "0.1.0",
+    "version_name": "0.1.0 (BETA)",
     "default_locale": "en",
     "description": "__MSG_manifest_description__",
     "icons": {
@@ -11,6 +12,13 @@
         "128": "imgs/icon_twitch-purple_128.png"
     },
     "author": "snowwits@gmail.com",
+    "background": {
+        "scripts": [
+            "common/common.js",
+            "background/event_page.js"
+        ],
+        "persistent": false
+    },
     "browser_action": {
         "default_icon": {
             "16": "imgs/icon_twitch-purple_16.png",
@@ -24,7 +32,10 @@
         {
             "matches": ["*://*.twitch.tv/*"],
             "css": ["content_scripts/twitch.tv.css"],
-            "js": ["common/common.js", "content_scripts/twitch.tv.js"],
+            "js": [
+                "common/common.js",
+                "content_scripts/twitch.tv.js"
+            ],
             "run_at": "document_end"
         }
     ],
@@ -33,7 +44,8 @@
         "chrome_style": true
     },
     "permissions": [
-        "storage"
+        "storage",
+        "tabs"
     ],
     "web_accessible_resources": [
         "imgs/*",

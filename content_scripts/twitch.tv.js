@@ -84,12 +84,15 @@ function resetGlobalPageStateFlags() {
  */
 function updateChannel(channel) {
     GLOBAL_channel = channel;
-    const channelQualifiedName = GLOBAL_channel !== null ? GLOBAL_channel.qualifiedName : LCL_CURRENT_CHANNEL_DEFAULT;
-    chrome.storage.local.set({[LCL_CURRENT_CHANNEL_NAME]: channelQualifiedName}, function () {
-        if (chrome.runtime.lastError) {
-            console.warn("Failed to update the channel on the local storage");
+    const channelQualifiedName = GLOBAL_channel !== null ? GLOBAL_channel.qualifiedName : TAB_INFO_CURRENT_CHANNEL_DEFAULT;
+    const msg = {
+        [MSG_TYPE_NAME]: MSG_TYPE_TAB_INFO,
+        [MSG_BODY_NAME]: {
+            [TAB_INFO_CURRENT_CHANNEL_NAME]: channelQualifiedName
         }
-        console.log("OPENEND: [local] storage: Set [%s] to [%s]", LCL_CURRENT_CHANNEL_NAME, channelQualifiedName);
+    };
+    chrome.runtime.sendMessage(msg, function (response) {
+        console.log("OPENEND: Message [%o] was successfully sent", msg);
     });
     console.log("OPENEND: Updated channel to %o", GLOBAL_channel);
 }
