@@ -52,6 +52,26 @@ const OPND_PLAYER_JUMP_FORWARD_TOOLTIP_SPAN_ID = "opnd-player-jump-forward-toolt
 const DURATION_PATTERN = "^(?:(\\d+)|(?:(\\d+)h)?(?:(\\d+)m)?(?:(\\d+)s)?)$";
 
 
+/**
+ * Creates an anchor element that can be queried for:
+ * <ul>
+ *     <li>protocol</li>
+ *     <li>port</li>
+ *     <li>host</li>
+ *     <li>hostname</li>
+ *     <li>pathname</li>
+ *     <li>search</li>
+ *     <li>hash</li>
+ *     </ul>
+ * @param href {!string} url of the anchor
+ * @returns {!HTMLAnchorElement }
+ */
+function createAnchor(href) {
+    const l = document.createElement("a");
+    l.href = href;
+    return l;
+}
+
 /*
  * CLASS DECLARATIONS
  */
@@ -86,20 +106,50 @@ class Platform {
     parseChannelQualifiedName(qualifiedChannelName) {
         throw new Error("Not implemented");
     }
-
-    /**
-     *
-     * @param hostname {!string} hostname of the URL
-     * @param pathname {!string} pathname of the URL
-     * @returns {?Channel} the parsed Channel or null
-     */
-    parseChannelUrl(hostname, pathname) {
-        throw new Error("Not implemented");
-    }
 }
 
-const TWITCH_PLATFORM_CLS = class TwitchPlatform extends Platform {
+/* Global Page Type Flags */
+const TwitchPageType = {
+    /**
+     * "https://www.twitch.tv"
+     */
+    ROOT: "ROOT",
+    /**
+     * "https://www.twitch.tv/playoverwatch"
+     */
+    CHANNEL: "CHANNEL",
+    /**
+     * "https://www.twitch.tv/playoverwatch/videos/all"
+     */
+    CHANNEL_VIDEOS: "CHANNEL_VIDEOS",
+    /**
+     * "https://www.twitch.tv/playoverwatch/..."
+     */
+    CHANNEL_UNKNOWN_SUB_DIR: "CHANNEL_UNKNOWN_SUB_DIR",
+    /**
+     * "https://www.twitch.tv/directory"
+     */
+    DIRECTORY: "DIRECTORY",
+    /**
+     * "https://www.twitch.tv/directory/..."
+     * "https://www.twitch.tv/directory/game/Overwatch"
+     */
+    DIRECTORY_UNKNOWN_SUB_DIR: "DIRECTORY_UNKNOWN_SUB_DIR",
 
+    /**
+     * "https://www.twitch.tv/videos/187486679"
+     */
+    VIDEO: "VIDEO",
+
+    /**
+     * "https://app.twitch.tv/download"
+     * "https://clips.twitch.tv/PiercingMoralOctopusUncleNox"
+     */
+    UNKNOWN: "UNKNOWN",
+};
+
+
+class TwitchPlatform extends Platform {
     /**
      * @override
      */
@@ -137,42 +187,79 @@ const TWITCH_PLATFORM_CLS = class TwitchPlatform extends Platform {
     }
 
     /**
-     * TODO: make a general method that takes [hostname, pathname, maybe search] and returns the URL type {CHANNEL, CHANNEL_VIDEOS, CHANNEL_UNKNOWN_SUB_DIR, VIDEO, UNKNOWN} and relevant parts like [channelName, videoId, timeStamp]
-     * "https://www.twitch.tv/playoverwatch"
-     *
-     * @override
+     * @typedef {Object} PageTypeResult
+     * @property {!string} pageType the page type
+     * @property {?Channel} channel the channel if it was a channel or channel sub page
+     * @property {?string} videoId the id of the video if it was a video page
      */
-    parseChannelUrl(hostname, pathname) {
-        // Host has to be twitch and no sub-host like "clips.twitch.tv" or "app.twitch.tv"
-        if ("www.twitch.tv" !== hostname && "twitch.tv" !== hostname) {
-            return null;
-        }
-        // "/directory" is a special path
-        if ("/directory" === pathname) {
-            return null;
-        }
-        if (new RegExp("^/[^/]+$").test(pathname)) {
-            return new Channel(this, pathname.substring(1));
-        }
-        return null;
-    }
 
     /**
-     * "https://www.twitch.tv/playoverwatch/videos/all"
-     *
-     * @param url {!string} the channel URL to parse
-     * @returns {?Channel} the parsed Channel or null
+     * @param hostname the hostname
+     * @param pathname the pathname
+     * @param search the query string
+     * @returns {?PageTypeResult} the page type result or null if it isn't a twitch page
      */
-    parseChannelVideosUrl(url) {
-        const match = new RegExp("twitch.tv/([^/]+)/videos/all(?:/)?$").exec(url);
-        if (match !== null) {
-            return new Channel(this, match[1]);
+    static determinePage(hostname, pathname, search) {
+        // For most content the host has to be twitch.tv
+        if ("www.twitch.tv" === hostname || "twitch.tv" === hostname) {
+            if("/" === pathname){
+                return {
+                    pageType: TwitchPageType.ROOT
+                };
+            }
+            // "/directory" is a special path
+            if ("/directory" === pathname || "/directory/" === pathname) {
+                return {
+                    pageType: TwitchPageType.DIRECTORY
+                };
+            }
+            if (pathname.startsWith("/directory")) {
+                return {
+                    pageType: TwitchPageType.DIRECTORY_UNKNOWN_SUB_DIR
+                };
+            }
+            let match = new RegExp("^/videos/(\\d+)(?:/)?$").exec(pathname);
+            if (match !== null) {
+                return {
+                    pageType: TwitchPageType.VIDEO,
+                    videoId: match[1]
+                };
+            }
+            match = new RegExp("^/([^/]+)/videos/all(?:/)?$").exec(pathname);
+            if (match !== null) {
+                return {
+                    pageType: TwitchPageType.CHANNEL_VIDEOS,
+                    channel: new Channel(TWITCH_PLATFORM, match[1])
+                };
+            }
+            match = new RegExp("^/([^/]+)(?:/)?$").exec(pathname);
+            if (match !== null) {
+                return {
+                    pageType: TwitchPageType.CHANNEL,
+                    channel: new Channel(TWITCH_PLATFORM, match[1])
+                };
+            }
+            match = new RegExp("^/([^/]+)/.*$").exec(pathname);
+            if (match !== null) {
+                return {
+                    pageType: TwitchPageType.CHANNEL_UNKNOWN_SUB_DIR,
+                    channel: new Channel(TWITCH_PLATFORM, match[1])
+                };
+            }
+            return {
+                pageType: TwitchPageType.UNKNOWN
+            };
+        } else if (hostname.includes("twitch.tv")) {
+            // sub-hosts like "clips.twitch.tv" or "app.twitch.tv"
+            return {
+                pageType: TwitchPageType.UNKNOWN
+            };
         }
         return null;
     }
-};
+}
 
-const TWITCH_PLATFORM = new TWITCH_PLATFORM_CLS();
+const TWITCH_PLATFORM = new TwitchPlatform();
 
 /**
  *

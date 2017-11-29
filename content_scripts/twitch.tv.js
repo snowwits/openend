@@ -1,7 +1,7 @@
 /* Global Constants */
 /* Technical Parameters */
-const CHECK_PAGE_TASK_INTERVAL = 100; // 200ms
-const PAGE_CONFIGURATION_TIMEOUT = 10000; // TODO: change to 30s
+const CHECK_PAGE_TASK_INTERVAL = 200; // 200ms
+const PAGE_CONFIGURATION_TIMEOUT = 30000; // 30s
 
 /* Constants element IDs and classes */
 const TWITCH_PROGRESS_TOTAL_TIME_DIV_CLASS = "player-seek__time--total";
@@ -23,14 +23,7 @@ const TWITCH_PLAYER_TOOLTIP_SPAN_TEXT_ATTR = "data-tip";
 /* Global Cached Options */
 let GLOBAL_options = getDefaultOptionsCopy();
 
-/* Global Page Type Flags */
-const PageType = {
-    CHANNEL: "CHANNEL",
-    CHANNEL_VIDEOS: "CHANNEL_VIDEOS",
-    VIDEO: "VIDEO",
-    UNKNOWN: "UNKNOWN",
-};
-let GLOBAL_pageType = PageType.UNKNOWN;
+let GLOBAL_pageType = null;
 /* Global Page Component Loaded Flags */
 /**
  *
@@ -39,7 +32,7 @@ let GLOBAL_pageType = PageType.UNKNOWN;
 let GLOBAL_channel = null;
 let GLOBAL_sfmPlayerConfigured = false;
 let GLOBAL_sfmVideoListItemsConfigured = false;
-let GLOBAL_pageConfigurationFailedMsgPrinted = false;
+let GLOBAL_pageConfigurationTimeoutReached = false;
 let GLOBAL_theatreModeConfigured = false;
 /* Global Page Component State Flags */
 let GLOBAL_playerDurationVisible = !OPT_SFM_PLAYER_HIDE_DURATION_DEFAULT;
@@ -79,7 +72,7 @@ function resetGlobalPageFlags() {
 function resetGlobalPageStateFlags() {
     GLOBAL_sfmPlayerConfigured = false;
     GLOBAL_sfmVideoListItemsConfigured = false;
-    GLOBAL_pageConfigurationFailedMsgPrinted = false;
+    GLOBAL_pageConfigurationTimeoutReached = false;
     GLOBAL_theatreModeConfigured = false;
     // Initialize global variables with the option values
     GLOBAL_playerDurationVisible = !GLOBAL_options.sfmPlayerHideDuration;
@@ -113,7 +106,7 @@ function configurePage() {
 }
 
 function configureSfmPlayer() {
-    if (GLOBAL_pageType === PageType.VIDEO && !GLOBAL_sfmPlayerConfigured) {
+    if (GLOBAL_pageType === TwitchPageType.VIDEO && !GLOBAL_sfmPlayerConfigured) {
         let toolbar = document.getElementById(OPND_PLAYER_TOOLBAR_ID);
         if (!toolbar) {
             // Search for injection container for toolbar (the left button panel)
@@ -179,7 +172,7 @@ function configurePlayerDurationVisible() {
 }
 
 function configureTheatreMode() {
-    if (!GLOBAL_theatreModeConfigured) {
+    if (GLOBAL_pageType === TwitchPageType.VIDEO && !GLOBAL_theatreModeConfigured) {
         const theatreModeBtn = getSingleElementByClassName(TWITCH_THEATRE_MODE_BTN_CLASS);
         if (theatreModeBtn) {
             const isActive = isTheatreModeActive(theatreModeBtn);
@@ -278,61 +271,14 @@ function listenForOptionsChanges() {
 }
 
 function determinePageType() {
-    // TODO(create setter for the GLOBAL_variables that log the updated value so we have that in one place)
-    let channel = isChannelPage();
-    if (channel !== null) {
-        GLOBAL_pageType = PageType.CHANNEL;
-        console.log("OPENEND: Page type: %s", GLOBAL_pageType);
-        updateChannel(channel);
-        return;
+    const pageTypeResult = TwitchPlatform.determinePage(window.location.hostname, window.location.pathname, window.location.search);
+    if (pageTypeResult) {
+        GLOBAL_pageType = pageTypeResult.pageType;
+        if (pageTypeResult.channel) {
+            updateChannel(pageTypeResult.channel);
+        }
     }
-    const videoId = isVideoPage();
-    if (videoId !== null) {
-        GLOBAL_pageType = PageType.VIDEO;
-        console.log("OPENEND: Page type: %s", GLOBAL_pageType);
-        return;
-    }
-    channel = isChannelVideosPage();
-    if (channel !== null) {
-        GLOBAL_pageType = PageType.CHANNEL_VIDEOS;
-        console.log("OPENEND: Page type: %s", GLOBAL_pageType);
-        updateChannel(channel);
-        return;
-    }
-    GLOBAL_pageType = PageType.UNKNOWN;
     console.log("OPENEND: Page type: %s", GLOBAL_pageType);
-}
-
-/**
- * https://www.twitch.tv/playoverwatch
- *
- * @return {?Channel} the Channel if it is a channel page
- */
-function isChannelPage() {
-    return TWITCH_PLATFORM.parseChannelUrl(window.location.hostname, window.location.pathname);
-}
-
-
-/**
- * https://www.twitch.tv/playoverwatch/videos/all
- *
- * @return {?Channel} the Channel if it is a channel videos page
- */
-function isChannelVideosPage() {
-    return TWITCH_PLATFORM.parseChannelVideosUrl(window.location.href);
-}
-
-/**
- * https://www.twitch.tv/videos/187486679
- *
- * @return {?string} the video ID if it is a video url
- */
-function isVideoPage() {
-    const match = new RegExp("twitch.tv/videos/(\\d+)(?:/)?$").exec(window.location.href);
-    if (match !== null) {
-        return match[1];
-    }
-    return null;
 }
 
 
@@ -351,13 +297,15 @@ function startCheckPageTask() {
         }
 
         // Check whether elements are loaded
-        const checkTime = Date.now();
-        if (checkTime - pageChangedTime < PAGE_CONFIGURATION_TIMEOUT) {
-            configurePage();
-        }
-        else if (!GLOBAL_pageConfigurationFailedMsgPrinted && !isPageConfigurationDone()) {
-            console.warn("OPENEND: Page configuration timeout reached (%d ms)", PAGE_CONFIGURATION_TIMEOUT);
-            GLOBAL_pageConfigurationFailedMsgPrinted = true;
+        if (!isPageConfigurationDone() && !GLOBAL_pageConfigurationTimeoutReached) {
+            const checkTime = Date.now();
+            if (checkTime - pageChangedTime < PAGE_CONFIGURATION_TIMEOUT) {
+                configurePage();
+            }
+            else {
+                GLOBAL_pageConfigurationTimeoutReached = true;
+                console.warn("OPENEND: Page configuration timeout reached (%d ms)", PAGE_CONFIGURATION_TIMEOUT);
+            }
         }
     };
 
@@ -395,9 +343,9 @@ function determineChannel() {
     if (GLOBAL_channel === null) {
         const channelLinkAnchor = document.querySelector("a[data-target=channel-header__channel-link]");
         if (channelLinkAnchor) {
-            const channel = TWITCH_PLATFORM.parseChannelUrl(channelLinkAnchor.hostname, channelLinkAnchor.pathname);
-            if (channel !== null) {
-                updateChannel(channel);
+            const pageTypResult = TwitchPlatform.determinePage(channelLinkAnchor.hostname, channelLinkAnchor.pathname, channelLinkAnchor.search);
+            if (pageTypResult && pageTypResult.channel) {
+                updateChannel(pageTypResult.channel);
             }
             else {
                 console.warn("Failed to parse channel from hostname=%s and pathname=%s", channelLinkAnchor.hostname, channelLinkAnchor.pathname);
