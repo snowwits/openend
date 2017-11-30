@@ -1,3 +1,26 @@
+/*
+ * ====================================================================================================
+ * LOGGING
+ * ====================================================================================================
+ */
+function log(msg, ...substitutions) {
+    logWithComponent("content_script-twitch", msg, ...substitutions);
+}
+
+function warn(msg, ...substitutions) {
+    warnWithComponent("content_script-twitch", msg, ...substitutions);
+}
+
+function error(msg, ...substitutions) {
+    errorWithComponent("content_script-twitch", msg, ...substitutions);
+}
+
+
+/*
+ * ====================================================================================================
+ * CONSTANTS
+ * ====================================================================================================
+ */
 /* Global Constants */
 /* Technical Parameters */
 const CHECK_PAGE_TASK_INTERVAL = 200; // 200ms
@@ -37,26 +60,38 @@ let GLOBAL_theatreModeConfigured = false;
 /* Global Page Component State Flags */
 let GLOBAL_playerDurationVisible = !OPT_SFM_PLAYER_HIDE_DURATION_DEFAULT;
 
-/* Functions */
 
-/* INIT */
-function init() {
-    console.log("OPENEND: Initializing...");
-
-    resetGlobalPageFlags();
-    loadOptions();
-    determinePageType();
-    startCheckPageTask();
+/*
+ * ====================================================================================================
+ * UTIL FUNCTIONS
+ * ====================================================================================================
+ */
+/**
+ *
+ * @param time {!number} in seconds
+ * @returns {!string} the URL with the time parameter
+ */
+function buildCurrentUrlWithTime(time) {
+    const newTimeFormatted = formatDuration(time);
+    const urlParams = newTimeFormatted.length > 0 ? "?t=" + newTimeFormatted : "";
+    return window.location.protocol + "//" + window.location.hostname + window.location.pathname + urlParams;
 }
+
+
+/*
+ * ====================================================================================================
+ * FUNCTIONS
+ * ====================================================================================================
+ */
 
 function loadOptions() {
     chrome.storage.sync.get(getDefaultOptionsCopy(), function (items) {
         if (chrome.runtime.lastError) {
-            console.error("OPENEND: Failed to load options: %s", chrome.runtime.lastError);
+            error("Failed to load options: %s", chrome.runtime.lastError);
             return;
         }
         GLOBAL_options = items;
-        console.log("OPENEND: Loaded options: %O", GLOBAL_options);
+        log("Loaded options: %O", GLOBAL_options);
         resetGlobalPageStateFlags();
         configurePage();
         listenForOptionsChanges();
@@ -75,7 +110,28 @@ function resetGlobalPageStateFlags() {
     GLOBAL_pageConfigurationTimeoutReached = false;
     GLOBAL_theatreModeConfigured = false;
     // Initialize global variables with the option values
-    GLOBAL_playerDurationVisible = !GLOBAL_options.sfmPlayerHideDuration;
+    GLOBAL_playerDurationVisible = !GLOBAL_options[OPT_SFM_PLAYER_HIDE_DURATION_NAME];
+}
+
+function listenForMessages() {
+    chrome.runtime.onMessage.addListener(handleMessage);
+}
+
+/**
+ *
+ * @param request {!Message} the message
+ * @param sender {!MessageSender} the sender
+ * @param sendResponse {!function} the function to send the response
+ */
+function handleMessage(request, sender, sendResponse) {
+    log("Received message from [%o]: %o", sender, request);
+    if (MSG_TYPE_NAME in request) {
+        if (MSG_TYPE_TAB_INFO_REQUEST === request[MSG_TYPE_NAME]) {
+            const tabInfoMessage = buildTabInfoMessage();
+            log("Responding to [Message:" + MSG_TYPE_TAB_INFO_REQUEST + "] with: %o", tabInfoMessage);
+            sendResponse(tabInfoMessage);
+        }
+    }
 }
 
 /**
@@ -84,17 +140,26 @@ function resetGlobalPageStateFlags() {
  */
 function updateChannel(channel) {
     GLOBAL_channel = channel;
+    log("Updated channel to %o", GLOBAL_channel);
+
+    // Notify about TabInfo change
+    const tabInfoMessage = buildTabInfoMessage();
+    chrome.runtime.sendMessage(tabInfoMessage, function (response) {
+        log("Message [%o] was successfully sent", tabInfoMessage);
+    });
+}
+
+/**
+ * @return TabInfoMessage
+ */
+function buildTabInfoMessage() {
     const channelQualifiedName = GLOBAL_channel !== null ? GLOBAL_channel.qualifiedName : TAB_INFO_CURRENT_CHANNEL_DEFAULT;
-    const msg = {
+    return {
         [MSG_TYPE_NAME]: MSG_TYPE_TAB_INFO,
         [MSG_BODY_NAME]: {
             [TAB_INFO_CURRENT_CHANNEL_NAME]: channelQualifiedName
         }
     };
-    chrome.runtime.sendMessage(msg, function (response) {
-        console.log("OPENEND: Message [%o] was successfully sent", msg);
-    });
-    console.log("OPENEND: Updated channel to %o", GLOBAL_channel);
 }
 
 function isPageConfigurationDone() {
@@ -117,9 +182,9 @@ function configureSfmPlayer() {
             if (injectionContainer) {
                 toolbar = buildPlayerToolbar();
                 injectionContainer.appendChild(toolbar);
-                console.log("OPENEND: Injected Open End Toolbar");
+                log("Injected Open End Toolbar");
             } else {
-                console.warn("OPENEND: Could not inject Open End Toolbar because injection container could not be found");
+                warn("Could not inject Open End Toolbar because injection container could not be found");
             }
         }
 
@@ -134,7 +199,7 @@ function configureSfmPlayer() {
             configurePlayerDurationVisible();
 
             GLOBAL_sfmPlayerConfigured = true;
-            console.log("OPENEND: Configured Twitch Player");
+            log("Configured Twitch Player");
         }
     }
 }
@@ -142,8 +207,8 @@ function configureSfmPlayer() {
 function configurePlayerJumpDistanceValue() {
     const jumpDistanceElem = document.getElementById(OPND_PLAYER_JUMP_DISTANCE_INPUT_ID);
     if (jumpDistanceElem) {
-        console.log("OPENEND: Updating Player Jump Distance value to %s", GLOBAL_options.sfmPlayerJumpDistance);
-        jumpDistanceElem.value = GLOBAL_options.sfmPlayerJumpDistance;
+        jumpDistanceElem.value = GLOBAL_options[OPT_SFM_PLAYER_JUMP_DISTANCE_NAME];
+        log("Updated Player Jump Distance value to %s", GLOBAL_options[OPT_SFM_PLAYER_JUMP_DISTANCE_NAME]);
     }
 }
 
@@ -156,7 +221,7 @@ function configurePlayerDurationVisible() {
     const allElementsToToggle = getElementsByClassNames([TWITCH_PROGRESS_TOTAL_TIME_DIV_CLASS, TWITCH_PROGRESS_SLIDER_DIV_CLASS]);
 
     if (allElementsToToggle.length > 0) {
-        console.log("OPENEND: Updating visibility of Player Duration to %s", GLOBAL_playerDurationVisible);
+        log("Updating visibility of Player Duration to %s", GLOBAL_playerDurationVisible);
         setVisible(allElementsToToggle, GLOBAL_playerDurationVisible)
     }
 
@@ -179,14 +244,14 @@ function configureTheatreMode() {
         const theatreModeBtn = getSingleElementByClassName(TWITCH_THEATRE_MODE_BTN_CLASS);
         if (theatreModeBtn) {
             const isActive = isTheatreModeActive(theatreModeBtn);
-            if (GLOBAL_options.generalTheatreMode !== isActive) {
-                console.log("OPENEND: " + (GLOBAL_options.generalTheatreMode ? "Entering" : "Exiting") + " Player Theatre Mode");
+            if (GLOBAL_options[OPT_GENERAL_THEATRE_MODE_NAME] !== isActive) {
+                log("" + (GLOBAL_options[OPT_GENERAL_THEATRE_MODE_NAME] ? "Entering" : "Exiting") + " Player Theatre Mode");
                 theatreModeBtn.click();
             }
             GLOBAL_theatreModeConfigured = true;
         }
         else {
-            console.warn("OPENEND: Could not configure Player Theatre Mode because the button." + TWITCH_THEATRE_MODE_BTN_CLASS + " could not be found");
+            warn("Could not configure Player Theatre Mode because the button." + TWITCH_THEATRE_MODE_BTN_CLASS + " could not be found");
         }
     }
 }
@@ -217,7 +282,7 @@ function isTheatreModeActive(theatreModeButton) {
     else if (innerHtml.indexOf('xlink:href="#icon_theatre"') !== -1) {
         return false;
     }
-    console.warn("Could not determine if Theatre Mode is active");
+    warn("Could not determine if Theatre Mode is active");
     return false;
 }
 
@@ -243,45 +308,42 @@ function configureSfmVideoListItems() {
     if (!GLOBAL_sfmVideoListItemsConfigured) {
         const videoStatDivs = document.getElementsByClassName("video-preview-card__preview-overlay-stat");
         if (videoStatDivs.length > 0) {
-            console.log("OPENEND: Updating visibility of all Video List item durations to %s", !GLOBAL_options.sfmVideoListHideDuration);
+            log("Updating visibility of all Video List item durations to %s", !GLOBAL_options[OPT_SFM_VIDEO_LIST_HIDE_DURATION_NAME]);
             for (let i = 0; i < videoStatDivs.length; ++i) {
                 const videoStatDiv = videoStatDivs[i];
                 const videoLengthDiv = videoStatDiv.querySelector('div[data-test-selector="video-length"]');
                 if (videoLengthDiv) {
-                    setVisible([videoStatDiv], !GLOBAL_options.sfmVideoListHideDuration)
+                    setVisible([videoStatDiv], !GLOBAL_options[OPT_SFM_VIDEO_LIST_HIDE_DURATION_NAME])
                 }
             }
             GLOBAL_sfmVideoListItemsConfigured = true;
-            console.log("OPENEND: Configured Video List items");
+            log("Configured Video List items");
         }
     }
 }
 
 function listenForOptionsChanges() {
-    chrome.storage.onChanged.addListener(function (changes, namespace) {
-        for (const key in changes) {
-            const storageChange = changes[key];
-            console.log('Storage key "%s" in namespace "%s" changed. ' + 'Old value was "%s", new value is "%s".',
-                key,
-                namespace,
-                storageChange.oldValue,
-                storageChange.newValue);
-            GLOBAL_options[key] = storageChange.newValue;
-            resetGlobalPageStateFlags();
-            configurePage();
-        }
-    });
+    chrome.storage.onChanged.addListener(handleStorageChanges);
+}
+
+function handleStorageChanges(changes, namespace) {
+    log("[%s storage] Changes: %o", namespace, changes);
+    for (const key in changes) {
+        GLOBAL_options[key] = changes[key].newValue;
+    }
+    resetGlobalPageStateFlags();
+    configurePage();
 }
 
 function determinePageType() {
-    const pageTypeResult = TwitchPlatform.determinePage(window.location.hostname, window.location.pathname, window.location.search);
+    const pageTypeResult = TWITCH_PLATFORM.determinePage(window.location.hostname, window.location.pathname, window.location.search);
     if (pageTypeResult) {
         GLOBAL_pageType = pageTypeResult.pageType;
         if (pageTypeResult.channel) {
             updateChannel(pageTypeResult.channel);
         }
     }
-    console.log("OPENEND: Page type: %s", GLOBAL_pageType);
+    log("Page type: %s", GLOBAL_pageType);
 }
 
 
@@ -293,7 +355,7 @@ function startCheckPageTask() {
         // Check for location changes
         const newLocation = createLocationIdentifier(location);
         if (newLocation !== oldLocation) {
-            console.log("OPENEND: Window location changed from %s to %s", oldLocation, newLocation);
+            log("Window location changed from %s to %s", oldLocation, newLocation);
             oldLocation = createLocationIdentifier(location);
             pageChangedTime = Date.now();
             handlePageChange();
@@ -307,7 +369,7 @@ function startCheckPageTask() {
             }
             else {
                 GLOBAL_pageConfigurationTimeoutReached = true;
-                console.warn("OPENEND: Page configuration timeout reached (%d ms)", PAGE_CONFIGURATION_TIMEOUT);
+                warn("Page configuration timeout reached (%d ms)", PAGE_CONFIGURATION_TIMEOUT);
             }
         }
     };
@@ -346,12 +408,12 @@ function determineChannel() {
     if (GLOBAL_channel === null) {
         const channelLinkAnchor = document.querySelector("a[data-target=channel-header__channel-link]");
         if (channelLinkAnchor) {
-            const pageTypResult = TwitchPlatform.determinePage(channelLinkAnchor.hostname, channelLinkAnchor.pathname, channelLinkAnchor.search);
+            const pageTypResult = TWITCH_PLATFORM.determinePage(channelLinkAnchor.hostname, channelLinkAnchor.pathname, channelLinkAnchor.search);
             if (pageTypResult && pageTypResult.channel) {
                 updateChannel(pageTypResult.channel);
             }
             else {
-                console.warn("Failed to parse channel from hostname=%s and pathname=%s", channelLinkAnchor.hostname, channelLinkAnchor.pathname);
+                warn("Failed to parse channel from hostname=%s and pathname=%s", channelLinkAnchor.hostname, channelLinkAnchor.pathname);
             }
         }
     }
@@ -462,7 +524,7 @@ function buildPlayerToolbarButton(id, onclick, tooltipId = null, tooltipTxtMsgNa
 
 /* PROGRESS */
 function handlePlayerShowHideDurationAction() {
-    console.log("OPENEND: Handling action [Player: Show/Hide Duration]");
+    log("Handling action [Player: Show/Hide Duration]");
 
     // Toggle
     GLOBAL_playerDurationVisible = !GLOBAL_playerDurationVisible;
@@ -473,19 +535,19 @@ function handlePlayerShowHideDurationAction() {
 
 /* Player: Jump */
 function handlePlayerJumpBackwardAction() {
-    console.log("OPENEND: Handling action [Player: Jump Backward]");
+    log("Handling action [Player: Jump Backward]");
     playerJump(false);
 }
 
 function handlePlayerJumpForwardAction() {
-    console.log("OPENEND: Handling action [Player: Jump Forward]");
+    log("Handling action [Player: Jump Forward]");
     playerJump(true);
 }
 
 function playerJump(forward = true) {
     const sliderDiv = getSingleElementByClassName(TWITCH_PROGRESS_SLIDER_DIV_CLASS);
     if (!sliderDiv) {
-        console.error("OPENEND: Time jump failed: slider not available", TWITCH_PROGRESS_SLIDER_DIV_CLASS);
+        error("Time jump failed: slider not available", TWITCH_PROGRESS_SLIDER_DIV_CLASS);
         return;
     }
 
@@ -495,7 +557,7 @@ function playerJump(forward = true) {
     const currentTime = parseInt(sliderDiv.getAttribute("aria-valuenow"));
 
     if (maxTime === 0) {
-        console.error("OPENEND: Time jump failed: video duration not available");
+        error("Time jump failed: video duration not available");
         return;
     }
 
@@ -504,7 +566,7 @@ function playerJump(forward = true) {
     const jumpDistanceInputValue = document.getElementById(OPND_PLAYER_JUMP_DISTANCE_INPUT_ID).value;
     const jumpDistance = parseDuration(jumpDistanceInputValue);
     if (jumpDistance === 0) {
-        console.log("OPENEND: Time jump failed: No valid jump distance given: %s", jumpDistanceInputValue);
+        log("Time jump failed: No valid jump distance given: %s", jumpDistanceInputValue);
         return;
     }
 
@@ -513,22 +575,24 @@ function playerJump(forward = true) {
 
     // Build the new url
     const newTimeUrl = buildCurrentUrlWithTime(newTime);
-    console.log("OPENEND: Jumping %is: %is -> %is (%s)", jumpDistance, currentTime, newTime, newTimeUrl);
+    log("Jumping %is: %is -> %is (%s)", jumpDistance, currentTime, newTime, newTimeUrl);
     window.location.assign(newTimeUrl);
 }
 
 
-/* UTIL METHODS */
-/**
- *
- * @param time {!number} in seconds
- * @returns {!string} the URL with the time parameter
+/*
+ * ====================================================================================================
+ * INIT
+ * ====================================================================================================
  */
-function buildCurrentUrlWithTime(time) {
-    const newTimeFormatted = formatDuration(time);
-    const urlParams = newTimeFormatted.length > 0 ? "?t=" + newTimeFormatted : "";
-    return window.location.protocol + "//" + window.location.hostname + window.location.pathname + urlParams;
+function init() {
+    log("Initializing...");
+
+    resetGlobalPageFlags();
+    listenForMessages();
+    loadOptions();
+    determinePageType();
+    startCheckPageTask();
 }
 
-/* INIT */
 init();

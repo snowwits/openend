@@ -123,6 +123,10 @@
         "message": "Options saved.",
         "description": "Message to be displayed after a successful Save action."
     },
+    "options_save_errorMsg": {
+        "message": "Save options failed.",
+        "description": "Message to be displayed after a failed Save action."
+    },
     "options_restoreDefaults": {
         "message": "Restore defaults",
         "description": "Label of the Restore Defaults button."

@@ -1,21 +1,43 @@
+/*
+ * ====================================================================================================
+ * LOGGING
+ * ====================================================================================================
+ */
+function log(msg, ...substitutions) {
+    logWithComponent("options", msg, ...substitutions);
+}
+
+function warn(msg, ...substitutions) {
+    warnWithComponent("options", msg, ...substitutions);
+}
+
+function error(msg, ...substitutions) {
+    errorWithComponent("options", msg, ...substitutions);
+}
+
+
+/*
+ * ====================================================================================================
+ * CONSTANTS
+ * ====================================================================================================
+ */
 const MESSAGE_DISPLAY_DURATION = 1000; // 1s
 
-function addChannel() {
-    const channelValue = getTextInputValue("sfm_channelToAdd");
-    const selectElem = document.getElementById("sfm_channels");
-    addSelectOption(selectElem, channelValue);
 
-    console.log("SELECT: %O", selectElem);
-}
-
-function removeChannels() {
-    removeSelectedOptions("sfm_channels");
-}
+/*
+ * ====================================================================================================
+ * FUNCTIONS
+ * ====================================================================================================
+ */
 
 // Saves options to chrome.storage.sync.
 function saveOptions() {
     // Store option values to storage
     chrome.storage.sync.set(getOptionsFromInputValues(), function () {
+        if (chrome.runtime.lastError) {
+            error("Failed to save the options: %o", chrome.runtime.lastError);
+            showStatusMsg(chrome.i18n.getMessage("options_save_errorMsg"));
+        }
         showStatusMsg(chrome.i18n.getMessage("options_save_successMsg"));
     });
 }
@@ -24,40 +46,64 @@ function saveOptions() {
 function restoreStoredOptions() {
     // Read option values from storage
     chrome.storage.sync.get(getDefaultOptionsCopy(), function (items) {
-        console.log(chrome.runtime.lastError);
-        setOptionsToInputValues(items);
+        if (chrome.runtime.lastError) {
+            error("[sync storage] Failed to read stored options: %o", chrome.runtime.lastError);
+            return;
+        }
+        updateInputsWithOptions(items);
     });
 }
 
 // Restores option values using the preferences stored in chrome.storage.
 function restoreDefaultOptions() {
-    setOptionsToInputValues(getDefaultOptionsCopy());
+    updateInputsWithOptions(getDefaultOptionsCopy());
     showStatusMsg(chrome.i18n.getMessage("options_restoreDefaults_successMsg"));
 }
 
 function getOptionsFromInputValues() {
     return {
-        sfmActive: getRadioValue("sfm_active"),
-        sfmChannels: getSelectOptionValues("sfm_channels"),
-        sfmPlayerHideDuration: getCheckboxValue("sfm_player_hideDuration"),
-        sfmPlayerJumpDistance: getTextInputValue("sfm_player_jumpDistance"),
-        sfmVideoListHideDuration: getCheckboxValue("sfm_videoList_hideDuration"),
-        sfmVideoListHideTitle: getCheckboxValue("sfm_videoList_hideTitle"),
-        sfmVideoListHidePreview: getCheckboxValue("sfm_videoList_hidePreview"),
-        generalTheatreMode: getCheckboxValue("general_theatreMode"),
+        [OPT_SFM_ACTIVE_NAME]: getRadioValue("sfm_active"),
+        [OPT_SFM_CHANNELS_NAME]: getSelectOptionValues("sfm_channels"),
+        [OPT_SFM_PLAYER_HIDE_DURATION_NAME]: getCheckboxValue("sfm_player_hideDuration"),
+        [OPT_SFM_PLAYER_JUMP_DISTANCE_NAME]: getTextInputValue("sfm_player_jumpDistance"),
+        [OPT_SFM_VIDEO_LIST_HIDE_DURATION_NAME]: getCheckboxValue("sfm_videoList_hideDuration"),
+        [OPT_SFM_VIDEO_LIST_HIDE_TITLE_NAME]: getCheckboxValue("sfm_videoList_hideTitle"),
+        [OPT_SFM_VIDEO_LIST_HIDE_PREVIEW_NAME]: getCheckboxValue("sfm_videoList_hidePreview"),
+        [OPT_GENERAL_THEATRE_MODE_NAME]: getCheckboxValue("general_theatreMode"),
     };
 }
 
-function setOptionsToInputValues(options) {
+/**
+ *
+ * @param options {!object} not necessarily all options, maybe just the ones which values changed
+ */
+function updateInputsWithOptions(options) {
     // Set option values to elements
-    setRadioValues("sfm_active", options.sfmActive);
-    setSelectOptions("sfm_channels", options.sfmChannels);
-    setCheckboxValue("sfm_player_hideDuration", options.sfmPlayerHideDuration);
-    setTextInputValue("sfm_player_jumpDistance", options.sfmPlayerJumpDistance);
-    setCheckboxValue("sfm_videoList_hideDuration", options.sfmVideoListHideDuration);
-    setCheckboxValue("sfm_videoList_hideTitle", options.sfmVideoListHideTitle);
-    setCheckboxValue("sfm_videoList_hidePreview", options.sfmVideoListHidePreview);
-    setCheckboxValue("general_theatreMode", options.generalTheatreMode);
+    if (OPT_SFM_ACTIVE_NAME in options) {
+        setRadioValues("sfm_active", options[OPT_SFM_ACTIVE_NAME]);
+    }
+    if (OPT_SFM_CHANNELS_NAME in options) {
+        const channelsSelect = document.getElementById("sfm_channels");
+        setOptionsToSortedSetSelect(channelsSelect, options[OPT_SFM_CHANNELS_NAME]);
+    }
+    if (OPT_SFM_PLAYER_HIDE_DURATION_NAME in options) {
+        setCheckboxValue("sfm_player_hideDuration", options[OPT_SFM_PLAYER_HIDE_DURATION_NAME]);
+    }
+    if (OPT_SFM_PLAYER_JUMP_DISTANCE_NAME in options) {
+        setTextInputValue("sfm_player_jumpDistance", options[OPT_SFM_PLAYER_JUMP_DISTANCE_NAME]);
+    }
+    if (OPT_SFM_VIDEO_LIST_HIDE_DURATION_NAME in options) {
+        setCheckboxValue("sfm_videoList_hideDuration", options[OPT_SFM_VIDEO_LIST_HIDE_DURATION_NAME]);
+    }
+    if (OPT_SFM_VIDEO_LIST_HIDE_TITLE_NAME in options) {
+        setCheckboxValue("sfm_videoList_hideTitle", options[OPT_SFM_VIDEO_LIST_HIDE_TITLE_NAME]);
+    }
+    if (OPT_SFM_VIDEO_LIST_HIDE_PREVIEW_NAME in options) {
+        setCheckboxValue("sfm_videoList_hidePreview", options[OPT_SFM_VIDEO_LIST_HIDE_PREVIEW_NAME]);
+    }
+    if (OPT_GENERAL_THEATRE_MODE_NAME in options) {
+        setCheckboxValue("general_theatreMode", options[OPT_GENERAL_THEATRE_MODE_NAME]);
+    }
 }
 
 function showStatusMsg(msg) {
@@ -69,6 +115,42 @@ function showStatusMsg(msg) {
     }, MESSAGE_DISPLAY_DURATION);
 }
 
+/**
+ *
+ * @param channelString {!string} the input string
+ * @returns {?Channel} the parsed channel
+ */
+function parseChannel(channelString) {
+    // Try to parse the given channel as url and as qualified name
+    let channel = parseChannelFromQualifiedName(channelString);
+    if (channel) {
+        return channel;
+    }
+    const dummyAnchor = createAnchor(channelString);
+    if (dummyAnchor.hostname && dummyAnchor.pathname) {
+        return parseChannelFromUrl(dummyAnchor.hostname, dummyAnchor.pathname, dummyAnchor.search)
+    }
+    return null;
+}
+
+/**
+ * Handles changes to the options that were made outside of the options window
+ * @param changes
+ * @param namespace
+ */
+function handleStorageChange(changes, namespace) {
+    log("[%s storage] Changes: %o", namespace, changes);
+    if ("sync" === namespace) {
+        updateInputsWithOptions(mapOptionChangesToItems(changes));
+    }
+}
+
+
+/*
+ * ====================================================================================================
+ * INIT
+ * ====================================================================================================
+ */
 function init() {
     // Init elements
     // Activate Spoiler-Free Mode
@@ -82,17 +164,39 @@ function init() {
     const channelsSelect = document.getElementById("sfm_channels");
 
     // Channel to add text input
+    const channelToAddInput = document.getElementById("sfm_channelToAdd");
     setMsgToTitle("sfm_channelToAdd", "options_sfm_channelToAdd");
 
     // Add channel button
     setMsgToInnerHtml("sfm_addChannel", "options_sfm_addChannel");
     const addChannelBtn = document.getElementById("sfm_addChannel");
-    addChannelBtn.onclick = addChannel;
+
+    // Set add channel action
+    addChannelBtn.onclick = function handleAddChannelAction() {
+        const channel = parseChannel(channelToAddInput.value);
+        if (channel) {
+            insertOptionInSortedSetSelect(channelsSelect, channel.qualifiedName);
+        } else {
+            error("Failed to add channel: %s", channelToAddInput.value);
+        }
+    };
+
+    // Activate/Deactivate add channel btn based on channel input
+    const handleChannelToAddChanged = () => {
+        const channel = parseChannel(channelToAddInput.value);
+        addChannelBtn.disabled = channel === null;
+    };
+    channelToAddInput.addEventListener("keyup", handleChannelToAddChanged);
+    handleChannelToAddChanged();
 
     // Remove channels btn
     setMsgToInnerHtml("sfm_removeChannel", "options_sfm_removeChannels");
     const removeChannelsBtn = document.getElementById("sfm_removeChannel");
-    removeChannelsBtn.onclick = removeChannels;
+
+    // Set remove channels action
+    removeChannelsBtn.onclick = function handleRemoveChannelsAction() {
+        removeSelectedOptions(channelsSelect);
+    };
 
     // Active/Deactivate remove channels btn based on channels selection
     const handleSelectedChannelsChange = () => {
@@ -127,7 +231,7 @@ function init() {
     restoreDefaultsBtn.onclick = restoreDefaultOptions;
 
     restoreStoredOptions();
+    chrome.storage.onChanged.addListener(handleStorageChange);
 }
 
 document.addEventListener('DOMContentLoaded', init);
-

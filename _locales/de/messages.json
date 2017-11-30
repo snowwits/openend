@@ -95,6 +95,9 @@
     "options_save_successMsg": {
         "message": "Optionen gespeichert."
     },
+    "options_save_errorMsg": {
+        "message": "Fehler beim Speichern der Optionen."
+    },
     "options_restoreDefaults": {
         "message": "Standardwerte wiederherstellen"
     },
