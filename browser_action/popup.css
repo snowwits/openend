@@ -11,3 +11,7 @@ h2 {
 .opnd-hidden {
     display: none;
 }
+
+#generalButtonBar {
+    margin-top: 1.5em;
+}

@@ -36,14 +36,14 @@ function errorWithComponent(component, msg, ...substitutions) {
  * OPTIONS (SYNC STORAGE)
  * ====================================================================================================
  */
-const SfmActive = {
+const SfmEnabled = {
     NEVER: "never",
     ALWAYS: "always",
     CUSTOM: "custom"
 };
 
-const OPT_SFM_ACTIVE_NAME = "sfmActive";
-const OPT_SFM_ACTIVE_DEFAULT = SfmActive.ALWAYS;
+const OPT_SFM_ENABLED_NAME = "sfmEnabled";
+const OPT_SFM_ENABLED_DEFAULT = SfmEnabled.ALWAYS;
 const OPT_SFM_CHANNELS_NAME = "sfmChannels";
 const OPT_SFM_CHANNELS_DEFAULT = [];
 const OPT_SFM_PLAYER_HIDE_DURATION_NAME = "sfmPlayerHideDuration";
@@ -61,7 +61,7 @@ const OPT_GENERAL_THEATRE_MODE_DEFAULT = false;
 
 function getDefaultOptionsCopy() {
     return {
-        [OPT_SFM_ACTIVE_NAME]: OPT_SFM_ACTIVE_DEFAULT,
+        [OPT_SFM_ENABLED_NAME]: OPT_SFM_ENABLED_DEFAULT,
         [OPT_SFM_CHANNELS_NAME]: OPT_SFM_CHANNELS_DEFAULT,
         [OPT_SFM_PLAYER_HIDE_DURATION_NAME]: OPT_SFM_PLAYER_HIDE_DURATION_DEFAULT,
         [OPT_SFM_PLAYER_JUMP_DISTANCE_NAME]: OPT_SFM_PLAYER_JUMP_DISTANCE_DEFAULT,

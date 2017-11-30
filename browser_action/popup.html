@@ -6,6 +6,7 @@
  -->
 <html>
 <head>
+    <meta charset="UTF-8">
     <title>Open End</title>
     <link rel="stylesheet" type="text/css" href="popup.css">
     <script src="../common/common.js"></script>
@@ -16,15 +17,27 @@
 <h2>Open End</h2>
 
 <div>
+    <h3 id="sfmActiveLabel"></h3>
+
     <div>
-        <span id="currentChannelLabel"></span>
-    </div>
-    <div>
-        <button id="addRemoveChannelBtn" class="opnd-hidden" data-channel="" data-mode=""></button>
+        <input type="radio" id="sfmActiveNever" name="sfmActive" value="never">
+        <label id="sfmActiveNeverLabel" for="sfmActiveNever"></label>
+        <br>
+        <input type="radio" id="sfmActiveAlways" name="sfmActive" value="always">
+        <label id="sfmActiveAlwaysLabel" for="sfmActiveAlways"></label>
+        <br>
+        <input type="radio" id="sfmActiveCustom" name="sfmActive" value="custom">
+        <label id="sfmActiveCustomLabel" for="sfmActiveCustom"></label>
     </div>
 </div>
 
-<div>
+<div id="currentChannelInfo" class="opnd-hidden">
+    <h3 id="currentChannelLabel"></h3>
+    <h4 id="currentChannel" data-channel=""></h4>
+    <input type="checkbox" id="sfmStateCheckbox"><label id="sfmStateLabel" for="sfmStateCheckbox"></label>
+</div>
+
+<div id="generalButtonBar">
     <button id="openOptionsBtn"></button>
 </div>
 

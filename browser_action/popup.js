@@ -39,82 +39,90 @@ const AddRemoveMode = {
 function updateUiAfterTabInfoUpdate(tabInfo) {
     log("Updating UI after tab info received: %o", tabInfo);
 
-    let currentChannelText = tabInfo && TAB_INFO_CURRENT_CHANNEL_NAME in tabInfo ? tabInfo[TAB_INFO_CURRENT_CHANNEL_NAME] : TAB_INFO_CURRENT_CHANNEL_DEFAULT;
-    let currentChannel = parseChannelFromQualifiedName(currentChannelText);
+    const currentChannelText = tabInfo && TAB_INFO_CURRENT_CHANNEL_NAME in tabInfo ? tabInfo[TAB_INFO_CURRENT_CHANNEL_NAME] : TAB_INFO_CURRENT_CHANNEL_DEFAULT;
+    const currentChannel = parseChannelFromQualifiedName(currentChannelText);
 
-    // First hide the button (maybe show it again later)
-    const addRemoveChannelBtn = document.getElementById("addRemoveChannelBtn");
-    addRemoveChannelBtn.classList.add(OPND_HIDDEN_CLASS);
-    addRemoveChannelBtn.dataset.channel = currentChannelText;
+    // First hide the elements
+    const currentChannelInfo = document.getElementById("currentChannelInfo");
+    currentChannelInfo.classList.add(OPND_HIDDEN_CLASS);
+
+    const currentChannelElem = document.getElementById("currentChannel");
+    currentChannelElem.dataset.channel = currentChannelText;
+    currentChannelElem.textContent = currentChannelText;
+
+    const sfmStateCheckbox = document.getElementById("sfmStateCheckbox");
+    sfmStateCheckbox.classList.add(OPND_HIDDEN_CLASS);
 
     const currentChannelSpan = document.getElementById("currentChannelLabel");
     if (currentChannel !== null) {
-        currentChannelSpan.textContent = "Current channel: " + currentChannel.displayName;
+        currentChannelSpan.textContent = chrome.i18n.getMessage("browserAction_currentChannel");
+        currentChannelInfo.classList.remove(OPND_HIDDEN_CLASS);
 
-        chrome.storage.sync.get(OPT_SFM_CHANNELS_NAME, function (items) {
+        const keys = [OPT_SFM_ENABLED_NAME, OPT_SFM_CHANNELS_NAME]
+        chrome.storage.sync.get(keys, function (items) {
             if (chrome.runtime.lastError) {
-                error("Failed to read [%s] from [sync] storage: %o", OPT_SFM_CHANNELS_NAME, chrome.runtime.lastError);
+                error("[sync storage] Failed to get [%o]: %o", keys, chrome.runtime.lastError);
                 return;
             }
+            log("[sync storage] Gotten %o", items);
 
-            updateAddRemoveChannelBtnModeAndLabel(addRemoveChannelBtn, currentChannel.qualifiedName, items[OPT_SFM_CHANNELS_NAME]);
-
-            addRemoveChannelBtn.classList.remove(OPND_HIDDEN_CLASS);
+            updateSfmStateCheckboxState(sfmStateCheckbox, currentChannel.qualifiedName, items[OPT_SFM_CHANNELS_NAME]);
+            sfmStateCheckbox.classList.remove(OPND_HIDDEN_CLASS);
         });
     } else {
-        currentChannelSpan.textContent = "Not on a channel page.";
+        currentChannelSpan.textContent = "";
     }
 }
 
 function updateUiAfterSyncStorageChange(changes) {
     // If the channels changed, may need to change the button mode and label
     if (OPT_SFM_CHANNELS_NAME in changes) {
-        const addRemoveChannelBtn = document.getElementById("addRemoveChannelBtn");
-        const currentChannelQualifiedName = addRemoveChannelBtn.dataset.channel;
-        updateAddRemoveChannelBtnModeAndLabel(addRemoveChannelBtn, currentChannelQualifiedName, changes[OPT_SFM_CHANNELS_NAME].newValue);
+        const currentChannelElem = document.getElementById("currentChannel");
+        const sfmStateCheckbox = document.getElementById("sfmStateCheckbox");
+        const currentChannelQualifiedName = currentChannelElem.dataset.channel;
+        updateSfmStateCheckboxState(sfmStateCheckbox, currentChannelQualifiedName, changes[OPT_SFM_CHANNELS_NAME].newValue);
     }
 }
 
 /**
  *
- * @param addRemoveChannelBtn {!Element} the add/remove button
+ * @param sfmStateCheckbox {!Element} the checkbox
  * @param currentChannelQualifiedName {!string} the qualified name of the current channel
  * @param sfmChannels {!Array.<string>} array qualified channel names (the {@link OPT_SFM_CHANNELS_NAME} option)
  */
-function updateAddRemoveChannelBtnModeAndLabel(addRemoveChannelBtn, currentChannelQualifiedName, sfmChannels) {
-    if (sfmChannels.includes(currentChannelQualifiedName)) {
-        addRemoveChannelBtn.dataset.mode = AddRemoveMode.REMOVE;
-        addRemoveChannelBtn.textContent = "Remove from Spoiler-free Mode channels";
-    } else {
-        addRemoveChannelBtn.dataset.mode = AddRemoveMode.ADD;
-        addRemoveChannelBtn.textContent = "Add to Spoiler-free Mode channels";
-    }
+function updateSfmStateCheckboxState(sfmStateCheckbox, currentChannelQualifiedName, sfmChannels) {
+    console.log("CONFIG CHANGED: BEFORE SETTING CHECKED: " + sfmStateCheckbox.checked);
+    sfmStateCheckbox.checked = sfmChannels.includes(currentChannelQualifiedName);
+    console.log("CONFIG CHANGED: AFTER SETTING CHECKED: " + sfmStateCheckbox.checked);
 }
 
-function handleAddRemoveChannelAction() {
-    const addRemoveChannelBtn = document.getElementById("addRemoveChannelBtn");
-    const channelQualifiedName = addRemoveChannelBtn.dataset.channel;
+function handleSfmStateChanged() {
+    const currentChannelElem = document.getElementById("currentChannel");
+    const channelQualifiedName = currentChannelElem.dataset.channel;
+
+    const sfmStateCheckbox = document.getElementById("sfmStateCheckbox");
+
     if (channelQualifiedName && channelQualifiedName.length > 0) {
-        const mode = addRemoveChannelBtn.dataset.mode;
         chrome.storage.sync.get({[OPT_SFM_CHANNELS_NAME]: OPT_SFM_CHANNELS_DEFAULT}, function (items) {
             if (chrome.runtime.lastError) {
-                error("Failed to read option [%s]: %o", OPT_SFM_CHANNELS_NAME, chrome.runtime.lastError);
+                error("[sync storage] Failed to get [%s]: %o", OPT_SFM_CHANNELS_NAME, chrome.runtime.lastError);
                 return;
             }
             const channels = items[OPT_SFM_CHANNELS_NAME];
             let newChannels;
-            if (AddRemoveMode.ADD === mode) {
+            console.log("CHECKBOX STATE CHANGED: CHECKED: " + sfmStateCheckbox.checked);
+            if (sfmStateCheckbox.checked === true) {
                 newChannels = sortedSetPlus(channels, channelQualifiedName);
             }
-            else if (AddRemoveMode.REMOVE === mode) {
+            else {
                 newChannels = sortedSetMinus(channels, channelQualifiedName);
             }
-            chrome.storage.sync.set({OPT_SFM_CHANNELS_NAME: newChannels}, function () {
+            chrome.storage.sync.set({[OPT_SFM_CHANNELS_NAME]: newChannels}, function () {
                 if (chrome.runtime.lastError) {
-                    error("Failed to set option [%s] to [%o]: %o", OPT_SFM_CHANNELS_NAME, newChannels, chrome.runtime.lastError);
+                    error("[sync storage] Failed to set option [%s] to [%o]: %o", OPT_SFM_CHANNELS_NAME, newChannels, chrome.runtime.lastError);
                     return;
                 }
-                log("Successfully stored new channels: %o", newChannels);
+                log("[sync storage] Set [%s] to [%o]", OPT_SFM_CHANNELS_NAME, newChannels);
             })
         });
     }
@@ -224,8 +232,20 @@ function handleStorageChange(changes, namespace) {
  * ====================================================================================================
  */
 function init() {
-    const addRemoveChannelBtn = document.getElementById("addRemoveChannelBtn");
-    addRemoveChannelBtn.onclick = handleAddRemoveChannelAction;
+    // Set labels for SFM active radio buttons
+    setMsgToInnerHtml("sfmActiveLabel", "options_sfm_enabled");
+    setMsgToInnerHtml("sfmActiveAlwaysLabel", "options_sfm_enabled_always");
+    setMsgToInnerHtml("sfmActiveNeverLabel", "options_sfm_enabled_never");
+    setMsgToInnerHtml("sfmActiveCustomLabel", "options_sfm_enabled_custom");
+
+    const currentChannelLabel = document.getElementById("currentChannelLabel");
+    currentChannelLabel.innerHTML = chrome.i18n.getMessage("browserAction_currentChannel");
+
+    const sfmStateCheckbox = document.getElementById("sfmStateCheckbox");
+    sfmStateCheckbox.onchange = handleSfmStateChanged;
+
+    const sfmStateLabel = document.getElementById("sfmStateLabel");
+    sfmStateLabel.innerHTML = chrome.i18n.getMessage("browserAction_sfmStateLabel");
 
     const openOptionsBtn = document.getElementById("openOptionsBtn");
     openOptionsBtn.innerHTML = chrome.i18n.getMessage("menu_open_options");

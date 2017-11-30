@@ -32,17 +32,17 @@
     "menu_open_options": {
         "message": "Optionen..."
     },
-    "options_sfm_activate": {
+    "options_sfm_enabled": {
         "message": "Spoilerfreien Modus aktivieren"
     },
-    "options_sfm_activate_never": {
+    "options_sfm_enabled_never": {
         "message": "Nie"
     },
-    "options_sfm_activate_always": {
+    "options_sfm_enabled_always": {
         "message": "Immer"
     },
-    "options_sfm_activate_custom": {
-        "message": "Nur auf den folgenden Kanälen:"
+    "options_sfm_enabled_custom": {
+        "message": "Nur auf ausgewählten Kanälen"
     },
     "options_sfm_channelToAdd": {
         "message": "Hinzuzufügender Kanal"
@@ -103,5 +103,11 @@
     },
     "options_restoreDefaults_successMsg": {
         "message": "Standardwerte wiederhergestellt."
+    },
+    "browserAction_currentChannel": {
+        "message": "Aktueller Kanal"
+    },
+    "browserAction_sfmStateLabel": {
+        "message": "Spoilerfreien Modus aktivieren"
     }
 }

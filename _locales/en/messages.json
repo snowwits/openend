@@ -39,21 +39,21 @@
         "message": "Options...",
         "description": "Label of the Options... button on the browser_action popup menu."
     },
-    "options_sfm_activate": {
-        "message": "Activate Spoiler-Free Mode",
-        "description": "Label of the Activate Spoiler-Free Mode options section."
+    "options_sfm_enabled": {
+        "message": "Enable Spoiler-Free Mode",
+        "description": "Label of the Enable Spoiler-Free Mode options section."
     },
-    "options_sfm_activate_never": {
+    "options_sfm_enabled_never": {
         "message": "Never",
-        "description": "Label of the Never Activate Spoiler-Free Mode option."
+        "description": "Label of the Never Enable Spoiler-Free Mode option."
     },
-    "options_sfm_activate_always": {
+    "options_sfm_enabled_always": {
         "message": "Always",
-        "description": "Label of the Always Activate Spoiler-Free Mode option."
+        "description": "Label of the Always Enable Spoiler-Free Mode option."
     },
-    "options_sfm_activate_custom": {
-        "message": "Only on the following channels:",
-        "description": "Label of the Custom Activate Spoiler-Free Mode option."
+    "options_sfm_enabled_custom": {
+        "message": "Only on selected channels",
+        "description": "Label of the Custom Enable Spoiler-Free Mode option."
     },
     "options_sfm_channelToAdd": {
         "message": "Channel to add",
@@ -134,6 +134,14 @@
     "options_restoreDefaults_successMsg": {
         "message": "Restored default options.",
         "description": "Message to be displayed after a successful Restore Defaults action."
+    },
+    "browserAction_currentChannel": {
+        "message": "Current channel",
+        "description": "The current channel label."
+    },
+    "browserAction_sfmStateLabel": {
+        "message": "Enable Spoiler-Free Mode",
+        "description": "The label for the Spoiler-Free Mode state of the channel."
     },
     "hello": {
         "message": "Hello, $USER$",

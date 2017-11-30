@@ -62,7 +62,7 @@ function restoreDefaultOptions() {
 
 function getOptionsFromInputValues() {
     return {
-        [OPT_SFM_ACTIVE_NAME]: getRadioValue("sfm_active"),
+        [OPT_SFM_ENABLED_NAME]: getRadioValue("sfm_enabled"),
         [OPT_SFM_CHANNELS_NAME]: getSelectOptionValues("sfm_channels"),
         [OPT_SFM_PLAYER_HIDE_DURATION_NAME]: getCheckboxValue("sfm_player_hideDuration"),
         [OPT_SFM_PLAYER_JUMP_DISTANCE_NAME]: getTextInputValue("sfm_player_jumpDistance"),
@@ -79,8 +79,8 @@ function getOptionsFromInputValues() {
  */
 function updateInputsWithOptions(options) {
     // Set option values to elements
-    if (OPT_SFM_ACTIVE_NAME in options) {
-        setRadioValues("sfm_active", options[OPT_SFM_ACTIVE_NAME]);
+    if (OPT_SFM_ENABLED_NAME in options) {
+        setRadioValues("sfm_enabled", options[OPT_SFM_ENABLED_NAME]);
     }
     if (OPT_SFM_CHANNELS_NAME in options) {
         const channelsSelect = document.getElementById("sfm_channels");
@@ -154,10 +154,10 @@ function handleStorageChange(changes, namespace) {
 function init() {
     // Init elements
     // Activate Spoiler-Free Mode
-    setMsgToInnerHtml("sfm_active-label", "options_sfm_activate");
-    setMsgToInnerHtml("sfm_active_always-label", "options_sfm_activate_always");
-    setMsgToInnerHtml("sfm_active_never-label", "options_sfm_activate_never");
-    setMsgToInnerHtml("sfm_active_custom-label", "options_sfm_activate_custom");
+    setMsgToInnerHtml("sfm_enabled-label", "options_sfm_enabled");
+    setMsgToInnerHtml("sfm_enabled_always-label", "options_sfm_enabled_always");
+    setMsgToInnerHtml("sfm_enabled_never-label", "options_sfm_enabled_never");
+    setMsgToInnerHtml("sfm_enabled_custom-label", "options_sfm_enabled_custom");
 
     // SFM channels select
     setMsgToTitle("sfm_channels", "options_sfm_channels");
