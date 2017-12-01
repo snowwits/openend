@@ -366,6 +366,26 @@ function getRadioValue(radioName) {
     return document.querySelector('input[name = "' + radioName + '"]:checked').value;
 }
 
+/**
+ *
+ * @param radioName {string} the name of all radio inputs in the group
+ * @param selectedValue {string} the value of the selected radio
+ */
+function setRadioValues(radioName, selectedValue) {
+    const allRadios = document.querySelectorAll('input[type="radio"][name = "' + radioName + '"]');
+    for (let i = 0; i < allRadios.length; i++) {
+        const radio = allRadios[i];
+        radio.checked = radio.value === selectedValue;
+    }
+}
+
+function listenForRadioChanges(radioName, changeHandler){
+    const allRadios = document.querySelectorAll('input[type="radio"][name = "' + radioName + '"]');
+    for(let i = 0; i < allRadios.length; i++) {
+        allRadios[i].onclick = changeHandler;
+    }
+}
+
 function getSelectOptionValues(selectId) {
     const select = document.getElementById("sfm_channels");
     const optionValues = [];
@@ -392,19 +412,6 @@ function setCheckboxValue(checkboxId, checked) {
  */
 function setTextInputValue(textInputId, value) {
     document.getElementById(textInputId).value = value;
-}
-
-/**
- *
- * @param radioName {string} the name of all radio inputs in the group
- * @param selectedValue {string} the value of the selected radio
- */
-function setRadioValues(radioName, selectedValue) {
-    const allRadios = document.querySelectorAll('input[type="radio"][name = "' + radioName + '"]');
-    for (let i = 0; i < allRadios.length; i++) {
-        const radio = allRadios[i];
-        radio.checked = radio.value === selectedValue;
-    }
 }
 
 /**

@@ -107,7 +107,7 @@
     "browserAction_currentChannel": {
         "message": "Aktueller Kanal"
     },
-    "browserAction_sfmStateLabel": {
+    "browserAction_currentChannelSfmEnabled": {
         "message": "Spoilerfreien Modus aktivieren"
     }
 }
