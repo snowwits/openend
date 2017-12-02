@@ -33,11 +33,14 @@ const MESSAGE_DISPLAY_DURATION = 1000; // 1s
 // Saves options to chrome.storage.sync.
 function saveOptions() {
     // Store option values to storage
-    chrome.storage.sync.set(getOptionsFromInputValues(), function () {
+    const options = getOptionsFromInputValues();
+    chrome.storage.sync.set(options, function () {
         if (chrome.runtime.lastError) {
-            error("Failed to save the options: %o", chrome.runtime.lastError);
+            error("[sync storage] Failed to set options [%o]: %o", options, chrome.runtime.lastError);
             showStatusMsg(chrome.i18n.getMessage("options_save_errorMsg"));
+            return;
         }
+        log("[sync storage] Set options: %o", options);
         showStatusMsg(chrome.i18n.getMessage("options_save_successMsg"));
     });
 }
@@ -47,9 +50,10 @@ function restoreStoredOptions() {
     // Read option values from storage
     chrome.storage.sync.get(getDefaultOptionsCopy(), function (items) {
         if (chrome.runtime.lastError) {
-            error("[sync storage] Failed to read stored options: %o", chrome.runtime.lastError);
+            error("[sync storage] Failed to get options: %o", chrome.runtime.lastError);
             return;
         }
+        log("[sync storage] Gotten options: %o", items);
         updateInputsWithOptions(items);
     });
 }
@@ -118,7 +122,7 @@ function showStatusMsg(msg) {
 /**
  *
  * @param channelString {!string} the input string
- * @returns {?Channel} the parsed channel
+ * @return {?Channel} the parsed channel
  */
 function parseChannel(channelString) {
     // Try to parse the given channel as url and as qualified name

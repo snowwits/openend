@@ -34,11 +34,12 @@ function readNecessaryOptions() {
             error("[sync storage] Failed to get [%o]: %o", OPT_SFM_ENABLED_NAME, chrome.runtime.lastError);
             return;
         }
-        log("[sync storage] Gotten %o", items);
+        log("[sync storage] Gotten options [%o]", items);
 
         updateUiAfterOptionsUpdate(items);
     });
 }
+
 /**
  *
  * @param tabInfo {?TabInfo}
@@ -116,7 +117,7 @@ function handleSfmEnabledChanged() {
             error("[sync storage] Failed to set option [%s] to [%o]: %o", OPT_SFM_ENABLED_NAME, sfmEnabledValue, chrome.runtime.lastError);
             return;
         }
-        log("[sync storage] Set [%s] to [%o]", OPT_SFM_ENABLED_NAME, sfmEnabledValue);
+        log("[sync storage] Set option [%s] to [%o]", OPT_SFM_ENABLED_NAME, sfmEnabledValue);
     });
 }
 
@@ -130,7 +131,7 @@ function handleCurrentChannelSfmEnabledChanged() {
     if (channelQualifiedName && channelQualifiedName.length > 0) {
         chrome.storage.sync.get({[OPT_SFM_CHANNELS_NAME]: OPT_SFM_CHANNELS_DEFAULT}, function (items) {
             if (chrome.runtime.lastError) {
-                error("[sync storage] Failed to get [%s]: %o", OPT_SFM_CHANNELS_NAME, chrome.runtime.lastError);
+                error("[sync storage] Failed to get option [%s]: %o", OPT_SFM_CHANNELS_NAME, chrome.runtime.lastError);
                 return;
             }
             const channels = items[OPT_SFM_CHANNELS_NAME];
@@ -146,7 +147,7 @@ function handleCurrentChannelSfmEnabledChanged() {
                     error("[sync storage] Failed to set option [%s] to [%o]: %o", OPT_SFM_CHANNELS_NAME, newChannels, chrome.runtime.lastError);
                     return;
                 }
-                log("[sync storage] Set [%s] to [%o]", OPT_SFM_CHANNELS_NAME, newChannels);
+                log("[sync storage] Set option [%s] to [%o]", OPT_SFM_CHANNELS_NAME, newChannels);
             });
         });
     }

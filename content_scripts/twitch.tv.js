@@ -42,24 +42,31 @@ const TWITCH_PLAYER_BTN_CLASS = "player-button";
 const TWITCH_PLAYER_TOOLTIP_SPAN_CLASS = "player-tip";
 const TWITCH_PLAYER_TOOLTIP_SPAN_TEXT_ATTR = "data-tip";
 
-/* Global Variables */
-/* Global Cached Options */
-let GLOBAL_options = getDefaultOptionsCopy();
 
+/*
+ * ====================================================================================================
+ * GLOBAL FLAGS
+ * ====================================================================================================
+ */
+/* Variables that only change after a page change */
 let GLOBAL_pageType = null;
-/* Global Page Component Loaded Flags */
+/* Variables that can change at any time */
+let GLOBAL_options = getDefaultOptionsCopy();
 /**
  *
  * @type {?Channel}
  */
 let GLOBAL_channel = null;
-let GLOBAL_sfmPlayerConfigured = false;
-let GLOBAL_sfmVideoListItemsConfigured = false;
-let GLOBAL_pageConfigurationTimeoutReached = false;
-let GLOBAL_theatreModeConfigured = false;
-/* Global Page Component State Flags */
-let GLOBAL_playerDurationVisible = !OPT_SFM_PLAYER_HIDE_DURATION_DEFAULT;
+const SfmEnabledForPage = Object.freeze({
+    ENABLED: "ENABLED",
+    DISABLED: "DISABLED",
+    UNDETERMINED: "UNDETERMINED"
+});
+let GLOBAL_sfmEnabledForPage = SfmEnabledForPage.UNDETERMINED;
 
+/* Flags whether the components have been configured yet */
+let GLOBAL_configured_flags = getDefaultConfiguredFlagsCopy();
+let GLOBAL_configurationTimeoutReached = false;
 
 /*
  * ====================================================================================================
@@ -69,7 +76,7 @@ let GLOBAL_playerDurationVisible = !OPT_SFM_PLAYER_HIDE_DURATION_DEFAULT;
 /**
  *
  * @param time {!number} in seconds
- * @returns {!string} the URL with the time parameter
+ * @return {!string} the URL with the time parameter
  */
 function buildCurrentUrlWithTime(time) {
     const newTimeFormatted = formatDuration(time);
@@ -77,262 +84,74 @@ function buildCurrentUrlWithTime(time) {
     return window.location.protocol + "//" + window.location.hostname + window.location.pathname + urlParams;
 }
 
-
 /*
  * ====================================================================================================
- * FUNCTIONS
+ * CONFIGURATION
  * ====================================================================================================
  */
+function getDefaultConfiguredFlagsCopy() {
+    return {
+        [OPT_SFM_PLAYER_HIDE_DURATION_NAME]: false,
+        [OPT_SFM_PLAYER_JUMP_DISTANCE_NAME]: false,
+        [OPT_SFM_VIDEO_LIST_HIDE_DURATION_NAME]: false,
+        [OPT_SFM_VIDEO_LIST_HIDE_PREVIEW_NAME]: false,
+        [OPT_SFM_VIDEO_LIST_HIDE_TITLE_NAME]: false,
+        [OPT_GENERAL_THEATRE_MODE_NAME]: false,
+    };
+}
 
-function loadOptions() {
-    chrome.storage.sync.get(getDefaultOptionsCopy(), function (items) {
-        if (chrome.runtime.lastError) {
-            error("Failed to load options: %s", chrome.runtime.lastError);
-            return;
-        }
-        GLOBAL_options = items;
-        log("Loaded options: %O", GLOBAL_options);
-        resetGlobalPageStateFlags();
-        configurePage();
-        listenForOptionsChanges();
-    });
+/**
+ *
+ * @param optionName {!string}
+ * @return {?boolean} true if configured, false if not and null if unknown optionName
+ */
+function isConfigured(optionName) {
+    return GLOBAL_configured_flags[optionName];
+}
+
+/**
+ *
+ *
+ * @param optionName {!string}
+ * @param value {!boolean}
+ */
+function setConfigured(optionName, value) {
+    GLOBAL_configured_flags[optionName] = value;
+    if (value) {
+        log("%s configured", optionName);
+    } else {
+        log("%s needs to be reconfigured", optionName);
+    }
 }
 
 function resetGlobalPageFlags() {
     GLOBAL_pageType = null;
     updateChannel(null);
-    resetGlobalPageStateFlags()
+    resetGlobalPageStateFlagsAfterOptionsUpdate(GLOBAL_options)
 }
 
-function resetGlobalPageStateFlags() {
-    GLOBAL_sfmPlayerConfigured = false;
-    GLOBAL_sfmVideoListItemsConfigured = false;
-    GLOBAL_pageConfigurationTimeoutReached = false;
-    GLOBAL_theatreModeConfigured = false;
-    // Initialize global variables with the option values
-    GLOBAL_playerDurationVisible = !GLOBAL_options[OPT_SFM_PLAYER_HIDE_DURATION_NAME];
-}
-
-function listenForMessages() {
-    chrome.runtime.onMessage.addListener(handleMessage);
-}
-
-/**
- *
- * @param request {!Message} the message
- * @param sender {!MessageSender} the sender
- * @param sendResponse {!function} the function to send the response
- */
-function handleMessage(request, sender, sendResponse) {
-    log("Received message from [%o]: %o", sender, request);
-    if (MSG_TYPE_NAME in request) {
-        if (MSG_TYPE_TAB_INFO_REQUEST === request[MSG_TYPE_NAME]) {
-            const tabInfoMessage = buildTabInfoMessage();
-            log("Responding to [Message:" + MSG_TYPE_TAB_INFO_REQUEST + "] with: %o", tabInfoMessage);
-            sendResponse(tabInfoMessage);
+function resetGlobalPageStateFlagsAfterOptionsUpdate(options) {
+    // Collect all options that need to be reconfigured in a Set
+    const optionsToReconfigure = new Set();
+    // Add all options that changed
+    for (let optionName in options) {
+        if (optionName in GLOBAL_configured_flags) {
+            optionsToReconfigure.add(optionName);
         }
     }
-}
-
-/**
- *
- * @param channel {?Channel}
- */
-function updateChannel(channel) {
-    GLOBAL_channel = channel;
-    log("Updated channel to %o", GLOBAL_channel);
-
-    // Notify about TabInfo change
-    const tabInfoMessage = buildTabInfoMessage();
-    chrome.runtime.sendMessage(tabInfoMessage, function (response) {
-        log("Message [%o] was successfully sent", tabInfoMessage);
-    });
-}
-
-/**
- * @return TabInfoMessage
- */
-function buildTabInfoMessage() {
-    const channelQualifiedName = GLOBAL_channel !== null ? GLOBAL_channel.qualifiedName : TAB_INFO_CURRENT_CHANNEL_DEFAULT;
-    return {
-        [MSG_TYPE_NAME]: MSG_TYPE_TAB_INFO,
-        [MSG_BODY_NAME]: {
-            [TAB_INFO_CURRENT_CHANNEL_NAME]: channelQualifiedName
-        }
-    };
-}
-
-function isPageConfigurationDone() {
-    return GLOBAL_channel !== null && GLOBAL_sfmPlayerConfigured && GLOBAL_sfmVideoListItemsConfigured && GLOBAL_theatreModeConfigured;
-}
-
-function configurePage() {
-    determineChannel();
-    configureSfmPlayer();
-    configureSfmVideoListItems();
-    configureTheatreMode();
-}
-
-function configureSfmPlayer() {
-    if (GLOBAL_pageType === TwitchPageType.VIDEO && !GLOBAL_sfmPlayerConfigured) {
-        let toolbar = document.getElementById(OPND_PLAYER_TOOLBAR_ID);
-        if (!toolbar) {
-            // Search for injection container for toolbar (the left button panel)
-            const injectionContainer = getSingleElementByClassName("player-buttons-left");
-            if (injectionContainer) {
-                toolbar = buildPlayerToolbar();
-                injectionContainer.appendChild(toolbar);
-                log("Injected Open End Toolbar");
-            } else {
-                warn("Could not inject Open End Toolbar because injection container could not be found");
+    if (OPT_SFM_ENABLED_NAME in options || OPT_SFM_CHANNELS_NAME in options) {
+        GLOBAL_sfmEnabledForPage = SfmEnabledForPage.UNDETERMINED;
+        // If SFM enabled changed, all the SFM options need to be reconfigured
+        for (let optionName in GLOBAL_configured_flags) {
+            if (optionName.includes("sfm")) {
+                optionsToReconfigure.add(optionName);
             }
         }
-
-        if (toolbar) {
-            // Update Jump Distance value
-            configurePlayerJumpDistanceValue();
-
-            //
-            configurePlayerJumpButtons();
-
-            // Set initial Show/Hide Duration state
-            configurePlayerDurationVisible();
-
-            GLOBAL_sfmPlayerConfigured = true;
-            log("Configured Twitch Player");
-        }
-    }
-}
-
-function configurePlayerJumpDistanceValue() {
-    const jumpDistanceElem = document.getElementById(OPND_PLAYER_JUMP_DISTANCE_INPUT_ID);
-    if (jumpDistanceElem) {
-        jumpDistanceElem.value = GLOBAL_options[OPT_SFM_PLAYER_JUMP_DISTANCE_NAME];
-        log("Updated Player Jump Distance value to %s", GLOBAL_options[OPT_SFM_PLAYER_JUMP_DISTANCE_NAME]);
-    }
-}
-
-function configurePlayerJumpButtons() {
-    handleJumpDistanceInputValueChange();
-}
-
-function configurePlayerDurationVisible() {
-    // Make progress indicators visible / hidden
-    const allElementsToToggle = getElementsByClassNames([TWITCH_PROGRESS_TOTAL_TIME_DIV_CLASS, TWITCH_PROGRESS_SLIDER_DIV_CLASS]);
-
-    if (allElementsToToggle.length > 0) {
-        log("Updating visibility of Player Duration to %s", GLOBAL_playerDurationVisible);
-        setVisible(allElementsToToggle, GLOBAL_playerDurationVisible)
     }
 
-    // Update the Player Progress Visibility img src and alt
-    const tooltip = chrome.i18n.getMessage(GLOBAL_playerDurationVisible ? "playerShowHideDuration_visible" : "playerShowHideDuration_hidden");
-    const showHidePlayerDurationImg = document.getElementById(OPND_PLAYER_SHOW_HIDE_DURATION_IMG_ID);
-    if (showHidePlayerDurationImg) {
-        showHidePlayerDurationImg.src = chrome.runtime.getURL(GLOBAL_playerDurationVisible ? "imgs/hide_white.svg" : "imgs/show_white.svg");
-        showHidePlayerDurationImg.alt = tooltip
+    for (let optionName of optionsToReconfigure) {
+        setConfigured(optionName, false);
     }
-
-    const showHidePlayerDurationTooltipSpan = document.getElementById(OPND_PLAYER_SHOW_HIDE_DURATION_TOOLTIP_SPAN_ID);
-    if (showHidePlayerDurationTooltipSpan) {
-        showHidePlayerDurationTooltipSpan.setAttribute(TWITCH_PLAYER_TOOLTIP_SPAN_TEXT_ATTR, tooltip);
-    }
-}
-
-function configureTheatreMode() {
-    if (GLOBAL_pageType === TwitchPageType.VIDEO && !GLOBAL_theatreModeConfigured) {
-        const theatreModeBtn = getSingleElementByClassName(TWITCH_THEATRE_MODE_BTN_CLASS);
-        if (theatreModeBtn) {
-            const isActive = isTheatreModeActive(theatreModeBtn);
-            if (GLOBAL_options[OPT_GENERAL_THEATRE_MODE_NAME] !== isActive) {
-                log("" + (GLOBAL_options[OPT_GENERAL_THEATRE_MODE_NAME] ? "Entering" : "Exiting") + " Player Theatre Mode");
-                theatreModeBtn.click();
-            }
-            GLOBAL_theatreModeConfigured = true;
-        }
-        else {
-            warn("Could not configure Player Theatre Mode because the button." + TWITCH_THEATRE_MODE_BTN_CLASS + " could not be found");
-        }
-    }
-}
-
-/**
- * "Exit Theatre Mode" button:
- * <button class="player-button qa-theatre-mode-button" id="" tabindex="-1" type="button">
- *     <span><span class="player-tip" data-tip="Kino-Modus beenden"></span><span class="">
- *         <svg class=""><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#icon_theatre_deactivate"></use></svg>
- *     </span></span>
- * </button>
- *
- * "Enter Theatre Mode" button:
- * <button class="player-button qa-theatre-mode-button" id="" tabindex="-1" type="button">
- *      <span><span class="player-tip" data-tip="Kino-Modus"></span><span class="">
- *          <svg class=""><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#icon_theatre"></use></svg>
- *      </span></span>
- * </button>
- *
- * @param theatreModeButton {Node} the theatre mode toggle button node (not null)
- * @returns {boolean}
- */
-function isTheatreModeActive(theatreModeButton) {
-    const innerHtml = theatreModeButton.innerHTML;
-    if (innerHtml.indexOf('xlink:href="#icon_theatre_deactivate"') !== -1) {
-        return true;
-    }
-    else if (innerHtml.indexOf('xlink:href="#icon_theatre"') !== -1) {
-        return false;
-    }
-    warn("Could not determine if Theatre Mode is active");
-    return false;
-}
-
-/**
- * On Video page:
- *
- * Video card:
- * <div class="tw-card relative"> ... </div>
- *
- * Video stat (length):
- * <div class="video-preview-card__preview-overlay-stat c-background-overlay c-text-overlay font-size-6 top-0 right-0 z-default inline-flex absolute mg-05">
- *      <div class="tw-tooltip-wrapper inline-flex">
- *          <div class="tw-stat" data-test-selector="video-length">
- *              <span class="tw-stat__icon"><figure class="svg-figure"><svg ...> ... </svg></figure></span>
- *              <span class="tw-stat__value" data-a-target="tw-stat-value">4:33:57</span>
- *          </div>
- *          <div class="tw-tooltip tw-tooltip--down tw-tooltip--align-center" data-a-target="tw-tooltip-label">Länge</div>
- *      </div>
- * </div>
- *
- */
-function configureSfmVideoListItems() {
-    if (!GLOBAL_sfmVideoListItemsConfigured) {
-        const videoStatDivs = document.getElementsByClassName("video-preview-card__preview-overlay-stat");
-        if (videoStatDivs.length > 0) {
-            log("Updating visibility of all Video List item durations to %s", !GLOBAL_options[OPT_SFM_VIDEO_LIST_HIDE_DURATION_NAME]);
-            for (let i = 0; i < videoStatDivs.length; ++i) {
-                const videoStatDiv = videoStatDivs[i];
-                const videoLengthDiv = videoStatDiv.querySelector('div[data-test-selector="video-length"]');
-                if (videoLengthDiv) {
-                    setVisible([videoStatDiv], !GLOBAL_options[OPT_SFM_VIDEO_LIST_HIDE_DURATION_NAME])
-                }
-            }
-            GLOBAL_sfmVideoListItemsConfigured = true;
-            log("Configured Video List items");
-        }
-    }
-}
-
-function listenForOptionsChanges() {
-    chrome.storage.onChanged.addListener(handleStorageChanges);
-}
-
-function handleStorageChanges(changes, namespace) {
-    log("[%s storage] Changes: %o", namespace, changes);
-    for (const key in changes) {
-        GLOBAL_options[key] = changes[key].newValue;
-    }
-    resetGlobalPageStateFlags();
-    configurePage();
 }
 
 function determinePageType() {
@@ -346,6 +165,20 @@ function determinePageType() {
     log("Page type: %s", GLOBAL_pageType);
 }
 
+/**
+ *
+ * @param channel {?Channel}
+ */
+function updateChannel(channel) {
+    GLOBAL_channel = channel;
+    log("Updated channel to [%o]", GLOBAL_channel);
+
+    // Notify about TabInfo change
+    const tabInfoMessage = buildTabInfoMessage();
+    chrome.runtime.sendMessage(tabInfoMessage, function (response) {
+        log("Message [%o] was successfully sent", tabInfoMessage);
+    });
+}
 
 function startCheckPageTask() {
     let pageChangedTime = Date.now();
@@ -355,21 +188,23 @@ function startCheckPageTask() {
         // Check for location changes
         const newLocation = createLocationIdentifier(location);
         if (newLocation !== oldLocation) {
-            log("Window location changed from %s to %s", oldLocation, newLocation);
+            log("Window location changed from [%s] to [%s]", oldLocation, newLocation);
             oldLocation = createLocationIdentifier(location);
             pageChangedTime = Date.now();
             handlePageChange();
         }
 
-        // Check whether elements are loaded
-        if (!isPageConfigurationDone() && !GLOBAL_pageConfigurationTimeoutReached) {
+        // If neither config done yet nor timeout reached yet
+        if (!GLOBAL_configurationTimeoutReached) {
             const checkTime = Date.now();
             if (checkTime - pageChangedTime < PAGE_CONFIGURATION_TIMEOUT) {
                 configurePage();
             }
             else {
-                GLOBAL_pageConfigurationTimeoutReached = true;
-                warn("Page configuration timeout reached (%d ms)", PAGE_CONFIGURATION_TIMEOUT);
+                GLOBAL_configurationTimeoutReached = true;
+                if (!isPageConfigured()) {
+                    warn("Page configuration timeout reached (%d ms). Some components may not be configured. Configuration state: %o", PAGE_CONFIGURATION_TIMEOUT, formatPageConfigurationState());
+                }
             }
         }
     };
@@ -389,36 +224,329 @@ function createLocationIdentifier(location) {
 function handlePageChange() {
     resetGlobalPageFlags();
 
-    // Remove old toolbar
-    const toolbar = document.getElementById(OPND_PLAYER_TOOLBAR_ID);
-    if (toolbar) {
-        toolbar.parentNode.removeChild(toolbar);
-    }
-
     // Determine page
     determinePageType();
 }
 
+function configurePage() {
+    if (isPageConfigured()) {
+        return;
+    }
+    determineChannel();
+    determineSfmEnabledForPage();
+    configurePlayer();
+    configureVideoListItems();
+    configureTheatreMode();
+}
+
+function isPageConfigured() {
+    return isChannelDetermined() && isSfmEnabledForPageDetermined() && isPlayerConfigured() && isVideoListItemsConfigured() && isTheatreModeConfigured();
+}
+
+function formatPageConfigurationState() {
+    return `channelDetermined: ${isChannelDetermined()}, sfmEnabledForPageDetermine: ${isSfmEnabledForPageDetermined()}, playerConfigured: ${isPlayerConfigured()}, videoListItemsConfigured: ${isVideoListItemsConfigured()}, theatreModeConfigured: ${isTheatreModeConfigured()}`;
+}
+
+
+/*
+ * ====================================================================================================
+ * CONFIGURATION: Determine Channel & SfmEnabledForPage
+ * ====================================================================================================
+ */
 /**
  * <a data-target="channel-header__channel-link" data-a-target="user-channel-header-item" class="channel-header__user align-items-center flex flex-shrink-0 flex-nowrap pd-r-2 pd-y-05" href="/mdz_jimmy">
  * ...
  * </a>
  */
 function determineChannel() {
-    if (GLOBAL_channel === null) {
-        const channelLinkAnchor = document.querySelector("a[data-target=channel-header__channel-link]");
-        if (channelLinkAnchor) {
-            const pageTypResult = TWITCH_PLATFORM.determinePage(channelLinkAnchor.hostname, channelLinkAnchor.pathname, channelLinkAnchor.search);
-            if (pageTypResult && pageTypResult.channel) {
-                updateChannel(pageTypResult.channel);
-            }
-            else {
-                warn("Failed to parse channel from hostname=%s and pathname=%s", channelLinkAnchor.hostname, channelLinkAnchor.pathname);
-            }
+    if (isChannelDetermined()) {
+        return;
+    }
+    const channelLinkAnchor = document.querySelector("a[data-target=channel-header__channel-link]");
+    if (channelLinkAnchor) {
+        const pageTypResult = TWITCH_PLATFORM.determinePage(channelLinkAnchor.hostname, channelLinkAnchor.pathname, channelLinkAnchor.search);
+        if (pageTypResult && pageTypResult.channel) {
+            updateChannel(pageTypResult.channel);
+        }
+        else {
+            warn("Failed to parse channel from hostname=%s, pathname=%s, search=%s", channelLinkAnchor.hostname, channelLinkAnchor.pathname, channelLinkAnchor.search);
         }
     }
 }
 
+function isChannelDetermined() {
+    return GLOBAL_channel !== null
+}
+
+function determineSfmEnabledForPage() {
+    if (isSfmEnabledForPageDetermined()) {
+        return;
+    }
+    const sfmEnabled = GLOBAL_options[OPT_SFM_ENABLED_NAME];
+    if (SfmEnabled.ALWAYS === sfmEnabled) {
+        GLOBAL_sfmEnabledForPage = SfmEnabledForPage.ENABLED;
+    } else if (SfmEnabled.NEVER === sfmEnabled) {
+        GLOBAL_sfmEnabledForPage = SfmEnabledForPage.DISABLED;
+    } else if (SfmEnabled.CUSTOM) {
+        if (GLOBAL_channel !== null) {
+            const sfmChannels = GLOBAL_options[OPT_SFM_CHANNELS_NAME];
+            if (sfmChannels.includes(GLOBAL_channel.qualifiedName)) {
+                GLOBAL_sfmEnabledForPage = SfmEnabledForPage.ENABLED;
+            }
+            else {
+                GLOBAL_sfmEnabledForPage = SfmEnabledForPage.DISABLED;
+            }
+        }
+    }
+    if (isSfmEnabledForPageDetermined()) {
+        log("Spoiler-Free Mode enabled for page: %s", GLOBAL_sfmEnabledForPage);
+    }
+}
+
+function isSfmEnabledForPageDetermined() {
+    return SfmEnabledForPage.UNDETERMINED !== GLOBAL_sfmEnabledForPage;
+}
+
+function isSfmEnabledForPage() {
+    return SfmEnabledForPage.ENABLED === GLOBAL_sfmEnabledForPage;
+}
+
+function isSfmDisabledForPage() {
+    return SfmEnabledForPage.DISABLED === GLOBAL_sfmEnabledForPage;
+}
+
+
+/*
+ * ====================================================================================================
+ * CONFIGURATION: Video Player
+ * ====================================================================================================
+ */
+function configurePlayer() {
+    if (isPlayerConfigured() || !isSfmEnabledForPageDetermined()) {
+        return;
+    }
+
+    if (isSfmEnabledForPage()) {
+        let toolbar = document.getElementById(OPND_PLAYER_TOOLBAR_ID);
+        if (!toolbar) {
+            // Search for injection container for toolbar (the left button panel)
+            const injectionContainer = getSingleElementByClassName("player-buttons-left");
+            if (injectionContainer) {
+                toolbar = buildPlayerToolbar();
+                injectionContainer.appendChild(toolbar);
+                log("Injected Open End Toolbar");
+            } else {
+                warn("Could not inject Open End Toolbar because injection container could not be found");
+            }
+        }
+        if (toolbar) {
+            // Update Jump Distance value
+            configurePlayerJumpDistanceInputAndButtons();
+
+            // Set initial Show/Hide Duration state
+            updatePayerDurationVisibleAndShowHideButton(true, !GLOBAL_options[OPT_SFM_PLAYER_HIDE_DURATION_NAME]);
+        }
+    }
+    // If SFM disabled, configure accordingly (may remove)
+    else if (isSfmDisabledForPage()) {
+        // Remove old toolbar
+        const toolbar = document.getElementById(OPND_PLAYER_TOOLBAR_ID);
+        if (toolbar) {
+            toolbar.parentNode.removeChild(toolbar);
+            log("Removed Open End Toolbar");
+        }
+
+        // Set the configured flag for the jump distance as well because it doesn't need any configuration in this case
+        setConfigured(OPT_SFM_PLAYER_JUMP_DISTANCE_NAME, true);
+
+        // Set initial Show/Hide Duration state
+        updatePayerDurationVisibleAndShowHideButton(true, true);
+    }
+}
+
+function isPlayerConfigured() {
+    return isPlayerDurationConfigured() && isPlayerJumpDistanceConfigured();
+}
+
+/**
+ * @param configuring {!boolean} if the method is called during configuration and not because of an UI event
+ * @param visible {?boolean} true, false or null (to toggle)
+ */
+function updatePayerDurationVisibleAndShowHideButton(configuring, visible) {
+    if (configuring && isPlayerDurationConfigured()) {
+        return;
+    }
+    // Make progress indicators visible / hidden
+    const allElementsToToggle = getElementsByClassNames([TWITCH_PROGRESS_TOTAL_TIME_DIV_CLASS, TWITCH_PROGRESS_SLIDER_DIV_CLASS]);
+
+    if (allElementsToToggle.length > 0) {
+        const setVisibleResult = setVisible(allElementsToToggle, visible);
+        log("Updated Player Duration visible to [%s]", setVisibleResult);
+
+        // Update the Player Progress Visibility img src and alt
+        const tooltip = chrome.i18n.getMessage(setVisibleResult ? "playerShowHideDuration_visible" : "playerShowHideDuration_hidden");
+        const showHidePlayerDurationImg = document.getElementById(OPND_PLAYER_SHOW_HIDE_DURATION_IMG_ID);
+        if (showHidePlayerDurationImg) {
+            showHidePlayerDurationImg.src = chrome.runtime.getURL(setVisibleResult ? "imgs/hide_white.svg" : "imgs/show_white.svg");
+            showHidePlayerDurationImg.alt = tooltip
+        }
+
+        const showHidePlayerDurationTooltipSpan = document.getElementById(OPND_PLAYER_SHOW_HIDE_DURATION_TOOLTIP_SPAN_ID);
+        if (showHidePlayerDurationTooltipSpan) {
+            showHidePlayerDurationTooltipSpan.setAttribute(TWITCH_PLAYER_TOOLTIP_SPAN_TEXT_ATTR, tooltip);
+        }
+
+        if (configuring) {
+            setConfigured(OPT_SFM_PLAYER_HIDE_DURATION_NAME, true);
+        }
+    }
+}
+
+function isPlayerDurationConfigured() {
+    return GLOBAL_pageType !== TwitchPageType.VIDEO || isConfigured(OPT_SFM_PLAYER_HIDE_DURATION_NAME);
+}
+
+function configurePlayerJumpDistanceInputAndButtons() {
+    if (isPlayerJumpDistanceConfigured()) {
+        return;
+    }
+    const jumpDistanceElem = document.getElementById(OPND_PLAYER_JUMP_DISTANCE_INPUT_ID);
+    if (jumpDistanceElem) {
+        jumpDistanceElem.value = GLOBAL_options[OPT_SFM_PLAYER_JUMP_DISTANCE_NAME];
+        log("Updated Player Time Jump Distance value to [%s]", GLOBAL_options[OPT_SFM_PLAYER_JUMP_DISTANCE_NAME]);
+        setConfigured(OPT_SFM_PLAYER_JUMP_DISTANCE_NAME, true);
+    }
+
+    updateJumpButtonsAfterJumpDistanceChange();
+}
+
+function isPlayerJumpDistanceConfigured() {
+    return GLOBAL_pageType !== TwitchPageType.VIDEO || isConfigured(OPT_SFM_PLAYER_JUMP_DISTANCE_NAME);
+}
+
+function updateJumpButtonsAfterJumpDistanceChange() {
+    const jumpDistanceInput = document.getElementById(OPND_PLAYER_JUMP_DISTANCE_INPUT_ID);
+    const playerJumpBackwardTooltipSpan = document.getElementById(OPND_PLAYER_JUMP_BACKWARD_TOOLTIP_SPAN_ID);
+    const playerJumpForwardTooltipSpan = document.getElementById(OPND_PLAYER_JUMP_FORWARD_TOOLTIP_SPAN_ID);
+
+    if (jumpDistanceInput && playerJumpBackwardTooltipSpan && playerJumpForwardTooltipSpan) {
+        const jumpDistanceInputValue = normalizeDurationString(jumpDistanceInput.value);
+
+        const backwardMsg = chrome.i18n.getMessage("playerJumpBackward", jumpDistanceInputValue);
+        playerJumpBackwardTooltipSpan.setAttribute(TWITCH_PLAYER_TOOLTIP_SPAN_TEXT_ATTR, backwardMsg);
+
+        const forwardMsg = chrome.i18n.getMessage("playerJumpForward", jumpDistanceInputValue);
+        playerJumpForwardTooltipSpan.setAttribute(TWITCH_PLAYER_TOOLTIP_SPAN_TEXT_ATTR, forwardMsg);
+    }
+}
+
+
+/*
+ * ====================================================================================================
+ * CONFIGURATION: Video List Items
+ * ====================================================================================================
+ */
+/**
+ * On Video page:
+ *
+ * Video card:
+ * <div class="tw-card relative"> ... </div>
+ *
+ * Video stat (length):
+ * <div class="video-preview-card__preview-overlay-stat c-background-overlay c-text-overlay font-size-6 top-0 right-0 z-default inline-flex absolute mg-05">
+ *      <div class="tw-tooltip-wrapper inline-flex">
+ *          <div class="tw-stat" data-test-selector="video-length">
+ *              <span class="tw-stat__icon"><figure class="svg-figure"><svg ...> ... </svg></figure></span>
+ *              <span class="tw-stat__value" data-a-target="tw-stat-value">4:33:57</span>
+ *          </div>
+ *          <div class="tw-tooltip tw-tooltip--down tw-tooltip--align-center" data-a-target="tw-tooltip-label">Länge</div>
+ *      </div>
+ * </div>
+ *
+ */
+function configureVideoListItems() {
+    if (isVideoListItemsConfigured() || !isSfmEnabledForPageDetermined()) {
+        return;
+    }
+    const videoDurationVisible = isSfmDisabledForPage() || !GLOBAL_options[OPT_SFM_VIDEO_LIST_HIDE_DURATION_NAME];
+    const videoStatDivs = document.getElementsByClassName("video-preview-card__preview-overlay-stat");
+    if (videoStatDivs.length > 0) {
+        for (let i = 0; i < videoStatDivs.length; ++i) {
+            const videoStatDiv = videoStatDivs[i];
+            const videoLengthDiv = videoStatDiv.querySelector('div[data-test-selector="video-length"]');
+            if (videoLengthDiv) {
+                setVisible([videoStatDiv], videoDurationVisible);
+            }
+        }
+        log("Updated Video List Item durations visible to [%s]", videoDurationVisible);
+        setConfigured(OPT_SFM_VIDEO_LIST_HIDE_DURATION_NAME, true);
+    }
+}
+
+function isVideoListItemsConfigured() {
+    return isConfigured(OPT_SFM_VIDEO_LIST_HIDE_DURATION_NAME); // TODO: && isConfigured(OPT_SFM_VIDEO_LIST_HIDE_TITLE_NAME) && isConfigured(OPT_SFM_VIDEO_LIST_HIDE_PREVIEW_NAME);
+}
+
+
+/*
+ * ====================================================================================================
+ * CONFIGURATION: Theatre Mode
+ * ====================================================================================================
+ */
+function configureTheatreMode() {
+    if (isTheatreModeConfigured()) {
+        return;
+    }
+    const theatreModeBtn = getSingleElementByClassName(TWITCH_THEATRE_MODE_BTN_CLASS);
+    if (theatreModeBtn) {
+        const isActive = isTheatreModeActive(theatreModeBtn);
+        if (GLOBAL_options[OPT_GENERAL_THEATRE_MODE_NAME] !== isActive) {
+            log("" + (GLOBAL_options[OPT_GENERAL_THEATRE_MODE_NAME] ? "Entering" : "Exiting") + " Player Theatre Mode");
+            theatreModeBtn.click();
+        }
+        setConfigured(OPT_GENERAL_THEATRE_MODE_NAME, true);
+    }
+}
+
+function isTheatreModeConfigured() {
+    return (GLOBAL_pageType !== TwitchPageType.VIDEO && GLOBAL_pageType !== TwitchPageType.CHANNEL) || isConfigured(OPT_GENERAL_THEATRE_MODE_NAME);
+}
+
+/**
+ * "Exit Theatre Mode" button:
+ * <button class="player-button qa-theatre-mode-button" id="" tabindex="-1" type="button">
+ *     <span><span class="player-tip" data-tip="Kino-Modus beenden"></span><span class="">
+ *         <svg class=""><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#icon_theatre_deactivate"></use></svg>
+ *     </span></span>
+ * </button>
+ *
+ * "Enter Theatre Mode" button:
+ * <button class="player-button qa-theatre-mode-button" id="" tabindex="-1" type="button">
+ *      <span><span class="player-tip" data-tip="Kino-Modus"></span><span class="">
+ *          <svg class=""><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#icon_theatre"></use></svg>
+ *      </span></span>
+ * </button>
+ *
+ * @param theatreModeButton {Element} the theatre mode toggle button node (not null)
+ * @return {boolean}
+ */
+function isTheatreModeActive(theatreModeButton) {
+    const innerHtml = theatreModeButton.innerHTML;
+    if (innerHtml.indexOf('xlink:href="#icon_theatre_deactivate"') !== -1) {
+        return true;
+    }
+    else if (innerHtml.indexOf('xlink:href="#icon_theatre"') !== -1) {
+        return false;
+    }
+    warn("Could not determine if Theatre Mode is active");
+    return false;
+}
+
+/*
+ * ====================================================================================================
+ * BUILD TOOLBAR
+ * ====================================================================================================
+ */
 function buildPlayerToolbar() {
     // Build toolbar div
     const toolbar = document.createElement("div");
@@ -448,30 +576,15 @@ function buildPlayerToolbar() {
     // Pressing Enter in the "Jump Distance" text input should trigger the "Jump Forward" button
     jumpDistanceInput.addEventListener("keyup", function (event) {
         event.preventDefault();
+        updateJumpButtonsAfterJumpDistanceChange();
         if (event.keyCode === 13) { // 13 = ENTER
             jumpForwardBtn.click();
         }
-        handleJumpDistanceInputValueChange();
     });
 
     return toolbar;
 }
 
-function handleJumpDistanceInputValueChange() {
-    const jumpDistanceInput = document.getElementById(OPND_PLAYER_JUMP_DISTANCE_INPUT_ID);
-    const playerJumpBackwardTooltipSpan = document.getElementById(OPND_PLAYER_JUMP_BACKWARD_TOOLTIP_SPAN_ID);
-    const playerJumpForwardTooltipSpan = document.getElementById(OPND_PLAYER_JUMP_FORWARD_TOOLTIP_SPAN_ID);
-
-    if (jumpDistanceInput && playerJumpBackwardTooltipSpan && playerJumpForwardTooltipSpan) {
-        const jumpDistanceInputValue = normalizeDurationString(jumpDistanceInput.value);
-
-        const backwardMsg = chrome.i18n.getMessage("playerJumpBackward", jumpDistanceInputValue);
-        playerJumpBackwardTooltipSpan.setAttribute(TWITCH_PLAYER_TOOLTIP_SPAN_TEXT_ATTR, backwardMsg);
-
-        const forwardMsg = chrome.i18n.getMessage("playerJumpForward", jumpDistanceInputValue);
-        playerJumpForwardTooltipSpan.setAttribute(TWITCH_PLAYER_TOOLTIP_SPAN_TEXT_ATTR, forwardMsg);
-    }
-}
 
 /**
  *
@@ -481,7 +594,7 @@ function handleJumpDistanceInputValueChange() {
  * @param tooltipTxtMsgName {?string} il8n message name for the tooltip text and image alt
  * @param imgId {?string}
  * @param imgSrc {?string} relative URL in the extension directory
- * @returns {!Element}
+ * @return {!Element}
  */
 function buildPlayerToolbarButton(id, onclick, tooltipId = null, tooltipTxtMsgName = null, imgId = null, imgSrc = null) {
     // Build button
@@ -522,18 +635,18 @@ function buildPlayerToolbarButton(id, onclick, tooltipId = null, tooltipTxtMsgNa
     return btn;
 }
 
-/* PROGRESS */
+/*
+ * ====================================================================================================
+ * ACTION HANDLING
+ * ====================================================================================================
+ */
 function handlePlayerShowHideDurationAction() {
     log("Handling action [Player: Show/Hide Duration]");
 
     // Toggle
-    GLOBAL_playerDurationVisible = !GLOBAL_playerDurationVisible;
-
-    configurePlayerDurationVisible();
+    updatePayerDurationVisibleAndShowHideButton(false, null);
 }
 
-
-/* Player: Jump */
 function handlePlayerJumpBackwardAction() {
     log("Handling action [Player: Jump Backward]");
     playerJump(false);
@@ -557,7 +670,7 @@ function playerJump(forward = true) {
     const currentTime = parseInt(sliderDiv.getAttribute("aria-valuenow"));
 
     if (maxTime === 0) {
-        error("Time jump failed: video duration not available");
+        error("Time jump failed: Video duration not available (yet)");
         return;
     }
 
@@ -582,6 +695,69 @@ function playerJump(forward = true) {
 
 /*
  * ====================================================================================================
+ * MESSAGE HANDLING
+ * ====================================================================================================
+ */
+function listenForMessages() {
+    chrome.runtime.onMessage.addListener(handleMessage);
+}
+
+/**
+ * @return TabInfoMessage
+ */
+function buildTabInfoMessage() {
+    const channelQualifiedName = GLOBAL_channel !== null ? GLOBAL_channel.qualifiedName : TAB_INFO_CURRENT_CHANNEL_DEFAULT;
+    return {
+        [MSG_TYPE_NAME]: MSG_TYPE_TAB_INFO,
+        [MSG_BODY_NAME]: {
+            [TAB_INFO_CURRENT_CHANNEL_NAME]: channelQualifiedName
+        }
+    };
+}
+
+/**
+ *
+ * @param request {!Message} the message
+ * @param sender {!MessageSender} the sender
+ * @param sendResponse {!function} the function to send the response
+ */
+function handleMessage(request, sender, sendResponse) {
+    log("Received message from [%o]: %o", sender, request);
+    if (MSG_TYPE_NAME in request) {
+        if (MSG_TYPE_TAB_INFO_REQUEST === request[MSG_TYPE_NAME]) {
+            const tabInfoMessage = buildTabInfoMessage();
+            log("Responding to [Message:" + MSG_TYPE_TAB_INFO_REQUEST + "] with: %o", tabInfoMessage);
+            sendResponse(tabInfoMessage);
+        }
+    }
+}
+
+/*
+ * ====================================================================================================
+ * OPTIONS
+ * ====================================================================================================
+ */
+function listenForOptionsChanges() {
+    chrome.storage.onChanged.addListener(handleOptionUpdate);
+}
+
+function handleOptionUpdate(changes, namespace) {
+    log("[%s storage] Changes: %o", namespace, changes);
+    for (const key in changes) {
+        GLOBAL_options[key] = changes[key].newValue;
+    }
+    reconfigurePageAfterOptionsUpdate(mapOptionChangesToItems(changes));
+}
+
+
+function reconfigurePageAfterOptionsUpdate(options) {
+    resetGlobalPageStateFlagsAfterOptionsUpdate(options);
+    configurePage();
+}
+
+
+/*
+ * ====================================================================================================
  * INIT
  * ====================================================================================================
  */
@@ -589,10 +765,20 @@ function init() {
     log("Initializing...");
 
     resetGlobalPageFlags();
-    listenForMessages();
-    loadOptions();
     determinePageType();
-    startCheckPageTask();
+
+    chrome.storage.sync.get(getDefaultOptionsCopy(), function (items) {
+        if (chrome.runtime.lastError) {
+            error("[sync storage] Failed to get options: %o", chrome.runtime.lastError);
+            return;
+        }
+        GLOBAL_options = items;
+        log("Loaded options: %o", GLOBAL_options);
+
+        listenForOptionsChanges();
+        listenForMessages();
+        startCheckPageTask();
+    });
 }
 
 init();

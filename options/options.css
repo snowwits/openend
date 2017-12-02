@@ -2,7 +2,7 @@ body {
     padding: 0 5px 5px 10px;
 }
 
-#options{
+#options {
     width: 450px;
     height: 450px; /* height so that the div is not too larger than the Chrome options box and Chrome won't display their own scroll pane */
     overflow-y: auto;

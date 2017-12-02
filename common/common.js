@@ -36,16 +36,16 @@ function errorWithComponent(component, msg, ...substitutions) {
  * OPTIONS (SYNC STORAGE)
  * ====================================================================================================
  */
-const SfmEnabled = {
-    NEVER: "never",
-    ALWAYS: "always",
-    CUSTOM: "custom"
-};
+const SfmEnabled = Object.freeze({
+    NEVER: "NEVER",
+    ALWAYS: "ALWAYS",
+    CUSTOM: "CUSTOM"
+});
 
 const OPT_SFM_ENABLED_NAME = "sfmEnabled";
 const OPT_SFM_ENABLED_DEFAULT = SfmEnabled.ALWAYS;
 const OPT_SFM_CHANNELS_NAME = "sfmChannels";
-const OPT_SFM_CHANNELS_DEFAULT = [];
+const OPT_SFM_CHANNELS_DEFAULT = Object.freeze([]);
 const OPT_SFM_PLAYER_HIDE_DURATION_NAME = "sfmPlayerHideDuration";
 const OPT_SFM_PLAYER_HIDE_DURATION_DEFAULT = true;
 const OPT_SFM_PLAYER_JUMP_DISTANCE_NAME = "sfmPlayerJumpDistance";
@@ -69,7 +69,7 @@ function getDefaultOptionsCopy() {
         [OPT_SFM_VIDEO_LIST_HIDE_TITLE_NAME]: OPT_SFM_VIDEO_LIST_HIDE_TITLE_DEFAULT,
         [OPT_SFM_VIDEO_LIST_HIDE_PREVIEW_NAME]: OPT_SFM_VIDEO_LIST_HIDE_PREVIEW_DEFAULT,
         [OPT_GENERAL_THEATRE_MODE_NAME]: OPT_GENERAL_THEATRE_MODE_DEFAULT
-    }
+    };
 }
 
 function mapOptionChangesToItems(changes) {
@@ -77,7 +77,7 @@ function mapOptionChangesToItems(changes) {
     for (let key in changes) {
         items[key] = changes[key].newValue;
     }
-    return items;
+    return Object.freeze(items);
 }
 
 /*
@@ -108,7 +108,6 @@ const MSG_TYPE_NAME = "type";
 const MSG_TYPE_TAB_INFO_REQUEST = "tabInfoRequest";
 const MSG_TYPE_TAB_INFO = "tabInfo";
 const MSG_BODY_NAME = "body";
-const LCL_TAB_INFO_PREFIX = MSG_TYPE_TAB_INFO_REQUEST + ":";
 
 /**
  * The key for the local storage item "currentChannel". The value is the qualified name of the channel.
@@ -175,7 +174,7 @@ const DURATION_PATTERN = "^(?:(\\d+)|(?:(\\d+)h)?(?:(\\d+)m)?(?:(\\d+)s)?)$";
  * Suffixes the given duration string with a "m" as single numbers are interpreted as minutes.
  *
  * @param durationString {!string}
- * @returns {!string}
+ * @return {!string}
  */
 function normalizeDurationString(durationString) {
     if (new RegExp("^\\d+$").test(durationString)) {
@@ -189,7 +188,7 @@ function normalizeDurationString(durationString) {
  * "2" -> "2m" -> 2 * 60 = 120
  *
  * @param durationString {!string}
- * @returns {!number} the duration in seconds (integer, 0 if no match)
+ * @return {!number} the duration in seconds (integer, 0 if no match)
  */
 function parseDuration(durationString) {
     if (durationString.length === 0) {
@@ -217,7 +216,7 @@ function parseDuration(durationString) {
  *
  * @param groups {!Array.<string>}
  * @param index {!number}
- * @returns {!number} the parsed integer or 0
+ * @return {!number} the parsed integer or 0
  */
 function parseDurationPart(groups, index) {
     return typeof groups[index] !== "undefined" ? parseInt(groups[index]) : 0;
@@ -227,7 +226,7 @@ function parseDurationPart(groups, index) {
  * 3723 = 1 * 60 * 60 + 2 * 60 + 3 -> "01h02m03s"
  *
  * @param duration {!number} the duration in seconds
- * @returns {!string}
+ * @return {!string}
  */
 function formatDuration(duration) {
     const parts = extractDurationParts(duration);
@@ -248,7 +247,7 @@ function formatDuration(duration) {
  * 3723 = 1h, 2m, 3s -> [1, 2, 3]
  *
  * @param duration {!number}
- * @returns {[!number,!number,!number]}
+ * @return {[!number,!number,!number]}
  */
 function extractDurationParts(duration) {
     let amount = duration;
@@ -275,7 +274,7 @@ function extractDurationParts(duration) {
 /**
  *
  * @param classNames {Array.<string>} the class names
- * @returns {Array} all elements that have any of the specified class names
+ * @return {Array} all elements that have any of the specified class names
  */
 function getElementsByClassNames(classNames) {
     const allElements = [];
@@ -297,15 +296,28 @@ function getSingleElementByClassName(className) {
     return null;
 }
 
+/**
+ *
+ * @param elements {!Array.<Element>}
+ * @param visible {?boolean} true, false or null (to toggle)
+ * @return {?boolean} true if the elements were set visible, false if not. null if there were no elements
+ */
 function setVisible(elements, visible) {
+    let actuallySetVisible = visible;
     for (let i = 0; i < elements.length; i++) {
         const opndContainer = getOrWrapInOpndContainer(elements[i]);
-        if (visible) {
+        if (actuallySetVisible === null) {
+            // If the visible param is null,
+            // we check the first element's visible state and use that to toggle all elements.
+            actuallySetVisible = opndContainer.classList.contains(OPND_HIDDEN_CLASS)
+        }
+        if (actuallySetVisible) {
             opndContainer.classList.remove(OPND_HIDDEN_CLASS);
         } else {
             opndContainer.classList.add(OPND_HIDDEN_CLASS);
         }
     }
+    return actuallySetVisible;
 }
 
 function getOrWrapInOpndContainer(element) {
@@ -379,15 +391,15 @@ function setRadioValues(radioName, selectedValue) {
     }
 }
 
-function listenForRadioChanges(radioName, changeHandler){
+function listenForRadioChanges(radioName, changeHandler) {
     const allRadios = document.querySelectorAll('input[type="radio"][name = "' + radioName + '"]');
-    for(let i = 0; i < allRadios.length; i++) {
+    for (let i = 0; i < allRadios.length; i++) {
         allRadios[i].onclick = changeHandler;
     }
 }
 
 function getSelectOptionValues(selectId) {
-    const select = document.getElementById("sfm_channels");
+    const select = document.getElementById(selectId);
     const optionValues = [];
     for (let i = 0; i < select.length; i++) {
         const option = select[i];
@@ -506,7 +518,7 @@ function setMsgToTitle(elementId, messageName) {
  *     <li>hash</li>
  *     </ul>
  * @param href {!string} url of the anchor
- * @returns {!HTMLAnchorElement }
+ * @return {!HTMLAnchorElement }
  */
 function createAnchor(href) {
     const l = document.createElement("a");
@@ -531,14 +543,14 @@ const TWITCH_USERNAME_REGEX = new RegExp("^[a-zA-Z0-9][a-zA-Z0-9_]{3,24}$");
 
 class Platform {
     /**
-     * @returns {!string} the name
+     * @return {!string} the name
      */
     get name() {
         throw new Error("Not implemented");
     }
 
     /**
-     * @returns {!string} the display name
+     * @return {!string} the display name
      */
     get displayName() {
         throw new Error("Not implemented");
@@ -547,7 +559,7 @@ class Platform {
     /**
      *
      * @param channelName {!string} the name of the channel to create
-     * @returns {!Channel} the created channel
+     * @return {!Channel} the created channel
      * @throws error if the channel name is invalid on the platform
      */
     buildChannel(channelName) {
@@ -557,7 +569,7 @@ class Platform {
     /**
      *
      * @param channel {!Channel} the channel
-     * @returns {!string} the full channel url
+     * @return {!string} the full channel url
      */
     buildChannelUrl(channel) {
         throw new Error("Not implemented");
@@ -691,7 +703,7 @@ class TwitchPlatform extends Platform {
      * @param hostname the hostname
      * @param pathname the pathname
      * @param search the query string
-     * @returns {?PageTypeResult} the page type result or null if it isn't a twitch page
+     * @return {?PageTypeResult} the page type result or null if it isn't a twitch page
      */
     determinePage(hostname, pathname, search) {
         try {
@@ -796,7 +808,7 @@ class Channel {
 /**
  *
  * @param channelQualifiedName the qualified name of the channel
- * @returns {?Channel} the parsed Channel or null if no platform could parse the qualified name
+ * @return {?Channel} the parsed Channel or null if no platform could parse the qualified name
  */
 function parseChannelFromQualifiedName(channelQualifiedName) {
     for (let i = 0; i < ALL_PLATFORMS.length; i++) {
@@ -813,7 +825,7 @@ function parseChannelFromQualifiedName(channelQualifiedName) {
  * @param hostname {!string} the hostname of the url
  * @param pathname {!string} the pathname of the url
  * @param search {!string} the query string of the url
- * @returns {?Channel} the parsed Channel or null if no platform could parse the qualified name
+ * @return {?Channel} the parsed Channel or null if no platform could parse the qualified name
  */
 function parseChannelFromUrl(hostname, pathname, search) {
     for (let i = 0; i < ALL_PLATFORMS.length; i++) {
