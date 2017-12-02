@@ -131,6 +131,8 @@ function resetGlobalPageFlags() {
 }
 
 function resetGlobalPageStateFlagsAfterOptionsUpdate(options) {
+    GLOBAL_configurationTimeoutReached = false;
+
     // Collect all options that need to be reconfigured in a Set
     const optionsToReconfigure = new Set();
     // Add all options that changed
