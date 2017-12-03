@@ -48,25 +48,26 @@ const TWITCH_PLAYER_TOOLTIP_SPAN_TEXT_ATTR = "data-tip";
  * GLOBAL FLAGS
  * ====================================================================================================
  */
-/* Variables that only change after a page change */
+/* Variables that only need to be changed after a page change */
+let GLOBAL_elementsLoadedTimeoutReached = false;
 let GLOBAL_pageType = null;
-/* Variables that can change at any time */
-let GLOBAL_options = getDefaultOptionsCopy();
 /**
  *
  * @type {?Channel}
  */
 let GLOBAL_channel = null;
+
+/* Variables that need to be changed after option changes */
+let GLOBAL_options = getDefaultOptionsCopy();
 const SfmEnabledForPage = Object.freeze({
     ENABLED: "ENABLED",
     DISABLED: "DISABLED",
     UNDETERMINED: "UNDETERMINED"
 });
 let GLOBAL_sfmEnabledForPage = SfmEnabledForPage.UNDETERMINED;
-
-/* Flags whether the components have been configured yet */
+/** Flags whether the components have been configured yet */
 let GLOBAL_configured_flags = getDefaultConfiguredFlagsCopy();
-let GLOBAL_configurationTimeoutReached = false;
+
 
 /*
  * ====================================================================================================
@@ -118,41 +119,29 @@ function isConfigured(optionName) {
 function setConfigured(optionName, value) {
     GLOBAL_configured_flags[optionName] = value;
     if (value) {
-        log("%s configured", optionName);
+        log("Elements depending on option [%s] configured", optionName);
     } else {
-        log("%s needs to be reconfigured", optionName);
+        log("Elements depending on option [%s] need reconfiguration", optionName);
     }
 }
 
 function resetGlobalPageFlags() {
+    GLOBAL_elementsLoadedTimeoutReached = false;
     GLOBAL_pageType = null;
     updateChannel(null);
-    resetGlobalPageStateFlagsAfterOptionsUpdate(GLOBAL_options)
+    resetGlobalPageStateFlags(GLOBAL_options)
 }
 
-function resetGlobalPageStateFlagsAfterOptionsUpdate(options) {
-    GLOBAL_configurationTimeoutReached = false;
-
-    // Collect all options that need to be reconfigured in a Set
-    const optionsToReconfigure = new Set();
-    // Add all options that changed
-    for (let optionName in options) {
-        if (optionName in GLOBAL_configured_flags) {
-            optionsToReconfigure.add(optionName);
-        }
-    }
-    if (OPT_SFM_ENABLED_NAME in options || OPT_SFM_CHANNELS_NAME in options) {
+function resetGlobalPageStateFlags(changedOptions) {
+    // AFTER
+    const sfmEnabledChanged = OPT_SFM_ENABLED_NAME in changedOptions || OPT_SFM_CHANNELS_NAME in changedOptions;
+    if(sfmEnabledChanged) {
         GLOBAL_sfmEnabledForPage = SfmEnabledForPage.UNDETERMINED;
-        // If SFM enabled changed, all the SFM options need to be reconfigured
-        for (let optionName in GLOBAL_configured_flags) {
-            if (optionName.includes("sfm")) {
-                optionsToReconfigure.add(optionName);
-            }
-        }
     }
-
-    for (let optionName of optionsToReconfigure) {
-        setConfigured(optionName, false);
+    for (let optionName in GLOBAL_configured_flags) {
+        if (sfmEnabledChanged && isSfmOption(optionName) || optionName in changedOptions) {
+            setConfigured(optionName, false);
+        }
     }
 }
 
@@ -196,16 +185,16 @@ function startCheckPageTask() {
             handlePageChange();
         }
 
-        // If neither config done yet nor timeout reached yet
-        if (!GLOBAL_configurationTimeoutReached) {
+        // As long as the time out hasn't been reached, periodically try to configure the page
+        if (!GLOBAL_elementsLoadedTimeoutReached) {
             const checkTime = Date.now();
             if (checkTime - pageChangedTime < PAGE_CONFIGURATION_TIMEOUT) {
                 configurePage();
             }
             else {
-                GLOBAL_configurationTimeoutReached = true;
+                GLOBAL_elementsLoadedTimeoutReached = true;
                 if (!isPageConfigured()) {
-                    warn("Page configuration timeout reached (%d ms). Some components may not be configured. Configuration state: %o", PAGE_CONFIGURATION_TIMEOUT, formatPageConfigurationState());
+                    warn("Elements loaded timeout reached (%d ms). Some components may not be configured. Configuration state: %o", PAGE_CONFIGURATION_TIMEOUT, formatPageConfigurationState());
                 }
             }
         }
@@ -752,8 +741,8 @@ function handleOptionUpdate(changes, namespace) {
 }
 
 
-function reconfigurePageAfterOptionsUpdate(options) {
-    resetGlobalPageStateFlagsAfterOptionsUpdate(options);
+function reconfigurePageAfterOptionsUpdate(changedOptions) {
+    resetGlobalPageStateFlags(changedOptions);
     configurePage();
 }
 

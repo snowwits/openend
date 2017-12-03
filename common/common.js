@@ -80,6 +80,15 @@ function mapOptionChangesToItems(changes) {
     return Object.freeze(items);
 }
 
+/**
+ *
+ * @param optionName {!string} the option's name
+ * @returns {!boolean} whether the option is a option to configure the Spoiler-Free mode (SFM)
+ */
+function isSfmOption(optionName) {
+    return optionName.includes("sfm");
+}
+
 /*
  * ====================================================================================================
  * MESSAGE PASSING
