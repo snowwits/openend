@@ -20,19 +20,19 @@
 }
 
 #opnd-player-toolbar img {
-    width: 2em;
+    width: 2em; /* for analog layout to the regular twitch button SVGs: */
     height: 2em;
 }
 
-#opnd-player-toolbar.opnd-hidden {
-    margin-bottom: 2em;
+.opnd-video-list-item-toolbar button {
+    margin-right: 5px; /* spacing between the toolbar buttons: */
 }
 
 #opnd-player-jump-distance-input {
-    height: 2em;
+    height: 2em; /* for analog layout to the regular twitch buttons: */
     line-height: 2em;
     float: left;
-    margin-top: 0.125em; /* 0.25em / 2 */
+    margin-top: 0.125em; /* (0.25em / 2) */
     margin-left: 5px;
     margin-right: 5px;
     width: 75px;

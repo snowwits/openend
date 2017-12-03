@@ -128,11 +128,11 @@ const TAB_INFO_CURRENT_CHANNEL_DEFAULT = "";
 
 /*
  * ====================================================================================================
- * CSS CLASSES
+ * ELEMENT IDS & CSS CLASSES
  * ====================================================================================================
  */
 /**
- * The CSS class of Open End container div elements. To not interfere with the page CSS style, we wrap every element we want to hide in a custom container div and then hide that container.
+ * The CSS class of Open End container elements. To not interfere with the page CSS style, we wrap every element we want to hide in a custom container element and then hide that container.
  * @type {string}
  */
 const OPND_CONTAINER_CLASS = "opnd-container";
@@ -141,12 +141,37 @@ const OPND_CONTAINER_CLASS = "opnd-container";
  * @type {string}
  */
 const OPND_HIDDEN_CLASS = "opnd-hidden";
-
 /**
- * The ID of the Open End Player Toolbar.
+ * The ID of the Open End player toolbar.
  * @type {string}
  */
 const OPND_PLAYER_TOOLBAR_ID = "opnd-player-toolbar";
+/**
+ * The CSS class of Open End containers that wrap elements of the player which contain a video's duration or the seek bar.
+ * @type {string}
+ */
+const OPND_CONTAINER_PLAYER_DURATION_CLASS = "opnd-container-player-duration";
+
+/**
+ * The CSS class of an Open End video ist item toolbar.
+ * @type {string}
+ */
+const OPND_VIDEO_LIST_ITEM_TOOLBAR_CLASS = "opnd-video-list-item-toolbar";
+/**
+ * The CSS class of the Open End container of a video list item's duration.
+ * @type {string}
+ */
+const OPND_CONTAINER_VIDEO_LIST_ITEM_DURATION_CLASS = "opnd-container-video-list-item-duration";
+/**
+ * The CSS class of the Open End container of a video list item's title.
+ * @type {string}
+ */
+const OPND_CONTAINER_VIDEO_LIST_ITEM_TITLE_CLASS = "opnd-container-video-list-item-title";
+/**
+ * The CSS class of the Open End container of a video list item's preview.
+ * @type {string}
+ */
+const OPND_CONTAINER_VIDEO_LIST_ITEM_PREVIEW_CLASS = "opnd-container-video-list-item-preview";
 
 const OPND_PLAYER_SHOW_HIDE_DURATION_BTN_ID = "opnd-player-show-hide-duration-btn";
 const OPND_PLAYER_SHOW_HIDE_DURATION_IMG_ID = "opnd-player-show-hide-duration-img";
@@ -305,16 +330,27 @@ function getSingleElementByClassName(className) {
     return null;
 }
 
+function removeElements(elements) {
+    // Iterate from end to start because it could be a live list and removing from it would change the indices
+    for (let i = elements.length - 1; i >= 0; i--) {
+        removeElement(elements[i])
+    }
+}
+
+function removeElement(element) {
+    element.parentNode.removeChild(element);
+}
+
 /**
  *
- * @param elements {!Array.<Element>}
+ * @param opndContainers {!Iterable.<Element>}
  * @param visible {?boolean} true, false or null (to toggle)
  * @return {?boolean} true if the elements were set visible, false if not. null if there were no elements
  */
-function setVisible(elements, visible) {
+function setVisible(opndContainers, visible) {
     let actuallySetVisible = visible;
-    for (let i = 0; i < elements.length; i++) {
-        const opndContainer = getOrWrapInOpndContainer(elements[i]);
+    for (let i = 0; i < opndContainers.length; i++) {
+        const opndContainer = opndContainers[i];
         if (actuallySetVisible === null) {
             // If the visible param is null,
             // we check the first element's visible state and use that to toggle all elements.
@@ -329,12 +365,20 @@ function setVisible(elements, visible) {
     return actuallySetVisible;
 }
 
-function getOrWrapInOpndContainer(element) {
+function getOrWrapAllInOpndContainers(elements, additionalClass = null) {
+    const opndContainers = [];
+    for (let i = 0; i < elements.length; i++) {
+        opndContainers.push(getOrWrapInOpndContainer(elements[i], additionalClass));
+    }
+    return opndContainers;
+}
+
+function getOrWrapInOpndContainer(element, additionalClass = null) {
     const container = getOpndContainer(element);
     if (container) {
         return container;
     }
-    return wrapInOpndContainer(element);
+    return wrapInOpndContainer(element, additionalClass);
 }
 
 function getOpndContainer(element) {
@@ -345,20 +389,23 @@ function getOpndContainer(element) {
     return null;
 }
 
+function wrapInOpndContainer(element, additionalClass = null) {
+    return wrap(element, createOpndContainer(additionalClass))
+}
+
+function createOpndContainer(additionalClass = null) {
+    const opndContainer = document.createElement("span");
+    opndContainer.classList.add(OPND_CONTAINER_CLASS);
+    if (additionalClass !== null) {
+        opndContainer.classList.add(additionalClass);
+    }
+    return opndContainer;
+}
+
 function wrap(element, wrapper) {
     element.parentNode.insertBefore(wrapper, element);
     wrapper.appendChild(element);
     return wrapper;
-}
-
-function wrapInOpndContainer(element) {
-    return wrap(element, createOpndContainer())
-}
-
-function createOpndContainer() {
-    const opndContainer = document.createElement('div');
-    opndContainer.classList.add(OPND_CONTAINER_CLASS);
-    return opndContainer;
 }
 
 /**

@@ -133,13 +133,12 @@ function resetGlobalPageFlags() {
 }
 
 function resetGlobalPageStateFlags(changedOptions) {
-    // AFTER
-    const sfmEnabledChanged = OPT_SFM_ENABLED_NAME in changedOptions || OPT_SFM_CHANNELS_NAME in changedOptions;
-    if(sfmEnabledChanged) {
+    const sfmEnabledForPageChanged = OPT_SFM_ENABLED_NAME in changedOptions || OPT_SFM_CHANNELS_NAME in changedOptions;
+    if (sfmEnabledForPageChanged) {
         GLOBAL_sfmEnabledForPage = SfmEnabledForPage.UNDETERMINED;
     }
     for (let optionName in GLOBAL_configured_flags) {
-        if (sfmEnabledChanged && isSfmOption(optionName) || optionName in changedOptions) {
+        if (sfmEnabledForPageChanged && isSfmOption(optionName) || optionName in changedOptions) {
             setConfigured(optionName, false);
         }
     }
@@ -318,19 +317,19 @@ function configurePlayer() {
     }
 
     if (isSfmEnabledForPage()) {
-        let toolbar = document.getElementById(OPND_PLAYER_TOOLBAR_ID);
-        if (!toolbar) {
+        let toolbarElem = document.getElementById(OPND_PLAYER_TOOLBAR_ID);
+        if (!toolbarElem) {
             // Search for injection container for toolbar (the left button panel)
             const injectionContainer = getSingleElementByClassName("player-buttons-left");
             if (injectionContainer) {
-                toolbar = buildPlayerToolbar();
-                injectionContainer.appendChild(toolbar);
-                log("Injected Open End Toolbar");
+                toolbarElem = buildPlayerToolbar();
+                injectionContainer.appendChild(toolbarElem);
+                log("Injected Open End player toolbar");
             } else {
-                warn("Could not inject Open End Toolbar because injection container could not be found");
+                warn("Could not inject Open End player toolbar because injection container could not be found");
             }
         }
-        if (toolbar) {
+        if (toolbarElem) {
             // Update Jump Distance value
             configurePlayerJumpDistanceInputAndButtons();
 
@@ -341,9 +340,9 @@ function configurePlayer() {
     // If SFM disabled, configure accordingly (may remove)
     else if (isSfmDisabledForPage()) {
         // Remove old toolbar
-        const toolbar = document.getElementById(OPND_PLAYER_TOOLBAR_ID);
-        if (toolbar) {
-            toolbar.parentNode.removeChild(toolbar);
+        const toolbarElem = document.getElementById(OPND_PLAYER_TOOLBAR_ID);
+        if (toolbarElem) {
+            removeElement(toolbarElem);
             log("Removed Open End Toolbar");
         }
 
@@ -368,10 +367,11 @@ function updatePayerDurationVisibleAndShowHideButton(configuring, visible) {
         return;
     }
     // Make progress indicators visible / hidden
-    const allElementsToToggle = getElementsByClassNames([TWITCH_PROGRESS_TOTAL_TIME_DIV_CLASS, TWITCH_PROGRESS_SLIDER_DIV_CLASS]);
+    const allDurationElements = getElementsByClassNames([TWITCH_PROGRESS_TOTAL_TIME_DIV_CLASS, TWITCH_PROGRESS_SLIDER_DIV_CLASS]);
+    const opndContainersOfAllDurationElements = getOrWrapAllInOpndContainers(allDurationElements, OPND_CONTAINER_PLAYER_DURATION_CLASS);
 
-    if (allElementsToToggle.length > 0) {
-        const setVisibleResult = setVisible(allElementsToToggle, visible);
+    if (opndContainersOfAllDurationElements.length > 0) {
+        const setVisibleResult = setVisible(opndContainersOfAllDurationElements, visible);
         log("Updated Player Duration visible to [%s]", setVisibleResult);
 
         // Update the Player Progress Visibility img src and alt
@@ -437,13 +437,12 @@ function updateJumpButtonsAfterJumpDistanceChange() {
  * CONFIGURATION: Video List Items
  * ====================================================================================================
  */
+
 /**
- * On Video page:
- *
- * Video card:
+ * Video card div:
  * <div class="tw-card relative"> ... </div>
- *
- * Video stat (length):
+
+ * Video duration div (length):
  * <div class="video-preview-card__preview-overlay-stat c-background-overlay c-text-overlay font-size-6 top-0 right-0 z-default inline-flex absolute mg-05">
  *      <div class="tw-tooltip-wrapper inline-flex">
  *          <div class="tw-stat" data-test-selector="video-length">
@@ -454,28 +453,160 @@ function updateJumpButtonsAfterJumpDistanceChange() {
  *      </div>
  * </div>
  *
+ * Video title div:
+ * <div data-test-selector="video-title" class="overflow-hidden relative">
+ *      <p class="c-text font-size-5">
+ *          <a class="video-preview-card__video-title" title="!RED Mickie | Dallas Fuel | EN-TH" data-a-target="video-preview-card-title-link" href="/videos/206218321">!RED Mickie | Dallas Fuel | EN-TH</a>
+ *     </p>
+ * </div>
+ *
+ * Video preview div:
+ * <div class="video-preview-card__image-wrapper" data-test-selector="preview-image-wrapper">
+ *      <figure class="flex-shrink-0">
+ *          <figure class="tw-aspect tw-aspect--16x9 tw-aspect--align-top">
+ *              <img alt="!RED Mickie | Dallas Fuel | TH-EN" class="video-preview-card__preview-image" data-test-selector="preview-image" src="https://static-cdn.jtvnw.net/s3_vods/179fedfa3031185e4302_mickiepp_26871265136_748124242/thumb/thumb0-320x180.jpg">
+ *          </figure>
+ *      </figure>
+ * </div>
  */
 function configureVideoListItems() {
     if (isVideoListItemsConfigured() || !isSfmEnabledForPageDetermined()) {
         return;
     }
-    const videoDurationVisible = isSfmDisabledForPage() || !GLOBAL_options[OPT_SFM_VIDEO_LIST_HIDE_DURATION_NAME];
+
+    const videoCardDivs = document.getElementsByClassName("tw-card");
+    if (videoCardDivs.length === 0) {
+        return;
+    }
+
+    const durationContainers = wrapInOpndContainers(getVideoLengthStatDivs, OPND_CONTAINER_VIDEO_LIST_ITEM_DURATION_CLASS);
+    const titleContainers = wrapInOpndContainers(() => {
+        return document.querySelectorAll('a[data-a-target="video-preview-card-title-link"]')
+    }, OPND_CONTAINER_VIDEO_LIST_ITEM_TITLE_CLASS);
+    const previewContainers = wrapInOpndContainers(() => {
+        return document.querySelectorAll('div[data-test-selector="preview-image-wrapper"]');
+    }, OPND_CONTAINER_VIDEO_LIST_ITEM_PREVIEW_CLASS);
+
+    const setDurationVisible = !GLOBAL_options[OPT_SFM_VIDEO_LIST_HIDE_DURATION_NAME];
+    const setTitleVisible = !GLOBAL_options[OPT_SFM_VIDEO_LIST_HIDE_TITLE_NAME];
+    const setPreviewVisible = !GLOBAL_options[OPT_SFM_VIDEO_LIST_HIDE_PREVIEW_NAME];
+
+    let toolbarConfigSuccess = true;
+
+    if (isSfmDisabledForPage()) {
+        setVisible(durationContainers, true);
+        setVisible(titleContainers, true);
+        setVisible(previewContainers, true);
+
+        // Remove toolbars
+        removeElements(document.getElementsByClassName(OPND_VIDEO_LIST_ITEM_TOOLBAR_CLASS));
+    } else if (isSfmEnabledForPage()) {
+        setVisible(durationContainers, setDurationVisible);
+        setVisible(titleContainers, setTitleVisible);
+        setVisible(previewContainers, setPreviewVisible);
+
+        for (let i = 0; i < videoCardDivs.length; i++) {
+            const videoCardDiv = videoCardDivs[i];
+            // Toolbar
+            let toolbarElem = videoCardDiv.querySelector("." + OPND_VIDEO_LIST_ITEM_TOOLBAR_CLASS);
+            if (!toolbarElem) {
+                const injectionContainer = videoCardDiv.querySelector('div[data-test-selector="video-title"]');
+                if (injectionContainer) {
+                    toolbarElem = buildVideoListItemToolbar(videoCardDiv);
+                    injectionContainer.insertBefore(toolbarElem, injectionContainer.firstChild);
+                }
+            }
+            if (!toolbarElem) {
+                toolbarConfigSuccess = false;
+            }
+        }
+    }
+
+    if (toolbarConfigSuccess) {
+        if (durationContainers.length > 0) {
+            setConfigured(OPT_SFM_VIDEO_LIST_HIDE_DURATION_NAME, true);
+        }
+        if (titleContainers.length > 0) {
+            setConfigured(OPT_SFM_VIDEO_LIST_HIDE_TITLE_NAME, true);
+        }
+        if (previewContainers.length > 0) {
+            setConfigured(OPT_SFM_VIDEO_LIST_HIDE_PREVIEW_NAME, true);
+        }
+    }
+}
+
+function isVideoListItemsConfigured() {
+    return isConfigured(OPT_SFM_VIDEO_LIST_HIDE_DURATION_NAME) && isConfigured(OPT_SFM_VIDEO_LIST_HIDE_TITLE_NAME) && isConfigured(OPT_SFM_VIDEO_LIST_HIDE_PREVIEW_NAME);
+}
+
+/**
+ *
+ * @param elementsGetter {!function() -> Iterable<Element>}
+ * @param containerClass the addition CSS class for the opnd-container
+ * @return {!Array.<Element>} the containers
+ */
+function wrapInOpndContainers(elementsGetter, containerClass) {
+    return getOrWrapAllInOpndContainers(elementsGetter(), containerClass);
+}
+
+/**
+ *
+ * @returns {!Array.<Element>}
+ */
+function getVideoLengthStatDivs() {
+    const videoLengthStatDivs = [];
     const videoStatDivs = document.getElementsByClassName("video-preview-card__preview-overlay-stat");
     if (videoStatDivs.length > 0) {
         for (let i = 0; i < videoStatDivs.length; ++i) {
             const videoStatDiv = videoStatDivs[i];
             const videoLengthDiv = videoStatDiv.querySelector('div[data-test-selector="video-length"]');
             if (videoLengthDiv) {
-                setVisible([videoStatDiv], videoDurationVisible);
+                videoLengthStatDivs.push(videoStatDiv);
             }
         }
-        log("Updated Video List Item durations visible to [%s]", videoDurationVisible);
-        setConfigured(OPT_SFM_VIDEO_LIST_HIDE_DURATION_NAME, true);
     }
+    return videoLengthStatDivs;
 }
 
-function isVideoListItemsConfigured() {
-    return isConfigured(OPT_SFM_VIDEO_LIST_HIDE_DURATION_NAME); // TODO: && isConfigured(OPT_SFM_VIDEO_LIST_HIDE_TITLE_NAME) && isConfigured(OPT_SFM_VIDEO_LIST_HIDE_PREVIEW_NAME);
+
+function buildVideoListItemToolbar(videoCardDiv) {
+    const toolbarElem = document.createElement("div");
+    toolbarElem.classList.add(OPND_VIDEO_LIST_ITEM_TOOLBAR_CLASS);
+
+    const handleShowHideDurationAction = function () {
+        setVisible(videoCardDiv.getElementsByClassName(OPND_CONTAINER_VIDEO_LIST_ITEM_DURATION_CLASS), null);
+    };
+    const showHideDurationBtn = buildVideoListItemToolbarButton(handleShowHideDurationAction, "Duration");
+    toolbarElem.appendChild(showHideDurationBtn);
+
+    const handleShowHideTitleAction = function () {
+        setVisible(videoCardDiv.getElementsByClassName(OPND_CONTAINER_VIDEO_LIST_ITEM_TITLE_CLASS), null);
+    };
+    const showHideTitleBtn = buildVideoListItemToolbarButton(handleShowHideTitleAction, "Title");
+    toolbarElem.appendChild(showHideTitleBtn);
+
+
+    const handleShowHidePreviewAction = function () {
+        setVisible(videoCardDiv.getElementsByClassName(OPND_CONTAINER_VIDEO_LIST_ITEM_PREVIEW_CLASS), null);
+    };
+    const showHidePreviewBtn = buildVideoListItemToolbarButton(handleShowHidePreviewAction, "Preview");
+    toolbarElem.appendChild(showHidePreviewBtn);
+
+    return toolbarElem;
+}
+
+/**
+ * TODO: add images, tooltips, toggle images/tooltips when visible state changes
+ *
+ * @param onclick {!function}
+ * @param label {!string}
+ * @returns {HTMLButtonElement}
+ */
+function buildVideoListItemToolbarButton(onclick, label) {
+    const btn = document.createElement("button");
+    btn.textContent = label;
+    btn.onclick = onclick;
+    return btn;
 }
 
 
