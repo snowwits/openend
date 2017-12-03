@@ -91,10 +91,6 @@
         "message": "Items in video lists",
         "description": "Label of the Video List options sub-section."
     },
-    "options_sfm_videoList_hideDuration": {
-        "message": "Hide the video duration",
-        "description": "Label of the Hide Duration option."
-    },
     "options_sfm_videoList_hideTitle": {
         "message": "Hide the video title",
         "description": "Label of the Hide Title option."
@@ -102,6 +98,10 @@
     "options_sfm_videoList_hidePreview": {
         "message": "Hide the video preview",
         "description": "Label of the Hide Preview option."
+    },
+    "options_sfm_videoList_hideDuration": {
+        "message": "Hide the video duration",
+        "description": "Label of the Hide Duration option."
     },
     "options_general": {
         "message": "General",

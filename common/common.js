@@ -50,12 +50,12 @@ const OPT_SFM_PLAYER_HIDE_DURATION_NAME = "sfmPlayerHideDuration";
 const OPT_SFM_PLAYER_HIDE_DURATION_DEFAULT = true;
 const OPT_SFM_PLAYER_JUMP_DISTANCE_NAME = "sfmPlayerJumpDistance";
 const OPT_SFM_PLAYER_JUMP_DISTANCE_DEFAULT = "2m";
-const OPT_SFM_VIDEO_LIST_HIDE_DURATION_NAME = "sfmVideoListHideDuration";
-const OPT_SFM_VIDEO_LIST_HIDE_DURATION_DEFAULT = true;
 const OPT_SFM_VIDEO_LIST_HIDE_TITLE_NAME = "sfmVideoListHideTitle";
 const OPT_SFM_VIDEO_LIST_HIDE_TITLE_DEFAULT = true;
 const OPT_SFM_VIDEO_LIST_HIDE_PREVIEW_NAME = "sfmVideoListHidePreview";
 const OPT_SFM_VIDEO_LIST_HIDE_PREVIEW_DEFAULT = true;
+const OPT_SFM_VIDEO_LIST_HIDE_DURATION_NAME = "sfmVideoListHideDuration";
+const OPT_SFM_VIDEO_LIST_HIDE_DURATION_DEFAULT = true;
 const OPT_GENERAL_THEATRE_MODE_NAME = "generalTheatreMode";
 const OPT_GENERAL_THEATRE_MODE_DEFAULT = false;
 
@@ -65,9 +65,9 @@ function getDefaultOptionsCopy() {
         [OPT_SFM_CHANNELS_NAME]: OPT_SFM_CHANNELS_DEFAULT,
         [OPT_SFM_PLAYER_HIDE_DURATION_NAME]: OPT_SFM_PLAYER_HIDE_DURATION_DEFAULT,
         [OPT_SFM_PLAYER_JUMP_DISTANCE_NAME]: OPT_SFM_PLAYER_JUMP_DISTANCE_DEFAULT,
-        [OPT_SFM_VIDEO_LIST_HIDE_DURATION_NAME]: OPT_SFM_VIDEO_LIST_HIDE_DURATION_DEFAULT,
         [OPT_SFM_VIDEO_LIST_HIDE_TITLE_NAME]: OPT_SFM_VIDEO_LIST_HIDE_TITLE_DEFAULT,
         [OPT_SFM_VIDEO_LIST_HIDE_PREVIEW_NAME]: OPT_SFM_VIDEO_LIST_HIDE_PREVIEW_DEFAULT,
+        [OPT_SFM_VIDEO_LIST_HIDE_DURATION_NAME]: OPT_SFM_VIDEO_LIST_HIDE_DURATION_DEFAULT,
         [OPT_GENERAL_THEATRE_MODE_NAME]: OPT_GENERAL_THEATRE_MODE_DEFAULT
     };
 }
@@ -158,11 +158,6 @@ const OPND_CONTAINER_PLAYER_DURATION_CLASS = "opnd-container-player-duration";
  */
 const OPND_VIDEO_LIST_ITEM_TOOLBAR_CLASS = "opnd-video-list-item-toolbar";
 /**
- * The CSS class of the Open End container of a video list item's duration.
- * @type {string}
- */
-const OPND_CONTAINER_VIDEO_LIST_ITEM_DURATION_CLASS = "opnd-container-video-list-item-duration";
-/**
  * The CSS class of the Open End container of a video list item's title.
  * @type {string}
  */
@@ -172,6 +167,11 @@ const OPND_CONTAINER_VIDEO_LIST_ITEM_TITLE_CLASS = "opnd-container-video-list-it
  * @type {string}
  */
 const OPND_CONTAINER_VIDEO_LIST_ITEM_PREVIEW_CLASS = "opnd-container-video-list-item-preview";
+/**
+ * The CSS class of the Open End container of a video list item's duration.
+ * @type {string}
+ */
+const OPND_CONTAINER_VIDEO_LIST_ITEM_DURATION_CLASS = "opnd-container-video-list-item-duration";
 
 const OPND_PLAYER_SHOW_HIDE_DURATION_BTN_ID = "opnd-player-show-hide-duration-btn";
 const OPND_PLAYER_SHOW_HIDE_DURATION_IMG_ID = "opnd-player-show-hide-duration-img";

@@ -94,9 +94,9 @@ function getDefaultConfiguredFlagsCopy() {
     return {
         [OPT_SFM_PLAYER_HIDE_DURATION_NAME]: false,
         [OPT_SFM_PLAYER_JUMP_DISTANCE_NAME]: false,
-        [OPT_SFM_VIDEO_LIST_HIDE_DURATION_NAME]: false,
-        [OPT_SFM_VIDEO_LIST_HIDE_PREVIEW_NAME]: false,
         [OPT_SFM_VIDEO_LIST_HIDE_TITLE_NAME]: false,
+        [OPT_SFM_VIDEO_LIST_HIDE_PREVIEW_NAME]: false,
+        [OPT_SFM_VIDEO_LIST_HIDE_DURATION_NAME]: false,
         [OPT_GENERAL_THEATRE_MODE_NAME]: false,
     };
 }
@@ -479,31 +479,31 @@ function configureVideoListItems() {
         return;
     }
 
-    const durationContainers = wrapInOpndContainers(getVideoLengthStatDivs, OPND_CONTAINER_VIDEO_LIST_ITEM_DURATION_CLASS);
     const titleContainers = wrapInOpndContainers(() => {
         return document.querySelectorAll('a[data-a-target="video-preview-card-title-link"]')
     }, OPND_CONTAINER_VIDEO_LIST_ITEM_TITLE_CLASS);
     const previewContainers = wrapInOpndContainers(() => {
         return document.querySelectorAll('div[data-test-selector="preview-image-wrapper"]');
     }, OPND_CONTAINER_VIDEO_LIST_ITEM_PREVIEW_CLASS);
+    const durationContainers = wrapInOpndContainers(getVideoLengthStatDivs, OPND_CONTAINER_VIDEO_LIST_ITEM_DURATION_CLASS);
 
-    const setDurationVisible = !GLOBAL_options[OPT_SFM_VIDEO_LIST_HIDE_DURATION_NAME];
     const setTitleVisible = !GLOBAL_options[OPT_SFM_VIDEO_LIST_HIDE_TITLE_NAME];
     const setPreviewVisible = !GLOBAL_options[OPT_SFM_VIDEO_LIST_HIDE_PREVIEW_NAME];
+    const setDurationVisible = !GLOBAL_options[OPT_SFM_VIDEO_LIST_HIDE_DURATION_NAME];
 
     let toolbarConfigSuccess = true;
 
     if (isSfmDisabledForPage()) {
-        setVisible(durationContainers, true);
         setVisible(titleContainers, true);
         setVisible(previewContainers, true);
+        setVisible(durationContainers, true);
 
         // Remove toolbars
         removeElements(document.getElementsByClassName(OPND_VIDEO_LIST_ITEM_TOOLBAR_CLASS));
     } else if (isSfmEnabledForPage()) {
-        setVisible(durationContainers, setDurationVisible);
         setVisible(titleContainers, setTitleVisible);
         setVisible(previewContainers, setPreviewVisible);
+        setVisible(durationContainers, setDurationVisible);
 
         for (let i = 0; i < videoCardDivs.length; i++) {
             const videoCardDiv = videoCardDivs[i];
@@ -523,20 +523,20 @@ function configureVideoListItems() {
     }
 
     if (toolbarConfigSuccess) {
-        if (durationContainers.length > 0) {
-            setConfigured(OPT_SFM_VIDEO_LIST_HIDE_DURATION_NAME, true);
-        }
         if (titleContainers.length > 0) {
             setConfigured(OPT_SFM_VIDEO_LIST_HIDE_TITLE_NAME, true);
         }
         if (previewContainers.length > 0) {
             setConfigured(OPT_SFM_VIDEO_LIST_HIDE_PREVIEW_NAME, true);
         }
+        if (durationContainers.length > 0) {
+            setConfigured(OPT_SFM_VIDEO_LIST_HIDE_DURATION_NAME, true);
+        }
     }
 }
 
 function isVideoListItemsConfigured() {
-    return isConfigured(OPT_SFM_VIDEO_LIST_HIDE_DURATION_NAME) && isConfigured(OPT_SFM_VIDEO_LIST_HIDE_TITLE_NAME) && isConfigured(OPT_SFM_VIDEO_LIST_HIDE_PREVIEW_NAME);
+    return isConfigured(OPT_SFM_VIDEO_LIST_HIDE_TITLE_NAME) && isConfigured(OPT_SFM_VIDEO_LIST_HIDE_PREVIEW_NAME) && isConfigured(OPT_SFM_VIDEO_LIST_HIDE_DURATION_NAME);
 }
 
 /**
@@ -573,24 +573,23 @@ function buildVideoListItemToolbar(videoCardDiv) {
     const toolbarElem = document.createElement("div");
     toolbarElem.classList.add(OPND_VIDEO_LIST_ITEM_TOOLBAR_CLASS);
 
-    const handleShowHideDurationAction = function () {
-        setVisible(videoCardDiv.getElementsByClassName(OPND_CONTAINER_VIDEO_LIST_ITEM_DURATION_CLASS), null);
-    };
-    const showHideDurationBtn = buildVideoListItemToolbarButton(handleShowHideDurationAction, "Duration");
-    toolbarElem.appendChild(showHideDurationBtn);
-
     const handleShowHideTitleAction = function () {
         setVisible(videoCardDiv.getElementsByClassName(OPND_CONTAINER_VIDEO_LIST_ITEM_TITLE_CLASS), null);
     };
     const showHideTitleBtn = buildVideoListItemToolbarButton(handleShowHideTitleAction, "Title");
     toolbarElem.appendChild(showHideTitleBtn);
 
-
     const handleShowHidePreviewAction = function () {
         setVisible(videoCardDiv.getElementsByClassName(OPND_CONTAINER_VIDEO_LIST_ITEM_PREVIEW_CLASS), null);
     };
     const showHidePreviewBtn = buildVideoListItemToolbarButton(handleShowHidePreviewAction, "Preview");
     toolbarElem.appendChild(showHidePreviewBtn);
+
+    const handleShowHideDurationAction = function () {
+        setVisible(videoCardDiv.getElementsByClassName(OPND_CONTAINER_VIDEO_LIST_ITEM_DURATION_CLASS), null);
+    };
+    const showHideDurationBtn = buildVideoListItemToolbarButton(handleShowHideDurationAction, "Duration");
+    toolbarElem.appendChild(showHideDurationBtn);
 
     return toolbarElem;
 }

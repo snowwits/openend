@@ -71,14 +71,14 @@
     "options_sfm_videoList": {
         "message": "Einträge in Videolisten"
     },
-    "options_sfm_videoList_hideDuration": {
-        "message": "Videodauer verbergen"
-    },
     "options_sfm_videoList_hideTitle": {
         "message": "Videotitel verbergen"
     },
     "options_sfm_videoList_hidePreview": {
         "message": "Videovorschau verbergen"
+    },
+    "options_sfm_videoList_hideDuration": {
+        "message": "Videodauer verbergen"
     },
     "options_general": {
         "message": "Allgemein"

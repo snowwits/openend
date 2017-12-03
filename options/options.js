@@ -70,9 +70,9 @@ function getOptionsFromInputValues() {
         [OPT_SFM_CHANNELS_NAME]: getSelectOptionValues("sfm_channels"),
         [OPT_SFM_PLAYER_HIDE_DURATION_NAME]: getCheckboxValue("sfm_player_hideDuration"),
         [OPT_SFM_PLAYER_JUMP_DISTANCE_NAME]: getTextInputValue("sfm_player_jumpDistance"),
-        [OPT_SFM_VIDEO_LIST_HIDE_DURATION_NAME]: getCheckboxValue("sfm_videoList_hideDuration"),
         [OPT_SFM_VIDEO_LIST_HIDE_TITLE_NAME]: getCheckboxValue("sfm_videoList_hideTitle"),
         [OPT_SFM_VIDEO_LIST_HIDE_PREVIEW_NAME]: getCheckboxValue("sfm_videoList_hidePreview"),
+        [OPT_SFM_VIDEO_LIST_HIDE_DURATION_NAME]: getCheckboxValue("sfm_videoList_hideDuration"),
         [OPT_GENERAL_THEATRE_MODE_NAME]: getCheckboxValue("general_theatreMode"),
     };
 }
@@ -96,14 +96,14 @@ function updateInputsWithOptions(options) {
     if (OPT_SFM_PLAYER_JUMP_DISTANCE_NAME in options) {
         setTextInputValue("sfm_player_jumpDistance", options[OPT_SFM_PLAYER_JUMP_DISTANCE_NAME]);
     }
-    if (OPT_SFM_VIDEO_LIST_HIDE_DURATION_NAME in options) {
-        setCheckboxValue("sfm_videoList_hideDuration", options[OPT_SFM_VIDEO_LIST_HIDE_DURATION_NAME]);
-    }
     if (OPT_SFM_VIDEO_LIST_HIDE_TITLE_NAME in options) {
         setCheckboxValue("sfm_videoList_hideTitle", options[OPT_SFM_VIDEO_LIST_HIDE_TITLE_NAME]);
     }
     if (OPT_SFM_VIDEO_LIST_HIDE_PREVIEW_NAME in options) {
         setCheckboxValue("sfm_videoList_hidePreview", options[OPT_SFM_VIDEO_LIST_HIDE_PREVIEW_NAME]);
+    }
+    if (OPT_SFM_VIDEO_LIST_HIDE_DURATION_NAME in options) {
+        setCheckboxValue("sfm_videoList_hideDuration", options[OPT_SFM_VIDEO_LIST_HIDE_DURATION_NAME]);
     }
     if (OPT_GENERAL_THEATRE_MODE_NAME in options) {
         setCheckboxValue("general_theatreMode", options[OPT_GENERAL_THEATRE_MODE_NAME]);
@@ -217,9 +217,9 @@ function init() {
     setMsgToInnerHtml("sfm_player_jumpDistance-label", "options_sfm_player_jumpDistance");
     // Video List
     setMsgToInnerHtml("sfm_videoList-label", "options_sfm_videoList");
-    setMsgToInnerHtml("sfm_videoList_hideDuration-label", "options_sfm_videoList_hideDuration");
     setMsgToInnerHtml("sfm_videoList_hideTitle-label", "options_sfm_videoList_hideTitle");
     setMsgToInnerHtml("sfm_videoList_hidePreview-label", "options_sfm_videoList_hidePreview");
+    setMsgToInnerHtml("sfm_videoList_hideDuration-label", "options_sfm_videoList_hideDuration");
 
     // Twitch
     setMsgToInnerHtml("general-label", "options_general");
