@@ -50,23 +50,32 @@ const TWITCH_PLAYER_TOOLTIP_SPAN_TEXT_ATTR = "data-tip";
  */
 /* Variables that only need to be changed after a page change */
 let GLOBAL_elementsLoadedTimeoutReached = false;
-let GLOBAL_pageType = null;
+
 /**
+ *
+ * @type {?string} {@link TwitchPageType}
+ */
+let GLOBAL_pageType = null;
+
+/* Variables that can change at any given time */
+/**
+ * Options can change at any time (when the user changes the options).
+ */
+let GLOBAL_options = getDefaultOptionsCopy();
+/**
+ * The channel changes to null when a new page is loaded and changes to a non-null value, when the channel was determined.
+ * On video pages this can take some time because the channel cannot be parsed from the URL but can only be parsed from the DOM which is loaded asynchronously.
  *
  * @type {?Channel}
  */
 let GLOBAL_channel = null;
 
-/* Variables that need to be changed after option changes */
-let GLOBAL_options = getDefaultOptionsCopy();
-const SfmEnabledForPage = Object.freeze({
-    ENABLED: "ENABLED",
-    DISABLED: "DISABLED",
-    UNDETERMINED: "UNDETERMINED"
-});
-let GLOBAL_sfmEnabledForPage = SfmEnabledForPage.UNDETERMINED;
-/** Flags whether the components have been configured yet */
-let GLOBAL_configured_flags = getDefaultConfiguredFlagsCopy();
+/* Variables that need to be changed after options or channel changes */
+let GLOBAL_sfmEnabledForPage = SfmEnabledForChannel.UNDETERMINED;
+/**
+ * Flags whether the dependencies of certain options have been configured yet
+ */
+let GLOBAL_configuredFlags = getDefaultConfiguredFlagsCopy();
 
 
 /*
@@ -107,7 +116,7 @@ function getDefaultConfiguredFlagsCopy() {
  * @return {?boolean} true if configured, false if not and null if unknown optionName
  */
 function isConfigured(optionName) {
-    return GLOBAL_configured_flags[optionName];
+    return GLOBAL_configuredFlags[optionName];
 }
 
 /**
@@ -117,11 +126,19 @@ function isConfigured(optionName) {
  * @param value {!boolean}
  */
 function setConfigured(optionName, value) {
-    GLOBAL_configured_flags[optionName] = value;
+    GLOBAL_configuredFlags[optionName] = value;
     if (value) {
-        log("Elements depending on option [%s] configured", optionName);
+        log("Dependencies of option [%s] configured", optionName);
     } else {
-        log("Elements depending on option [%s] need reconfiguration", optionName);
+        log("Dependencies of option [%s] need reconfiguration", optionName);
+    }
+}
+
+function setSfmOptionsToNotConfigured() {
+    for (let optionName in GLOBAL_configuredFlags) {
+        if (isSfmOption(optionName)) {
+            setConfigured(optionName, false);
+        }
     }
 }
 
@@ -133,12 +150,16 @@ function resetGlobalPageFlags() {
 }
 
 function resetGlobalPageStateFlags(changedOptions) {
-    const sfmEnabledForPageChanged = OPT_SFM_ENABLED_NAME in changedOptions || OPT_SFM_CHANNELS_NAME in changedOptions;
-    if (sfmEnabledForPageChanged) {
-        GLOBAL_sfmEnabledForPage = SfmEnabledForPage.UNDETERMINED;
+    // If something about SFM enabled changed, sfmEnabledForPage needs re-determination.
+    // Also, all SFM dependencies need reconfiguration (they may be independent from sfmEnabledForPage, for example video list items on a directory/game/XXX page can be from several channels).
+    if (OPT_SFM_ENABLED_NAME in changedOptions || OPT_SFM_CHANNELS_NAME in changedOptions) {
+        updateSfmEnabledForPage(SfmEnabledForChannel.UNDETERMINED);
+
+        setSfmOptionsToNotConfigured();
     }
-    for (let optionName in GLOBAL_configured_flags) {
-        if (sfmEnabledForPageChanged && isSfmOption(optionName) || optionName in changedOptions) {
+    // All changed options need redetermination
+    for (let optionName in GLOBAL_configuredFlags) {
+        if (optionName in changedOptions) {
             setConfigured(optionName, false);
         }
     }
@@ -153,21 +174,6 @@ function determinePageType() {
         }
     }
     log("Page type: %s", GLOBAL_pageType);
-}
-
-/**
- *
- * @param channel {?Channel}
- */
-function updateChannel(channel) {
-    GLOBAL_channel = channel;
-    log("Updated channel to [%o]", GLOBAL_channel);
-
-    // Notify about TabInfo change
-    const tabInfoMessage = buildTabInfoMessage();
-    chrome.runtime.sendMessage(tabInfoMessage, function (response) {
-        log("Message [%o] was successfully sent", tabInfoMessage);
-    });
 }
 
 function startCheckPageTask() {
@@ -234,7 +240,7 @@ function isPageConfigured() {
 }
 
 function formatPageConfigurationState() {
-    return `channelDetermined: ${isChannelDetermined()}, sfmEnabledForPageDetermine: ${isSfmEnabledForPageDetermined()}, playerConfigured: ${isPlayerConfigured()}, videoListItemsConfigured: ${isVideoListItemsConfigured()}, theatreModeConfigured: ${isTheatreModeConfigured()}`;
+    return `channelDetermined: ${isChannelDetermined()}, sfmEnabledForPageDetermined: ${isSfmEnabledForPageDetermined()}, playerConfigured: ${isPlayerConfigured()}, videoListItemsConfigured: ${isVideoListItemsConfigured()}, theatreModeConfigured: ${isTheatreModeConfigured()}`;
 }
 
 
@@ -268,41 +274,57 @@ function isChannelDetermined() {
     return GLOBAL_channel !== null
 }
 
+/**
+ *
+ * @param channel {?Channel}
+ */
+function updateChannel(channel) {
+    const isChange = GLOBAL_channel !== channel;
+    // If the channel changed, sfmEnabledForPage needs to be redetermined.
+    // Also, the TabInfo message needs to be send out
+    if (isChange) {
+        GLOBAL_channel = channel;
+        log("Updated [channel] to [%o]", GLOBAL_channel);
+
+        updateSfmEnabledForPage(SfmEnabledForChannel.UNDETERMINED);
+
+        // Notify about TabInfo change
+        const tabInfoMessage = buildTabInfoMessage();
+        chrome.runtime.sendMessage(tabInfoMessage, function (response) {
+            log("Message [%o] was successfully sent", tabInfoMessage);
+        });
+    }
+}
+
 function determineSfmEnabledForPage() {
     if (isSfmEnabledForPageDetermined()) {
         return;
     }
-    const sfmEnabled = GLOBAL_options[OPT_SFM_ENABLED_NAME];
-    if (SfmEnabled.ALWAYS === sfmEnabled) {
-        GLOBAL_sfmEnabledForPage = SfmEnabledForPage.ENABLED;
-    } else if (SfmEnabled.NEVER === sfmEnabled) {
-        GLOBAL_sfmEnabledForPage = SfmEnabledForPage.DISABLED;
-    } else if (SfmEnabled.CUSTOM) {
-        if (GLOBAL_channel !== null) {
-            const sfmChannels = GLOBAL_options[OPT_SFM_CHANNELS_NAME];
-            if (sfmChannels.includes(GLOBAL_channel.qualifiedName)) {
-                GLOBAL_sfmEnabledForPage = SfmEnabledForPage.ENABLED;
-            }
-            else {
-                GLOBAL_sfmEnabledForPage = SfmEnabledForPage.DISABLED;
-            }
-        }
-    }
-    if (isSfmEnabledForPageDetermined()) {
-        log("Spoiler-Free Mode enabled for page: %s", GLOBAL_sfmEnabledForPage);
-    }
+    updateSfmEnabledForPage(isSfmEnabledForChannel(GLOBAL_options, GLOBAL_channel));
 }
 
 function isSfmEnabledForPageDetermined() {
-    return SfmEnabledForPage.UNDETERMINED !== GLOBAL_sfmEnabledForPage;
+    return SfmEnabledForChannel.UNDETERMINED !== GLOBAL_sfmEnabledForPage;
 }
 
 function isSfmEnabledForPage() {
-    return SfmEnabledForPage.ENABLED === GLOBAL_sfmEnabledForPage;
+    return SfmEnabledForChannel.ENABLED === GLOBAL_sfmEnabledForPage;
 }
 
 function isSfmDisabledForPage() {
-    return SfmEnabledForPage.DISABLED === GLOBAL_sfmEnabledForPage;
+    return SfmEnabledForChannel.DISABLED === GLOBAL_sfmEnabledForPage;
+}
+
+function updateSfmEnabledForPage(sfmEnabledForPage) {
+    const isChange = GLOBAL_sfmEnabledForPage !== sfmEnabledForPage;
+
+    // If the sfmEnabledForPage changed, SFM dependencies need reconfiguration
+    if (isChange) {
+        GLOBAL_sfmEnabledForPage = sfmEnabledForPage;
+        log("Updated [sfmEnabledForPage] to [%o]", GLOBAL_sfmEnabledForPage);
+
+        setSfmOptionsToNotConfigured();
+    }
 }
 
 
@@ -312,7 +334,7 @@ function isSfmDisabledForPage() {
  * ====================================================================================================
  */
 function configurePlayer() {
-    if (isPlayerConfigured() || !isSfmEnabledForPageDetermined()) {
+    if (isPlayerConfigured()) {
         return;
     }
 
@@ -337,8 +359,7 @@ function configurePlayer() {
             updatePayerDurationVisibleAndShowHideButton(true, !GLOBAL_options[OPT_SFM_PLAYER_HIDE_DURATION_NAME]);
         }
     }
-    // If SFM disabled, configure accordingly (may remove)
-    else if (isSfmDisabledForPage()) {
+    else {
         // Remove old toolbar
         const toolbarElem = document.getElementById(OPND_PLAYER_TOOLBAR_ID);
         if (toolbarElem) {
@@ -470,7 +491,7 @@ function updateJumpButtonsAfterJumpDistanceChange() {
  * </div>
  */
 function configureVideoListItems() {
-    if (isVideoListItemsConfigured() || !isSfmEnabledForPageDetermined()) {
+    if (isVideoListItemsConfigured()) {
         return;
     }
 
@@ -479,64 +500,116 @@ function configureVideoListItems() {
         return;
     }
 
-    const titleContainers = wrapInOpndContainers(() => {
-        return document.querySelectorAll('a[data-a-target="video-preview-card-title-link"]')
-    }, OPND_CONTAINER_VIDEO_LIST_ITEM_TITLE_CLASS);
-    const previewContainers = wrapInOpndContainers(() => {
-        return document.querySelectorAll('div[data-test-selector="preview-image-wrapper"]');
-    }, OPND_CONTAINER_VIDEO_LIST_ITEM_PREVIEW_CLASS);
-    const durationContainers = wrapInOpndContainers(getVideoLengthStatDivs, OPND_CONTAINER_VIDEO_LIST_ITEM_DURATION_CLASS);
+    const allTitleContainers = getVideoTitleOpndContainers();
+    const allPreviewContainers = getVideoPreviewOpndContainers();
+    const allDurationContainers = getVideoDurationOpndContainers();
 
     const setTitleVisible = !GLOBAL_options[OPT_SFM_VIDEO_LIST_HIDE_TITLE_NAME];
     const setPreviewVisible = !GLOBAL_options[OPT_SFM_VIDEO_LIST_HIDE_PREVIEW_NAME];
     const setDurationVisible = !GLOBAL_options[OPT_SFM_VIDEO_LIST_HIDE_DURATION_NAME];
 
-    let toolbarConfigSuccess = true;
-
-    if (isSfmDisabledForPage()) {
-        setVisible(titleContainers, true);
-        setVisible(previewContainers, true);
-        setVisible(durationContainers, true);
-
-        // Remove toolbars
-        removeElements(document.getElementsByClassName(OPND_VIDEO_LIST_ITEM_TOOLBAR_CLASS));
-    } else if (isSfmEnabledForPage()) {
-        setVisible(titleContainers, setTitleVisible);
-        setVisible(previewContainers, setPreviewVisible);
-        setVisible(durationContainers, setDurationVisible);
+    // If SFM = enabled, configure according to the SFM config
+    if (isSfmEnabledForPage()) {
+        setVisible(allTitleContainers, setTitleVisible);
+        setVisible(allPreviewContainers, setPreviewVisible);
+        setVisible(allDurationContainers, setDurationVisible);
 
         for (let i = 0; i < videoCardDivs.length; i++) {
             const videoCardDiv = videoCardDivs[i];
-            // Toolbar
-            let toolbarElem = videoCardDiv.querySelector("." + OPND_VIDEO_LIST_ITEM_TOOLBAR_CLASS);
-            if (!toolbarElem) {
-                const injectionContainer = videoCardDiv.querySelector('div[data-test-selector="video-title"]');
-                if (injectionContainer) {
-                    toolbarElem = buildVideoListItemToolbar(videoCardDiv);
-                    injectionContainer.insertBefore(toolbarElem, injectionContainer.firstChild);
-                }
+            addVideoListItemToolbar(videoCardDiv);
+        }
+    }
+    // If SFM = disabled, show everything and remove toolbars
+    else if (isSfmDisabledForPage()) {
+        setVisible(allTitleContainers, true);
+        setVisible(allPreviewContainers, true);
+        setVisible(allDurationContainers, true);
+
+        removeVideoListItemToolbars();
+    }
+    // If SFM = undetermined (maybe because sfmEnabled=CUSTOM and not on a channel page),
+    // only hide information of videos of channels for which SFM is enabled.
+    else {
+        for (let i = 0; i < videoCardDivs.length; i++) {
+            const videoCardDiv = videoCardDivs[i];
+
+            const videoTitleContainer = getVideoTitleOpndContainers(videoCardDiv);
+            const videoPreviewContainer = getVideoPreviewOpndContainers(videoCardDiv);
+            const videoDurationContainer = getVideoDurationOpndContainers(videoCardDiv);
+
+            const channel = getVideoChannel(videoCardDiv);
+            const sfmEnabledForChannel = isSfmEnabledForChannel(GLOBAL_options, channel);
+            if (SfmEnabledForChannel.ENABLED === sfmEnabledForChannel) {
+                setVisible(videoTitleContainer, setTitleVisible);
+                setVisible(videoPreviewContainer, setPreviewVisible);
+                setVisible(videoDurationContainer, setDurationVisible);
+
+                addVideoListItemToolbar(videoCardDiv);
             }
-            if (!toolbarElem) {
-                toolbarConfigSuccess = false;
+            // DISABLED or UNDETERMINED
+            else {
+                setVisible(videoTitleContainer, true);
+                setVisible(videoPreviewContainer, true);
+                setVisible(videoDurationContainer, true);
+
+                removeVideoListItemToolbars(videoCardDiv);
             }
         }
     }
 
-    if (toolbarConfigSuccess) {
-        if (titleContainers.length > 0) {
-            setConfigured(OPT_SFM_VIDEO_LIST_HIDE_TITLE_NAME, true);
-        }
-        if (previewContainers.length > 0) {
-            setConfigured(OPT_SFM_VIDEO_LIST_HIDE_PREVIEW_NAME, true);
-        }
-        if (durationContainers.length > 0) {
-            setConfigured(OPT_SFM_VIDEO_LIST_HIDE_DURATION_NAME, true);
-        }
+    if (allTitleContainers.length > 0) {
+        setConfigured(OPT_SFM_VIDEO_LIST_HIDE_TITLE_NAME, true);
+    }
+    if (allPreviewContainers.length > 0) {
+        setConfigured(OPT_SFM_VIDEO_LIST_HIDE_PREVIEW_NAME, true);
+    }
+    if (allDurationContainers.length > 0) {
+        setConfigured(OPT_SFM_VIDEO_LIST_HIDE_DURATION_NAME, true);
     }
 }
 
 function isVideoListItemsConfigured() {
     return isConfigured(OPT_SFM_VIDEO_LIST_HIDE_TITLE_NAME) && isConfigured(OPT_SFM_VIDEO_LIST_HIDE_PREVIEW_NAME) && isConfigured(OPT_SFM_VIDEO_LIST_HIDE_DURATION_NAME);
+}
+
+/**
+ *
+ * @param videoCardDiv {!Element} the video card div in which the toolbar should be added
+ * @returns {?Element} the toolbar if it could be added
+ */
+function addVideoListItemToolbar(videoCardDiv) {
+    let toolbarElem = videoCardDiv.querySelector("." + OPND_VIDEO_LIST_ITEM_TOOLBAR_CLASS);
+    if (!toolbarElem) {
+        const injectionContainer = videoCardDiv.querySelector('div[data-test-selector="video-title"]');
+        if (injectionContainer) {
+            toolbarElem = buildVideoListItemToolbar(videoCardDiv);
+            injectionContainer.insertBefore(toolbarElem, injectionContainer.firstChild);
+        }
+    }
+    return toolbarElem;
+}
+
+/**
+ *
+ * @param videoCardDiv {?Element} the video card div if toolbars should only be removed inside this dive or null to remove all
+ */
+function removeVideoListItemToolbars(videoCardDiv = null) {
+    const queryRoot = videoCardDiv ? videoCardDiv : document;
+    removeElements(queryRoot.getElementsByClassName(OPND_VIDEO_LIST_ITEM_TOOLBAR_CLASS));
+}
+
+function getVideoTitleOpndContainers(videoCardDiv = null) {
+    const queryRoot = videoCardDiv ? videoCardDiv : document;
+    return wrapInOpndContainers(() => queryRoot.querySelectorAll('a[data-a-target="video-preview-card-title-link"]'), OPND_CONTAINER_VIDEO_LIST_ITEM_TITLE_CLASS);
+}
+
+function getVideoPreviewOpndContainers(videoCardDiv = null) {
+    const queryRoot = videoCardDiv ? videoCardDiv : document;
+    return wrapInOpndContainers(() => queryRoot.querySelectorAll('div[data-test-selector="preview-image-wrapper"]'), OPND_CONTAINER_VIDEO_LIST_ITEM_PREVIEW_CLASS);
+}
+
+function getVideoDurationOpndContainers(videoCardDiv = null) {
+    return wrapInOpndContainers(() => getVideoLengthStatDivs(videoCardDiv), OPND_CONTAINER_VIDEO_LIST_ITEM_DURATION_CLASS);
 }
 
 /**
@@ -550,12 +623,13 @@ function wrapInOpndContainers(elementsGetter, containerClass) {
 }
 
 /**
- *
+ * @param videoCardDiv {?Element} the video card div to use for the query root or null to use the document
  * @returns {!Array.<Element>}
  */
-function getVideoLengthStatDivs() {
+function getVideoLengthStatDivs(videoCardDiv = null) {
     const videoLengthStatDivs = [];
-    const videoStatDivs = document.getElementsByClassName("video-preview-card__preview-overlay-stat");
+    const queryRoot = videoCardDiv ? videoCardDiv : document;
+    const videoStatDivs = queryRoot.getElementsByClassName("video-preview-card__preview-overlay-stat");
     if (videoStatDivs.length > 0) {
         for (let i = 0; i < videoStatDivs.length; ++i) {
             const videoStatDiv = videoStatDivs[i];
@@ -568,6 +642,21 @@ function getVideoLengthStatDivs() {
     return videoLengthStatDivs;
 }
 
+/**
+ *
+ * Video channel anchor:
+ * <a class="video-preview-card__owner-display-name" data-a-target="video-preview-card-channel-link" data-test-selector="video-owner" title="xQcOW" href="/xqcow">xQcOW</a>
+ *
+ * @param videoCardDiv
+ * @return {?Channel} the channel if it can be determined
+ */
+function getVideoChannel(videoCardDiv) {
+    const channelAnchor = videoCardDiv.querySelector('a[data-test-selector="video-owner"]');
+    if (channelAnchor) {
+        return TWITCH_PLATFORM.parseChannelFromUrl(channelAnchor.hostname, channelAnchor.pathname, channelAnchor.search);
+    }
+    return null;
+}
 
 function buildVideoListItemToolbar(videoCardDiv) {
     const toolbarElem = document.createElement("div");
@@ -863,7 +952,7 @@ function listenForOptionsChanges() {
 }
 
 function handleOptionUpdate(changes, namespace) {
-    log("[%s storage] Changes: %o", namespace, changes);
+    log("[%s storage] Option changes: %o", namespace, changes);
     for (const key in changes) {
         GLOBAL_options[key] = changes[key].newValue;
     }

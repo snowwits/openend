@@ -89,6 +89,38 @@ function isSfmOption(optionName) {
     return optionName.includes("sfm");
 }
 
+const SfmEnabledForChannel = Object.freeze({
+    ENABLED: "ENABLED",
+    DISABLED: "DISABLED",
+    UNDETERMINED: "UNDETERMINED"
+});
+
+/**
+ * @param options the options
+ * @param channel {?Channel} the channel to check
+ * @return {!string} {@link SfmEnabledForChannel}
+ */
+function isSfmEnabledForChannel(options, channel) {
+    const sfmEnabled = options[OPT_SFM_ENABLED_NAME];
+    if (SfmEnabled.ALWAYS === sfmEnabled) {
+        return SfmEnabledForChannel.ENABLED;
+    } else if (SfmEnabled.NEVER === sfmEnabled) {
+        return SfmEnabledForChannel.DISABLED;
+    } else if (SfmEnabled.CUSTOM) {
+        if (channel !== null) {
+            const sfmChannels = options[OPT_SFM_CHANNELS_NAME];
+            if (sfmChannels.includes(channel.qualifiedName)) {
+                return SfmEnabledForChannel.ENABLED;
+            }
+            else {
+                return SfmEnabledForChannel.DISABLED;
+            }
+        }
+        return SfmEnabledForChannel.UNDETERMINED;
+    }
+}
+
+
 /*
  * ====================================================================================================
  * MESSAGE PASSING
@@ -651,7 +683,7 @@ class Platform {
 }
 
 /* Global Page Type Flags */
-const TwitchPageType = {
+const TwitchPageType = Object.freeze({
     /**
      * "https://www.twitch.tv"
      */
@@ -688,7 +720,7 @@ const TwitchPageType = {
      * "https://clips.twitch.tv/PiercingMoralOctopusUncleNox"
      */
     UNKNOWN: "UNKNOWN",
-};
+});
 
 
 class TwitchPlatform extends Platform {
@@ -708,7 +740,8 @@ class TwitchPlatform extends Platform {
 
     buildChannel(channelName) {
         if (TWITCH_USERNAME_REGEX.test(channelName)) {
-            return new Channel(this, channelName);
+            const channelNameLowerCase = channelName.toLowerCase();
+            return new Channel(this, channelNameLowerCase);
         }
         throw new Error("The given channel name is not a valid channel name (regex: " + TWITCH_USERNAME_REGEX + ")");
     }
@@ -828,13 +861,13 @@ class TwitchPlatform extends Platform {
     }
 }
 
-const TWITCH_PLATFORM = new TwitchPlatform();
+const TWITCH_PLATFORM = Object.freeze(new TwitchPlatform());
 
 /**
  *
- * @type {Array.<Platform>}
+ * @type {ReadonlyArray.<Platform>}
  */
-const ALL_PLATFORMS = [TWITCH_PLATFORM];
+const ALL_PLATFORMS = Object.freeze([TWITCH_PLATFORM]);
 
 class Channel {
     /**
