@@ -1,8 +1,8 @@
 # Open End
-Chrome extension that lets you hide the title, preview and duration of videos on Twitch.tv to prevent spoilers when watching sports or e-sports videos.
+Chrome extension that lets you hide the title, preview and duration of videos on Twitch.tv to prevent spoilers when watching e-sports or sports videos.
 
 ## Description 
-Sometimes you can't or don't want to watch a sports or e-sports event live. But when you are watching the videos later, the titles, preview thumbnails or durations of videos can often give away the ending. For example, if you are watching a best-of-3 series and the video has almost reached its end during second match, you know that it will be a 2:0 victory.
+Sometimes you can't or don't want to watch a e-sports or sports event live. But when you are watching the videos later, the titles, preview thumbnails or durations of videos can often give away the ending. For example, if you are watching a best-of-3 series and the video has almost reached its end during second match, you know that it will be a 2:0 victory.
 Or if you are scrolling through a video list to find the semifinals videos and accidentally read the finalists names in the grand final video title, the excitement for the semifinals quickly fades away.
 
 Open End prevents those kinds of spoilers by hiding certain information on Twitch.tv. Its features include:

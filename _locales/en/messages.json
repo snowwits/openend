@@ -1,6 +1,6 @@
 {
     "manifest_description": {
-        "message": "Hides the duration and title of videos on Twitch.tv to prevent spoilers when watching sports or e-sports videos.",
+        "message": "Hides the duration and title of videos on Twitch.tv to prevent spoilers when watching e-sports or sports videos.",
         "description": "Extension description."
     },
     "playerShowHideDuration_visible": {
