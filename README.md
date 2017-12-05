@@ -46,6 +46,13 @@ Open End prevents those kinds of spoilers by hiding certain information on Twitc
 - Save your changes by clicking the "Save" button
 - Close the options
 
+### Navigation in the video without a seek bar
+- You can use the arrow keys (<-, ->) on your keyboard for 10 second time jumps
+- If a video is run in Spoiler-Free Mode, Open End adds a quick navigation toolbar which you can use to make larger time jumps
+- The length of the time jumps can be specified in the same format as twitch time stamps
+  - E.g. \"2\" for 2 minutes or \"1h2m3s\" for 1 hour, 2 minutes and 3 seconds".
+- When you hit Enter while being in the time jump text field, a forward jump is triggered 
+
 ### I only want the spoiler-free video player but I don't want to hide information in video lists
 - Click on the Open End icon in the Chrome toolbar. A popup opens
 - On the popup click on "Options..."
