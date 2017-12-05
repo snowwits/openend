@@ -21,15 +21,11 @@ Open End prevents those kinds of spoilers by hiding certain information on Twitc
 - Option changes are directly applied (no need to refresh the page)
 - Auto-enter the Theatre Mode
 
-### Limitations
-- Currently only Twitch.tv is supported, YouTube.com support is planned
-- Quick video navigation currently requires a reload of the page. Further investigation is needed to determine if there is a way that this can be done without having to reload the page (like when you seek normally using the seek bar)
-
 ## Usage
 See documentation in Chrome Web Store: TODO
 
 ## Roadmap and Version Notes
-[See here](version_notes.md)
+[See here](VERSION_NOTES.md)
 
 ## Contact
 If you have questions or feature requests you can contact me:
