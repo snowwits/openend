@@ -23,7 +23,24 @@ Open End prevents those kinds of spoilers by hiding certain information on Twitc
 - Can be used alongside BetterTTV without problems
 
 ## Usage
-See documentation in Chrome Web Store: TODO
+### Enable/Disable Spoiler-free Mode
+- Click on the Open End icon in the Chrome toolbar
+- Choose one of the options under "Enable Spoiler-Free Mode" (Never, Always or Only on selected channels)
+### Enable Spoiler-free Mode only for a specific channel
+**Option A: On the popup**
+- Click on the Open End icon in the Chrome toolbar. A popup opens
+- On the popup select "(*) Only on selected channels"
+- Check "[x] Enable Spoiler-Free Mode"
+
+**Option B: In the options**
+- Click on the Open End icon in the Chrome toolbar. A popup opens
+- On the popup click on "Options..."
+- Make sure, you have selected "(*) Only on selected channels"
+- In the Options, put the complete URL of a channel ("https://www.twitch.tv/playoverwatch") or the qualified name of a channel ("twitch.tv/playoverwatch") in the text field next to the button "Add channel"
+- Click "Add channel" to add the channel. It will be added to the list of selected channels
+- Save your changes by clicking the "Save" button
+- Close the options
+
 
 ## Roadmap and Version Notes
 [See here](VERSION_NOTES.md)

@@ -47,7 +47,7 @@ const SfmEnabled = Object.freeze({
 });
 
 const OPT_SFM_ENABLED_NAME = "sfmEnabled";
-const OPT_SFM_ENABLED_DEFAULT = SfmEnabled.ALWAYS;
+const OPT_SFM_ENABLED_DEFAULT = SfmEnabled.NEVER;
 const OPT_SFM_CHANNELS_NAME = "sfmChannels";
 const OPT_SFM_CHANNELS_DEFAULT = Object.freeze([]);
 const OPT_SFM_PLAYER_HIDE_DURATION_NAME = "sfmPlayerHideDuration";
