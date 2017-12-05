@@ -25,10 +25,10 @@
     "content_scripts": [
         {
             "matches": ["*://*.twitch.tv/*"],
-            "css": ["content_script/twitch.tv.css"],
+            "css": ["content_scripts/twitch.tv.css"],
             "js": [
                 "common/common.js",
-                "content_script/twitch.tv.js"
+                "content_scripts/twitch.tv.js"
             ],
             "run_at": "document_end"
         }
