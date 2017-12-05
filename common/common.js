@@ -18,8 +18,12 @@
  * LOGGING
  * ====================================================================================================
  */
+const LOG_ENABLED = true;
+
 function logWithComponent(component, msg, ...substitutions) {
-    console.log("OPND[" + component + "]: " + msg, ...substitutions);
+    if (LOG_ENABLED) {
+        console.log("OPND[" + component + "]: " + msg, ...substitutions);
+    }
 }
 
 function warnWithComponent(component, msg, ...substitutions) {
