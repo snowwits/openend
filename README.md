@@ -25,7 +25,7 @@ Open End prevents those kinds of spoilers by hiding certain information on Twitc
 See documentation in Chrome Web Store: TODO
 
 ## Roadmap and Version Notes
-[See here](version_notes_tmp.md)
+[See here](VERSION_NOTES.md)
 
 ## Contact
 If you have questions or feature requests you can contact me:
