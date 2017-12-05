@@ -31,9 +31,13 @@
             }
         }
     },
-    "playerJump_errMsg": {
-        "message": "Jump distance format: \"2\" for 2 minutes or \"1h2m3s\" for 1 hour, 2 minutes and 3 seconds",
-        "description": "The error message to be displayed the Jump Distance is invalid."
+    "playerJump_help": {
+        "message": "Time jump format: \"2\" for 2 minutes or \"1h2m3s\" for 1 hour, 2 minutes and 3 seconds",
+        "description": "The help message to be displayed for the Jump Distance input."
+    },
+    "playerJump_err": {
+        "message": "Invalid jump distance",
+        "description": "The error message to be displayed if the Jump Distance is invalid."
     },
     "videoListItemShowHideTitle_visible": {
         "message": "Hide title",
@@ -164,7 +168,7 @@
         "description": "The current channel label."
     },
     "browserAction_currentChannelSfmEnabled": {
-        "message": "Enable Spoiler-Free Mode",
+        "message": "Enable Spoiler-Free Mode (only effective if \"Only on selected channels\" is selected)",
         "description": "The label for the Spoiler-Free Mode state of the channel."
     },
     "hello": {

@@ -457,11 +457,18 @@ function updateJumpButtonsAfterJumpDistanceChange() {
 
     if (jumpDistanceInput && playerJumpBackwardTooltipSpan && playerJumpForwardTooltipSpan) {
         const jumpDistanceInputValue = normalizeDurationString(jumpDistanceInput.value);
+        const jumpDistanceValue = parseDuration(jumpDistanceInputValue);
+        let backwardMsg;
+        let forwardMsg;
+        if (jumpDistanceValue > 0) {
+            backwardMsg = chrome.i18n.getMessage("playerJumpBackward", jumpDistanceInputValue);
+            forwardMsg = chrome.i18n.getMessage("playerJumpForward", jumpDistanceInputValue);
+        }
+        else {
+            backwardMsg = forwardMsg = chrome.i18n.getMessage("playerJump_err");
+        }
 
-        const backwardMsg = chrome.i18n.getMessage("playerJumpBackward", jumpDistanceInputValue);
         playerJumpBackwardTooltipSpan.setAttribute(TWITCH_PLAYER_TOOLTIP_SPAN_TEXT_ATTR, backwardMsg);
-
-        const forwardMsg = chrome.i18n.getMessage("playerJumpForward", jumpDistanceInputValue);
         playerJumpForwardTooltipSpan.setAttribute(TWITCH_PLAYER_TOOLTIP_SPAN_TEXT_ATTR, forwardMsg);
     }
 }
@@ -796,9 +803,8 @@ function buildPlayerToolbar() {
     const jumpDistanceInput = document.createElement("input");
     jumpDistanceInput.type = "text";
     jumpDistanceInput.id = OPND_PLAYER_JUMP_DISTANCE_INPUT_ID;
-    // TODO: Figure out how to check the jump distance string and how to display the error message
-    //jumpDistanceInput.pattern = DURATION_PATTERN;
-    //jumpDistanceInput.title = chrome.i18n.getMessage("playerJump_errMsg");
+    jumpDistanceInput.pattern = DURATION_PATTERN;
+    jumpDistanceInput.title = chrome.i18n.getMessage("playerJump_help");
     toolbar.appendChild(jumpDistanceInput);
 
     // Build "Jump Forward" button

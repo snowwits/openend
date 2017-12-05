@@ -26,8 +26,11 @@
             }
         }
     },
-    "playerJump_errMsg": {
-        "message": "Format: \"2\" für zwei Minuten oder \"1h2m3s\" for 1 Stunde, 2 Minuten and 3 Sekunden"
+    "playerJump_help": {
+        "message": "Zeitsprungformat: \"2\" für zwei Minuten oder \"1h2m3s\" für 1 Stunde, 2 Minuten and 3 Sekunden"
+    },
+    "playerJump_err": {
+        "message": "Ungültige Zeitsprunglänge"
     },
     "videoListItemShowHideTitle_visible": {
         "message": "Titel verbergen"
