@@ -168,7 +168,7 @@
         "description": "The current channel label."
     },
     "browserAction_currentChannelSfmEnabled": {
-        "message": "Enable Spoiler-Free Mode",
+        "message": "Enable Spoiler-Free Mode<br>(only effective if \"Only on selected channels\" selected)",
         "description": "The label for the Spoiler-Free Mode state of the channel."
     },
     "hello": {
