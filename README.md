@@ -28,23 +28,23 @@ Open End prevents those kinds of spoilers by hiding certain information on Twitc
 - **Options:** On the popup you can click on the "Options..." button to open the options of the extension. Explore the options and customize the extension as you like it
 
 ### Enable/Disable Spoiler-free Mode
-- Click on the Open End icon in the Chrome toolbar
-- Choose one of the options under "Enable Spoiler-Free Mode" ("Never", "Always" or "Only on selected channels")
+1. Click on the Open End icon in the Chrome toolbar
+2. Choose one of the options under "Enable Spoiler-Free Mode" ("Never", "Always" or "Only on selected channels")
 
 ### Enable Spoiler-free Mode only for a specific channel
 **Option A: Via the toolbar icon**
-- Click on the Open End icon in the Chrome toolbar. A popup opens
-- On the popup select "(*) Only on selected channels"
-- Check "[x] Enable Spoiler-Free Mode"
+1. Click on the Open End icon in the Chrome toolbar. A popup opens
+2. On the popup select "(*) Only on selected channels"
+3. Check "[x] Enable Spoiler-Free Mode"
 
 **Option B: Via the options**
-- Click on the Open End icon in the Chrome toolbar. A popup opens
-- On the popup click on "Options..."
-- Make sure, you have selected "(*) Only on selected channels"
-- In the Options, put the complete URL of a channel ("https://www.twitch.tv/playoverwatch") or the qualified name of a channel ("twitch.tv/playoverwatch") in the text field next to the button "Add channel"
-- Click "Add channel" to add the channel. It will be added to the list of selected channels
-- Save your changes by clicking the "Save" button
-- Close the options
+1. Click on the Open End icon in the Chrome toolbar. A popup opens
+2. On the popup click on "Options..."
+3. Make sure, you have selected "(*) Only on selected channels"
+4. In the Options, put the complete URL of a channel ("https://www.twitch.tv/playoverwatch") or the qualified name of a channel ("twitch.tv/playoverwatch") in the text field next to the button "Add channel"
+5. Click "Add channel" to add the channel. It will be added to the list of selected channels
+6. Save your changes by clicking the "Save" button
+7. Close the options
 
 ### Navigation in the video without a seek bar
 - You can use the arrow keys (<-, ->) on your keyboard for 10 second time jumps
@@ -54,10 +54,10 @@ Open End prevents those kinds of spoilers by hiding certain information on Twitc
 - When you hit Enter while being in the time jump text field, a forward jump is triggered 
 
 ### I want to customize what information about videos in video lists is hidden
-- Click on the Open End icon in the Chrome toolbar. A popup opens
-- On the popup click on "Options..."
-- Go to the section "Items in video lists"
-- Check/uncheck the options under that section according to your preferences  
+1. Click on the Open End icon in the Chrome toolbar. A popup opens
+2. On the popup click on "Options..."
+3. Go to the section "Items in video lists"
+4. Check/uncheck the options under that section according to your preferences  
 
 ## Roadmap and Version Notes
 [See here](VERSION_NOTES.md)
