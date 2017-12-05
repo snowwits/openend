@@ -44,6 +44,7 @@ const TWITCH_PLAYER_TOOLTIP_SPAN_TEXT_ATTR = "data-tip";
 
 const TWITCH_VIDEO_LIST_ITEM_CARD_CLASS = "tw-card";
 
+
 /*
  * ====================================================================================================
  * GLOBAL FLAGS
@@ -98,6 +99,7 @@ function buildCurrentUrlWithTime(time) {
     const urlParams = newTimeFormatted.length > 0 ? "?t=" + newTimeFormatted : "";
     return window.location.protocol + "//" + window.location.hostname + window.location.pathname + urlParams;
 }
+
 
 /*
  * ====================================================================================================
@@ -719,93 +721,6 @@ function observeVideoListItemsAdded() {
 
 /*
  * ====================================================================================================
- * BUILD VIDEO LIST ITEM TOOLBAR
- * ====================================================================================================
- */
-function buildVideoListItemToolbar(videoCardDiv) {
-    const setTitleVisible = !GLOBAL_options[OPT_SFM_VIDEO_LIST_HIDE_TITLE_NAME];
-    const setPreviewVisible = !GLOBAL_options[OPT_SFM_VIDEO_LIST_HIDE_PREVIEW_NAME];
-    const setDurationVisible = !GLOBAL_options[OPT_SFM_VIDEO_LIST_HIDE_DURATION_NAME];
-
-    const toolbarElem = document.createElement("div");
-    toolbarElem.classList.add(OPND_VIDEO_LIST_ITEM_TOOLBAR_CLASS);
-
-    // Title
-    const showHideTitleBtn = buildVideoListItemToolbarButton(videoCardDiv, "imgs/title_grey.svg", OPND_CONTAINER_VIDEO_LIST_ITEM_TITLE_CLASS, OPND_VIDEO_LIST_ITEM_TITLE_TOOLTIP_CLASS, "videoListItemShowHideTitle_visible", "videoListItemShowHideTitle_hidden", setTitleVisible);
-    toolbarElem.appendChild(showHideTitleBtn);
-
-    // Preview
-    const showHidePreviewBtn = buildVideoListItemToolbarButton(videoCardDiv, "imgs/preview_grey.svg", OPND_CONTAINER_VIDEO_LIST_ITEM_PREVIEW_CLASS, OPND_VIDEO_LIST_ITEM_PREVIEW_TOOLTIP_CLASS, "videoListItemShowHidePreview_visible", "videoListItemShowHidePreview_hidden", setPreviewVisible);
-    toolbarElem.appendChild(showHidePreviewBtn);
-
-    // Duration
-    const showHideDurationBtn = buildVideoListItemToolbarButton(videoCardDiv, "imgs/duration_grey.svg", OPND_CONTAINER_VIDEO_LIST_ITEM_DURATION_CLASS, OPND_VIDEO_LIST_ITEM_DURATION_TOOLTIP_CLASS, "videoListItemShowHideDuration_visible", "videoListItemShowHideDuration_hidden", setDurationVisible);
-    toolbarElem.appendChild(showHideDurationBtn);
-
-    return toolbarElem;
-}
-
-/**
- * Tooltip div of stat:
- * <div class="tw-tooltip-wrapper inline-flex"><div class="tw-stat" data-test-selector="video-view-count">
- *     ...
- *     <div class="tw-tooltip tw-tooltip--down tw-tooltip--align-center" data-a-target="tw-tooltip-label">views</div>
- * </div>
- *
- * @param videoCardDiv {!HTMLDivElement} the video card div element
- * @param imgSrc {!string}
- * @param hideableContainerClass {!string}
- * @param tooltipClass {!string}
- * @param visibleTooltipMsg {!string}
- * @param hiddenTooltipMsg {!string}
- * @param initialVisible {!boolean}
- * @returns {!HTMLDivElement}
- */
-function buildVideoListItemToolbarButton(videoCardDiv, imgSrc, hideableContainerClass, tooltipClass, visibleTooltipMsg, hiddenTooltipMsg, initialVisible) {
-    const tooltipWrapper = document.createElement("div");
-    tooltipWrapper.classList.add("tw-tooltip-wrapper");
-
-    const btn = document.createElement("button");
-    const actionHandler = () => {
-        const setVisibleResult = setVisible(videoCardDiv.getElementsByClassName(hideableContainerClass), null);
-        const tooltipSpan = videoCardDiv.querySelector("." + tooltipClass);
-        updateShowHideTooltip(tooltipSpan, setVisibleResult, visibleTooltipMsg, hiddenTooltipMsg);
-    };
-    btn.onclick = actionHandler;
-
-    // Build button content span
-    const content = document.createElement("span");
-    btn.appendChild(content);
-
-    // Build img
-    const img = document.createElement("img");
-    img.src = chrome.runtime.getURL(imgSrc);
-    content.appendChild(img);
-
-    // Tooltip
-    const tooltipSpan = document.createElement("span");
-    tooltipSpan.classList.add(tooltipClass, "tw-tooltip", "tw-tooltip--down", "tw-tooltip--align-center");
-    content.appendChild(tooltipSpan);
-
-    // Execute one time to initially set the button tooltip text
-    updateShowHideTooltip(tooltipSpan, initialVisible, visibleTooltipMsg, hiddenTooltipMsg);
-
-    tooltipWrapper.appendChild(btn);
-
-    return tooltipWrapper;
-}
-
-function updateShowHideTooltip(tooltipSpan, visible, visibleTooltipMsg, hiddenTooltipMsg) {
-    if (visible === true) {
-        tooltipSpan.textContent = chrome.i18n.getMessage(visibleTooltipMsg);
-    } else if (visible === false) {
-        tooltipSpan.textContent = chrome.i18n.getMessage(hiddenTooltipMsg);
-    }
-}
-
-
-/*
- * ====================================================================================================
  * CONFIGURATION: Theatre Mode
  * ====================================================================================================
  */
@@ -857,6 +772,7 @@ function isTheatreModeActive(theatreModeButton) {
     warn("Could not determine if Theatre Mode is active");
     return false;
 }
+
 
 /*
  * ====================================================================================================
@@ -949,6 +865,94 @@ function buildPlayerToolbarButton(id, onclick, tooltipId = null, tooltipTxtMsgNa
 
     return btn;
 }
+
+
+/*
+ * ====================================================================================================
+ * BUILD VIDEO LIST ITEM TOOLBAR
+ * ====================================================================================================
+ */
+function buildVideoListItemToolbar(videoCardDiv) {
+    const setTitleVisible = !GLOBAL_options[OPT_SFM_VIDEO_LIST_HIDE_TITLE_NAME];
+    const setPreviewVisible = !GLOBAL_options[OPT_SFM_VIDEO_LIST_HIDE_PREVIEW_NAME];
+    const setDurationVisible = !GLOBAL_options[OPT_SFM_VIDEO_LIST_HIDE_DURATION_NAME];
+
+    const toolbarElem = document.createElement("div");
+    toolbarElem.classList.add(OPND_VIDEO_LIST_ITEM_TOOLBAR_CLASS);
+
+    // Title
+    const showHideTitleBtn = buildVideoListItemToolbarButton(videoCardDiv, "imgs/title_grey.svg", OPND_CONTAINER_VIDEO_LIST_ITEM_TITLE_CLASS, OPND_VIDEO_LIST_ITEM_TITLE_TOOLTIP_CLASS, "videoListItemShowHideTitle_visible", "videoListItemShowHideTitle_hidden", setTitleVisible);
+    toolbarElem.appendChild(showHideTitleBtn);
+
+    // Preview
+    const showHidePreviewBtn = buildVideoListItemToolbarButton(videoCardDiv, "imgs/preview_grey.svg", OPND_CONTAINER_VIDEO_LIST_ITEM_PREVIEW_CLASS, OPND_VIDEO_LIST_ITEM_PREVIEW_TOOLTIP_CLASS, "videoListItemShowHidePreview_visible", "videoListItemShowHidePreview_hidden", setPreviewVisible);
+    toolbarElem.appendChild(showHidePreviewBtn);
+
+    // Duration
+    const showHideDurationBtn = buildVideoListItemToolbarButton(videoCardDiv, "imgs/duration_grey.svg", OPND_CONTAINER_VIDEO_LIST_ITEM_DURATION_CLASS, OPND_VIDEO_LIST_ITEM_DURATION_TOOLTIP_CLASS, "videoListItemShowHideDuration_visible", "videoListItemShowHideDuration_hidden", setDurationVisible);
+    toolbarElem.appendChild(showHideDurationBtn);
+
+    return toolbarElem;
+}
+
+/**
+ * Tooltip div of stat:
+ * <div class="tw-tooltip-wrapper inline-flex"><div class="tw-stat" data-test-selector="video-view-count">
+ *     ...
+ *     <div class="tw-tooltip tw-tooltip--down tw-tooltip--align-center" data-a-target="tw-tooltip-label">views</div>
+ * </div>
+ *
+ * @param videoCardDiv {!HTMLDivElement} the video card div element
+ * @param imgSrc {!string}
+ * @param hideableContainerClass {!string}
+ * @param tooltipClass {!string}
+ * @param visibleTooltipMsg {!string}
+ * @param hiddenTooltipMsg {!string}
+ * @param initialVisible {!boolean}
+ * @returns {!HTMLDivElement}
+ */
+function buildVideoListItemToolbarButton(videoCardDiv, imgSrc, hideableContainerClass, tooltipClass, visibleTooltipMsg, hiddenTooltipMsg, initialVisible) {
+    const tooltipWrapper = document.createElement("div");
+    tooltipWrapper.classList.add("tw-tooltip-wrapper");
+
+    const btn = document.createElement("button");
+    const actionHandler = () => {
+        const setVisibleResult = setVisible(videoCardDiv.getElementsByClassName(hideableContainerClass), null);
+        const tooltipSpan = videoCardDiv.querySelector("." + tooltipClass);
+        updateShowHideTooltip(tooltipSpan, setVisibleResult, visibleTooltipMsg, hiddenTooltipMsg);
+    };
+    btn.onclick = actionHandler;
+
+    // Build button content span
+    const content = document.createElement("span");
+    btn.appendChild(content);
+
+    // Build img
+    const img = document.createElement("img");
+    img.src = chrome.runtime.getURL(imgSrc);
+    content.appendChild(img);
+
+    // Tooltip
+    const tooltipSpan = document.createElement("span");
+    tooltipSpan.classList.add(tooltipClass, "tw-tooltip", "tw-tooltip--down", "tw-tooltip--align-center");
+    content.appendChild(tooltipSpan);
+
+    // Execute one time to initially set the button tooltip text
+    updateShowHideTooltip(tooltipSpan, initialVisible, visibleTooltipMsg, hiddenTooltipMsg);
+
+    tooltipWrapper.appendChild(btn);
+
+    return tooltipWrapper;
+}
+
+function updateShowHideTooltip(tooltipSpan, visible, visibleTooltipMsg, hiddenTooltipMsg) {
+    if (visible === true) {
+        tooltipSpan.textContent = chrome.i18n.getMessage(visibleTooltipMsg);
+    } else if (visible === false) {
+        tooltipSpan.textContent = chrome.i18n.getMessage(hiddenTooltipMsg);
+    }
+}
+
 
 /*
  * ====================================================================================================
@@ -1046,6 +1050,7 @@ function handleMessage(request, sender, sendResponse) {
         }
     }
 }
+
 
 /*
  * ====================================================================================================
