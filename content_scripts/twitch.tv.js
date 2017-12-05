@@ -731,15 +731,15 @@ function buildVideoListItemToolbar(videoCardDiv) {
     toolbarElem.classList.add(OPND_VIDEO_LIST_ITEM_TOOLBAR_CLASS);
 
     // Title
-    const showHideTitleBtn = buildVideoListItemToolbarButton(videoCardDiv, "imgs/title_white.svg", OPND_CONTAINER_VIDEO_LIST_ITEM_TITLE_CLASS, OPND_VIDEO_LIST_ITEM_TITLE_TOOLTIP_CLASS, "videoListItemShowHideTitle_visible", "videoListItemShowHideTitle_hidden", setTitleVisible);
+    const showHideTitleBtn = buildVideoListItemToolbarButton(videoCardDiv, "imgs/title_grey.svg", OPND_CONTAINER_VIDEO_LIST_ITEM_TITLE_CLASS, OPND_VIDEO_LIST_ITEM_TITLE_TOOLTIP_CLASS, "videoListItemShowHideTitle_visible", "videoListItemShowHideTitle_hidden", setTitleVisible);
     toolbarElem.appendChild(showHideTitleBtn);
 
     // Preview
-    const showHidePreviewBtn = buildVideoListItemToolbarButton(videoCardDiv, "imgs/preview_white.svg", OPND_CONTAINER_VIDEO_LIST_ITEM_PREVIEW_CLASS, OPND_VIDEO_LIST_ITEM_PREVIEW_TOOLTIP_CLASS, "videoListItemShowHidePreview_visible", "videoListItemShowHidePreview_hidden", setPreviewVisible);
+    const showHidePreviewBtn = buildVideoListItemToolbarButton(videoCardDiv, "imgs/preview_grey.svg", OPND_CONTAINER_VIDEO_LIST_ITEM_PREVIEW_CLASS, OPND_VIDEO_LIST_ITEM_PREVIEW_TOOLTIP_CLASS, "videoListItemShowHidePreview_visible", "videoListItemShowHidePreview_hidden", setPreviewVisible);
     toolbarElem.appendChild(showHidePreviewBtn);
 
     // Duration
-    const showHideDurationBtn = buildVideoListItemToolbarButton(videoCardDiv, "imgs/duration_white.svg", OPND_CONTAINER_VIDEO_LIST_ITEM_DURATION_CLASS, OPND_VIDEO_LIST_ITEM_DURATION_TOOLTIP_CLASS, "videoListItemShowHideDuration_visible", "videoListItemShowHideDuration_hidden", setDurationVisible);
+    const showHideDurationBtn = buildVideoListItemToolbarButton(videoCardDiv, "imgs/duration_grey.svg", OPND_CONTAINER_VIDEO_LIST_ITEM_DURATION_CLASS, OPND_VIDEO_LIST_ITEM_DURATION_TOOLTIP_CLASS, "videoListItemShowHideDuration_visible", "videoListItemShowHideDuration_hidden", setDurationVisible);
     toolbarElem.appendChild(showHideDurationBtn);
 
     return toolbarElem;
