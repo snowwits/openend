@@ -23,16 +23,19 @@ Open End prevents those kinds of spoilers by hiding certain information on Twitc
 - Can be used alongside BetterTTV without problems
 
 ## Usage
+###General
+- **Toolbar icon:** The extension has an icon in the Chrome toolbar (next to the address bar). Click on it to quickly access the most important features
+- **Options:** On the popup you can click on the "Options..." to open the full options of the extension. Explore the options and customize the extension as you like
 ### Enable/Disable Spoiler-free Mode
 - Click on the Open End icon in the Chrome toolbar
-- Choose one of the options under "Enable Spoiler-Free Mode" (Never, Always or Only on selected channels)
+- Choose one of the options under "Enable Spoiler-Free Mode" ("Never", "Always" or "Only on selected channels")
 ### Enable Spoiler-free Mode only for a specific channel
-**Option A: On the popup**
+**Option A: Via the toolbar icon**
 - Click on the Open End icon in the Chrome toolbar. A popup opens
 - On the popup select "(*) Only on selected channels"
 - Check "[x] Enable Spoiler-Free Mode"
 
-**Option B: In the options**
+**Option B: Via the options**
 - Click on the Open End icon in the Chrome toolbar. A popup opens
 - On the popup click on "Options..."
 - Make sure, you have selected "(*) Only on selected channels"
