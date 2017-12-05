@@ -51,12 +51,16 @@ const TWITCH_VIDEO_LIST_ITEM_CARD_CLASS = "tw-card";
  */
 /* Variables that only need to be changed after a page change */
 let GLOBAL_elementsLoadedTimeoutReached = false;
-
 /**
  *
  * @type {?string} {@link TwitchPageType}
  */
 let GLOBAL_pageType = null;
+/**
+ *
+ * @type {?MutationObserver} the video list items added Observer
+ */
+let GLOBAL_videoListItemsAddedObserver = null;
 
 /* Variables that can change at any given time */
 /**
@@ -146,6 +150,13 @@ function setSfmOptionsToNotConfigured() {
 function resetGlobalPageFlags() {
     GLOBAL_elementsLoadedTimeoutReached = false;
     GLOBAL_pageType = null;
+
+    // Disconnect the observer and then set the variable to null
+    if (GLOBAL_videoListItemsAddedObserver) {
+        GLOBAL_videoListItemsAddedObserver.disconnect();
+    }
+    GLOBAL_videoListItemsAddedObserver = null;
+
     updateChannel(null);
     resetGlobalPageStateFlags(GLOBAL_options)
 }
@@ -558,21 +569,16 @@ function configureVideoListItems() {
         }
     }
 
-    // Video List Items are added asynchronlously to the video list item tower if the user scrolls down.
-    // So we have to listen for that and then trigger a reconfiguration
-    const videoListItemTowerDiv = document.querySelector(".tw-tower");
-    if (videoListItemTowerDiv) {
-        listenForVideoListItemsAdded(videoListItemTowerDiv);
-
-        if (allTitleContainers.length > 0) {
-            setConfigured(OPT_SFM_VIDEO_LIST_HIDE_TITLE_NAME, true);
-        }
-        if (allPreviewContainers.length > 0) {
-            setConfigured(OPT_SFM_VIDEO_LIST_HIDE_PREVIEW_NAME, true);
-        }
-        if (allDurationContainers.length > 0) {
-            setConfigured(OPT_SFM_VIDEO_LIST_HIDE_DURATION_NAME, true);
-        }
+    if (allTitleContainers.length > 0) {
+        setConfigured(OPT_SFM_VIDEO_LIST_HIDE_TITLE_NAME, true);
+        // If any loaded, add the observer to handle the async addition of more video list items in the future
+        observeVideoListItemsAdded();
+    }
+    if (allPreviewContainers.length > 0) {
+        setConfigured(OPT_SFM_VIDEO_LIST_HIDE_PREVIEW_NAME, true);
+    }
+    if (allDurationContainers.length > 0) {
+        setConfigured(OPT_SFM_VIDEO_LIST_HIDE_DURATION_NAME, true);
     }
 }
 
@@ -667,33 +673,47 @@ function getVideoChannel(videoCardDiv) {
 }
 
 /**
+ *
+ *  Video List Items are added asynchronlously to the video list item tower if the user scrolls down.
+ *  So we have to listen for that and then trigger a reconfiguration
+ *
  * Video List Item Tower:
  * <div class="tw-tower tw-tower--gutter-sm tw-tower--240">...</div>
+ *
+ *
  */
-function listenForVideoListItemsAdded(videoListItemTowerDiv) {
-    const observer = new MutationObserver(function (mutations) {
-        let elementsAdded = false;
-        for (let i = 0; i < mutations.length; i++) {
-            const mutation = mutations[i];
-            if (mutation.addedNodes && mutation.addedNodes.length > 0) {
-                elementsAdded = true;
-                break;
-            }
-        }
-        if (elementsAdded) {
-            setConfigured(OPT_SFM_VIDEO_LIST_HIDE_TITLE_NAME, false);
-            setConfigured(OPT_SFM_VIDEO_LIST_HIDE_PREVIEW_NAME, false);
-            setConfigured(OPT_SFM_VIDEO_LIST_HIDE_DURATION_NAME, false);
-            configureVideoListItems();
-        }
-    });
+function observeVideoListItemsAdded() {
+    if (GLOBAL_videoListItemsAddedObserver === null) {
+        const videoListItemTowerDiv = document.querySelector(".tw-tower");
+        if (videoListItemTowerDiv) {
+            const observer = new MutationObserver(function (mutations) {
+                let elementsAdded = false;
+                for (let i = 0; i < mutations.length; i++) {
+                    const mutation = mutations[i];
+                    if (mutation.addedNodes && mutation.addedNodes.length > 0) {
+                        elementsAdded = true;
+                        break;
+                    }
+                }
+                if (elementsAdded) {
+                    setConfigured(OPT_SFM_VIDEO_LIST_HIDE_TITLE_NAME, false);
+                    setConfigured(OPT_SFM_VIDEO_LIST_HIDE_PREVIEW_NAME, false);
+                    setConfigured(OPT_SFM_VIDEO_LIST_HIDE_DURATION_NAME, false);
+                    // TODO: We should only configure the added video list items and not all video list items (including the already configured and maybe the ones that were customized by the user).
+                    // Right now, once we configure all items, the visible states of hideable elements are reset (so changes that the user made on the page will be reset).
+                    configureVideoListItems();
+                }
+            });
 
-    const config = {
-        childList: true // Set to true if additions and removals of the target node's child elements (including text nodes) are to be observed.
-    };
+            const config = {
+                childList: true // Set to true if additions and removals of the target node's child elements (including text nodes) are to be observed.
+            };
 
-    // Observe the tower for card additions
-    observer.observe(videoListItemTowerDiv, config);
+            // Observe the tower for card additions
+            observer.observe(videoListItemTowerDiv, config);
+            GLOBAL_videoListItemsAddedObserver = observer;
+        }
+    }
 }
 
 
