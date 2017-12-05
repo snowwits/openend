@@ -42,6 +42,7 @@ const TWITCH_PLAYER_BTN_CLASS = "player-button";
 const TWITCH_PLAYER_TOOLTIP_SPAN_CLASS = "player-tip";
 const TWITCH_PLAYER_TOOLTIP_SPAN_TEXT_ATTR = "data-tip";
 
+const TWITCH_VIDEO_LIST_ITEM_CARD_CLASS = "tw-card";
 
 /*
  * ====================================================================================================
@@ -495,7 +496,7 @@ function configureVideoListItems() {
         return;
     }
 
-    const videoCardDivs = document.getElementsByClassName("tw-card");
+    const videoCardDivs = document.getElementsByClassName(TWITCH_VIDEO_LIST_ITEM_CARD_CLASS);
     if (videoCardDivs.length === 0) {
         return;
     }
@@ -557,14 +558,21 @@ function configureVideoListItems() {
         }
     }
 
-    if (allTitleContainers.length > 0) {
-        setConfigured(OPT_SFM_VIDEO_LIST_HIDE_TITLE_NAME, true);
-    }
-    if (allPreviewContainers.length > 0) {
-        setConfigured(OPT_SFM_VIDEO_LIST_HIDE_PREVIEW_NAME, true);
-    }
-    if (allDurationContainers.length > 0) {
-        setConfigured(OPT_SFM_VIDEO_LIST_HIDE_DURATION_NAME, true);
+    // Video List Items are added asynchronlously to the video list item tower if the user scrolls down.
+    // So we have to listen for that and then trigger a reconfiguration
+    const videoListItemTowerDiv = document.querySelector(".tw-tower");
+    if (videoListItemTowerDiv) {
+        listenForVideoListItemsAdded(videoListItemTowerDiv);
+
+        if (allTitleContainers.length > 0) {
+            setConfigured(OPT_SFM_VIDEO_LIST_HIDE_TITLE_NAME, true);
+        }
+        if (allPreviewContainers.length > 0) {
+            setConfigured(OPT_SFM_VIDEO_LIST_HIDE_PREVIEW_NAME, true);
+        }
+        if (allDurationContainers.length > 0) {
+            setConfigured(OPT_SFM_VIDEO_LIST_HIDE_DURATION_NAME, true);
+        }
     }
 }
 
@@ -580,10 +588,10 @@ function isVideoListItemsConfigured() {
 function addVideoListItemToolbar(videoCardDiv) {
     let toolbarElem = videoCardDiv.querySelector("." + OPND_VIDEO_LIST_ITEM_TOOLBAR_CLASS);
     if (!toolbarElem) {
-        const injectionContainer = videoCardDiv.querySelector('div[data-test-selector="video-title"]');
-        if (injectionContainer) {
+        const injectionContainerChild = videoCardDiv.querySelector('div[data-test-selector="video-title"]');
+        if (injectionContainerChild) {
             toolbarElem = buildVideoListItemToolbar(videoCardDiv);
-            injectionContainer.insertBefore(toolbarElem, injectionContainer.firstChild);
+            injectionContainerChild.parentNode.insertBefore(toolbarElem, injectionContainerChild);
         }
     }
     return toolbarElem;
@@ -658,43 +666,121 @@ function getVideoChannel(videoCardDiv) {
     return null;
 }
 
+/**
+ * Video List Item Tower:
+ * <div class="tw-tower tw-tower--gutter-sm tw-tower--240">...</div>
+ */
+function listenForVideoListItemsAdded(videoListItemTowerDiv) {
+    const observer = new MutationObserver(function (mutations) {
+        let elementsAdded = false;
+        for (let i = 0; i < mutations.length; i++) {
+            const mutation = mutations[i];
+            if (mutation.addedNodes && mutation.addedNodes.length > 0) {
+                elementsAdded = true;
+                break;
+            }
+        }
+        if (elementsAdded) {
+            setConfigured(OPT_SFM_VIDEO_LIST_HIDE_TITLE_NAME, false);
+            setConfigured(OPT_SFM_VIDEO_LIST_HIDE_PREVIEW_NAME, false);
+            setConfigured(OPT_SFM_VIDEO_LIST_HIDE_DURATION_NAME, false);
+            configureVideoListItems();
+        }
+    });
+
+    const config = {
+        childList: true // Set to true if additions and removals of the target node's child elements (including text nodes) are to be observed.
+    };
+
+    // Observe the tower for card additions
+    observer.observe(videoListItemTowerDiv, config);
+}
+
+
+/*
+ * ====================================================================================================
+ * BUILD VIDEO LIST ITEM TOOLBAR
+ * ====================================================================================================
+ */
 function buildVideoListItemToolbar(videoCardDiv) {
+    const setTitleVisible = !GLOBAL_options[OPT_SFM_VIDEO_LIST_HIDE_TITLE_NAME];
+    const setPreviewVisible = !GLOBAL_options[OPT_SFM_VIDEO_LIST_HIDE_PREVIEW_NAME];
+    const setDurationVisible = !GLOBAL_options[OPT_SFM_VIDEO_LIST_HIDE_DURATION_NAME];
+
     const toolbarElem = document.createElement("div");
     toolbarElem.classList.add(OPND_VIDEO_LIST_ITEM_TOOLBAR_CLASS);
 
-    const handleShowHideTitleAction = function () {
-        setVisible(videoCardDiv.getElementsByClassName(OPND_CONTAINER_VIDEO_LIST_ITEM_TITLE_CLASS), null);
-    };
-    const showHideTitleBtn = buildVideoListItemToolbarButton(handleShowHideTitleAction, "Title");
+    // Title
+    const showHideTitleBtn = buildVideoListItemToolbarButton(videoCardDiv, "imgs/title_white.svg", OPND_CONTAINER_VIDEO_LIST_ITEM_TITLE_CLASS, OPND_VIDEO_LIST_ITEM_TITLE_TOOLTIP_CLASS, "videoListItemShowHideTitle_visible", "videoListItemShowHideTitle_hidden", setTitleVisible);
     toolbarElem.appendChild(showHideTitleBtn);
 
-    const handleShowHidePreviewAction = function () {
-        setVisible(videoCardDiv.getElementsByClassName(OPND_CONTAINER_VIDEO_LIST_ITEM_PREVIEW_CLASS), null);
-    };
-    const showHidePreviewBtn = buildVideoListItemToolbarButton(handleShowHidePreviewAction, "Preview");
+    // Preview
+    const showHidePreviewBtn = buildVideoListItemToolbarButton(videoCardDiv, "imgs/preview_white.svg", OPND_CONTAINER_VIDEO_LIST_ITEM_PREVIEW_CLASS, OPND_VIDEO_LIST_ITEM_PREVIEW_TOOLTIP_CLASS, "videoListItemShowHidePreview_visible", "videoListItemShowHidePreview_hidden", setPreviewVisible);
     toolbarElem.appendChild(showHidePreviewBtn);
 
-    const handleShowHideDurationAction = function () {
-        setVisible(videoCardDiv.getElementsByClassName(OPND_CONTAINER_VIDEO_LIST_ITEM_DURATION_CLASS), null);
-    };
-    const showHideDurationBtn = buildVideoListItemToolbarButton(handleShowHideDurationAction, "Duration");
+    // Duration
+    const showHideDurationBtn = buildVideoListItemToolbarButton(videoCardDiv, "imgs/duration_white.svg", OPND_CONTAINER_VIDEO_LIST_ITEM_DURATION_CLASS, OPND_VIDEO_LIST_ITEM_DURATION_TOOLTIP_CLASS, "videoListItemShowHideDuration_visible", "videoListItemShowHideDuration_hidden", setDurationVisible);
     toolbarElem.appendChild(showHideDurationBtn);
 
     return toolbarElem;
 }
 
 /**
- * TODO: add images, tooltips, toggle images/tooltips when visible state changes
+ * Tooltip div of stat:
+ * <div class="tw-tooltip-wrapper inline-flex"><div class="tw-stat" data-test-selector="video-view-count">
+ *     ...
+ *     <div class="tw-tooltip tw-tooltip--down tw-tooltip--align-center" data-a-target="tw-tooltip-label">views</div>
+ * </div>
  *
- * @param onclick {!function}
- * @param label {!string}
- * @returns {HTMLButtonElement}
+ * @param videoCardDiv {!HTMLDivElement} the video card div element
+ * @param imgSrc {!string}
+ * @param hideableContainerClass {!string}
+ * @param tooltipClass {!string}
+ * @param visibleTooltipMsg {!string}
+ * @param hiddenTooltipMsg {!string}
+ * @param initialVisible {!boolean}
+ * @returns {!HTMLDivElement}
  */
-function buildVideoListItemToolbarButton(onclick, label) {
+function buildVideoListItemToolbarButton(videoCardDiv, imgSrc, hideableContainerClass, tooltipClass, visibleTooltipMsg, hiddenTooltipMsg, initialVisible) {
+    const tooltipWrapper = document.createElement("div");
+    tooltipWrapper.classList.add("tw-tooltip-wrapper");
+
     const btn = document.createElement("button");
-    btn.textContent = label;
-    btn.onclick = onclick;
-    return btn;
+    const actionHandler = () => {
+        const setVisibleResult = setVisible(videoCardDiv.getElementsByClassName(hideableContainerClass), null);
+        const tooltipSpan = videoCardDiv.querySelector("." + tooltipClass);
+        updateShowHideTooltip(tooltipSpan, setVisibleResult, visibleTooltipMsg, hiddenTooltipMsg);
+    };
+    btn.onclick = actionHandler;
+
+    // Build button content span
+    const content = document.createElement("span");
+    btn.appendChild(content);
+
+    // Build img
+    const img = document.createElement("img");
+    img.src = chrome.runtime.getURL(imgSrc);
+    content.appendChild(img);
+
+    // Tooltip
+    const tooltipSpan = document.createElement("span");
+    tooltipSpan.classList.add(tooltipClass, "tw-tooltip", "tw-tooltip--down", "tw-tooltip--align-center");
+    content.appendChild(tooltipSpan);
+
+    // Execute one time to initially set the button tooltip text
+    updateShowHideTooltip(tooltipSpan, initialVisible, visibleTooltipMsg, hiddenTooltipMsg);
+
+    tooltipWrapper.appendChild(btn);
+
+    return tooltipWrapper;
+}
+
+function updateShowHideTooltip(tooltipSpan, visible, visibleTooltipMsg, hiddenTooltipMsg) {
+    if (visible === true) {
+        tooltipSpan.textContent = chrome.i18n.getMessage(visibleTooltipMsg);
+    } else if (visible === false) {
+        tooltipSpan.textContent = chrome.i18n.getMessage(hiddenTooltipMsg);
+    }
 }
 
 
@@ -754,7 +840,7 @@ function isTheatreModeActive(theatreModeButton) {
 
 /*
  * ====================================================================================================
- * BUILD TOOLBAR
+ * BUILD PLAYER TOOLBAR
  * ====================================================================================================
  */
 function buildPlayerToolbar() {
@@ -794,7 +880,6 @@ function buildPlayerToolbar() {
 
     return toolbar;
 }
-
 
 /**
  *

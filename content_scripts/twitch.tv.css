@@ -24,6 +24,11 @@
     height: 2em;
 }
 
+.opnd-video-list-item-toolbar img {
+    width: 1.5em; /* for analog layout to the regular twitch button SVGs: */
+    height: 1.5em;
+}
+
 .opnd-video-list-item-toolbar button {
     margin-right: 5px; /* spacing between the toolbar buttons: */
 }

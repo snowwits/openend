@@ -35,6 +35,30 @@
         "message": "Jump distance format: \"2\" for 2 minutes or \"1h2m3s\" for 1 hour, 2 minutes and 3 seconds",
         "description": "The error message to be displayed the Jump Distance is invalid."
     },
+    "videoListItemShowHideTitle_visible": {
+        "message": "Hide title",
+        "description": "Label of the Show/Hide Title button for the visible state."
+    },
+    "videoListItemShowHideTitle_hidden": {
+        "message": "Show title",
+        "description": "Label of the Show/Hide Title button for the visible state."
+    },
+    "videoListItemShowHidePreview_visible": {
+        "message": "Hide preview image",
+        "description": "Label of the Show/Hide Preview button for the visible state."
+    },
+    "videoListItemShowHidePreview_hidden": {
+        "message": "Show preview image",
+        "description": "Label of the Show/Hide Preview button for the visible state."
+    },
+    "videoListItemShowHideDuration_visible": {
+        "message": "Hide duration",
+        "description": "Label of the Show/Hide Duration button for the visible state."
+    },
+    "videoListItemShowHideDuration_hidden": {
+        "message": "Show duration",
+        "description": "Label of the Show/Hide Duration button for the visible state."
+    },
     "menu_open_options": {
         "message": "Options...",
         "description": "Label of the Options... button on the browser_action popup menu."

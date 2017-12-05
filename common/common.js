@@ -194,16 +194,19 @@ const OPND_VIDEO_LIST_ITEM_TOOLBAR_CLASS = "opnd-video-list-item-toolbar";
  * @type {string}
  */
 const OPND_CONTAINER_VIDEO_LIST_ITEM_TITLE_CLASS = "opnd-container-video-list-item-title";
+const OPND_VIDEO_LIST_ITEM_TITLE_TOOLTIP_CLASS = "opnd-video-list-item-title-tooltip";
 /**
  * The CSS class of the Open End container of a video list item's preview.
  * @type {string}
  */
 const OPND_CONTAINER_VIDEO_LIST_ITEM_PREVIEW_CLASS = "opnd-container-video-list-item-preview";
+const OPND_VIDEO_LIST_ITEM_PREVIEW_TOOLTIP_CLASS = "opnd-video-list-item-preview-tooltip";
 /**
  * The CSS class of the Open End container of a video list item's duration.
  * @type {string}
  */
 const OPND_CONTAINER_VIDEO_LIST_ITEM_DURATION_CLASS = "opnd-container-video-list-item-duration";
+const OPND_VIDEO_LIST_ITEM_DURATION_TOOLTIP_CLASS = "opnd-video-list-item-duration-tooltip";
 
 const OPND_PLAYER_SHOW_HIDE_DURATION_BTN_ID = "opnd-player-show-hide-duration-btn";
 const OPND_PLAYER_SHOW_HIDE_DURATION_IMG_ID = "opnd-player-show-hide-duration-img";

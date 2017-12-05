@@ -29,6 +29,24 @@
     "playerJump_errMsg": {
         "message": "Format: \"2\" für zwei Minuten oder \"1h2m3s\" for 1 Stunde, 2 Minuten and 3 Sekunden"
     },
+    "videoListItemShowHideTitle_visible": {
+        "message": "Titel verbergen"
+    },
+    "videoListItemShowHideTitle_hidden": {
+        "message": "Titel anzeigen"
+    },
+    "videoListItemShowHidePreview_visible": {
+        "message": "Vorschaubild verbergen"
+    },
+    "videoListItemShowHidePreview_hidden": {
+        "message": "Vorschaubild anzeigen"
+    },
+    "videoListItemShowHideDuration_visible": {
+        "message": "Dauer verbergen"
+    },
+    "videoListItemShowHideDuration_hidden": {
+        "message": "Dauer anzeigen"
+    },
     "menu_open_options": {
         "message": "Optionen..."
     },
