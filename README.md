@@ -25,7 +25,7 @@ Open End prevents those kinds of spoilers by hiding certain information on Twitc
 ## Usage
 ### General
 - **Toolbar icon:** The extension has an icon in the Chrome toolbar (next to the address bar). Click on it to quickly access the most important features
-- **Options:** On the popup you can click on the "Options..." to open the full options of the extension. Explore the options and customize the extension as you like
+- **Options:** On the popup you can click on the "Options..." button to open the options of the extension. Explore the options and customize the extension as you like it
 
 ### Enable/Disable Spoiler-free Mode
 - Click on the Open End icon in the Chrome toolbar
@@ -53,7 +53,7 @@ Open End prevents those kinds of spoilers by hiding certain information on Twitc
   - E.g. \"2\" for 2 minutes or \"1h2m3s\" for 1 hour, 2 minutes and 3 seconds".
 - When you hit Enter while being in the time jump text field, a forward jump is triggered 
 
-### I only want the spoiler-free video player but I don't want to hide information in video lists
+### I want to customize what information about videos in video lists is hidden
 - Click on the Open End icon in the Chrome toolbar. A popup opens
 - On the popup click on "Options..."
 - Go to the section "Items in video lists"
