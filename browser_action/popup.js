@@ -29,7 +29,7 @@ function error(msg, ...substitutions) {
  * ====================================================================================================
  */
 function readNecessaryOptions() {
-    chrome.storage.sync.get(OPT_SFM_ENABLED_NAME, function (items) {
+    chrome.storage.sync.get({[OPT_SFM_ENABLED_NAME]: OPT_SFM_ENABLED_DEFAULT}, function (items) {
         if (chrome.runtime.lastError) {
             error("[sync storage] Failed to get [%o]: %o", OPT_SFM_ENABLED_NAME, chrome.runtime.lastError);
             return;
@@ -66,10 +66,9 @@ function updateUiAfterTabInfoUpdate(tabInfo) {
         currentChannelSpan.textContent = chrome.i18n.getMessage("browserAction_currentChannel");
         currentChannelInfo.classList.remove(OPND_HIDDEN_CLASS);
 
-        const keys = [OPT_SFM_CHANNELS_NAME];
-        chrome.storage.sync.get(keys, function (items) {
+        chrome.storage.sync.get({[OPT_SFM_CHANNELS_NAME]: OPT_SFM_CHANNELS_DEFAULT}, function (items) {
             if (chrome.runtime.lastError) {
-                error("[sync storage] Failed to get [%o]: %o", keys, chrome.runtime.lastError);
+                error("[sync storage] Failed to get [%o]: %o", OPT_SFM_CHANNELS_NAME, chrome.runtime.lastError);
                 return;
             }
             log("[sync storage] Gotten %o", items);

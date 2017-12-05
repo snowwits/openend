@@ -13,13 +13,14 @@ Open End prevents those kinds of spoilers by hiding certain information on Twitc
 - Hides the title, preview and duration of other videos (suggested/related videos, videos in video lists)
 - Provides quick video navigation features to mitigate the lack of a seek bar
 
-### Special Features
+### Minor Features
 - Custom channel list to auto-enable the Spoiler-Free Mode only on selected channels (for example enable it on tournament channels but not on streamer channels)
   - Quickly add/remove channels to/from the list without having to go through the options (only two clicks needed)
 - What information should be hidden is customizable
 - The visibility of any hideable element can be toggled directly on the page (no need to refresh the page)
 - Option changes are directly applied (no need to refresh the page)
 - Auto-enter the Theatre Mode
+- Can be used alongside BetterTTV without problems
 
 ## Usage
 See documentation in Chrome Web Store: TODO
