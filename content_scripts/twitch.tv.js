@@ -413,7 +413,7 @@ function updatePayerDurationVisibleAndShowHideButton(configuring, visible) {
         const tooltip = chrome.i18n.getMessage(setVisibleResult ? "playerShowHideDuration_visible" : "playerShowHideDuration_hidden");
         const showHidePlayerDurationImg = document.getElementById(OPND_PLAYER_SHOW_HIDE_DURATION_IMG_ID);
         if (showHidePlayerDurationImg) {
-            showHidePlayerDurationImg.src = chrome.runtime.getURL(setVisibleResult ? "imgs/hide_white.svg" : "imgs/show_white.svg");
+            showHidePlayerDurationImg.src = chrome.runtime.getURL(setVisibleResult ? "img/hide_white.svg" : "img/show_white.svg");
             showHidePlayerDurationImg.alt = tooltip
         }
 
@@ -796,7 +796,7 @@ function buildPlayerToolbar() {
     toolbar.appendChild(progressVisibilityBtn);
 
     // Build "Jump Back" button
-    const jumpBackwardBtn = buildPlayerToolbarButton(OPND_PLAYER_JUMP_BACKWARD_BTN_ID, handlePlayerJumpBackwardAction, OPND_PLAYER_JUMP_BACKWARD_TOOLTIP_SPAN_ID, "playerJumpBackward", null, "imgs/jump_backward_white.svg");
+    const jumpBackwardBtn = buildPlayerToolbarButton(OPND_PLAYER_JUMP_BACKWARD_BTN_ID, handlePlayerJumpBackwardAction, OPND_PLAYER_JUMP_BACKWARD_TOOLTIP_SPAN_ID, "playerJumpBackward", null, "img/jump_backward_white.svg");
     toolbar.appendChild(jumpBackwardBtn);
 
     // Build "Jump Distance" text input
@@ -808,7 +808,7 @@ function buildPlayerToolbar() {
     toolbar.appendChild(jumpDistanceInput);
 
     // Build "Jump Forward" button
-    const jumpForwardBtn = buildPlayerToolbarButton(OPND_PLAYER_JUMP_FORWARD_BTN_ID, handlePlayerJumpForwardAction, OPND_PLAYER_JUMP_FORWARD_TOOLTIP_SPAN_ID, "playerJumpForward", null, "imgs/jump_forward_white.svg");
+    const jumpForwardBtn = buildPlayerToolbarButton(OPND_PLAYER_JUMP_FORWARD_BTN_ID, handlePlayerJumpForwardAction, OPND_PLAYER_JUMP_FORWARD_TOOLTIP_SPAN_ID, "playerJumpForward", null, "img/jump_forward_white.svg");
     toolbar.appendChild(jumpForwardBtn);
 
     // Pressing Enter in the "Jump Distance" text input should trigger the "Jump Forward" button
@@ -887,15 +887,15 @@ function buildVideoListItemToolbar(videoCardDiv) {
     toolbarElem.classList.add(OPND_VIDEO_LIST_ITEM_TOOLBAR_CLASS);
 
     // Title
-    const showHideTitleBtn = buildVideoListItemToolbarButton(videoCardDiv, "imgs/title_grey.svg", OPND_CONTAINER_VIDEO_LIST_ITEM_TITLE_CLASS, OPND_VIDEO_LIST_ITEM_TITLE_TOOLTIP_CLASS, "videoListItemShowHideTitle_visible", "videoListItemShowHideTitle_hidden", setTitleVisible);
+    const showHideTitleBtn = buildVideoListItemToolbarButton(videoCardDiv, "img/title_grey.svg", OPND_CONTAINER_VIDEO_LIST_ITEM_TITLE_CLASS, OPND_VIDEO_LIST_ITEM_TITLE_TOOLTIP_CLASS, "videoListItemShowHideTitle_visible", "videoListItemShowHideTitle_hidden", setTitleVisible);
     toolbarElem.appendChild(showHideTitleBtn);
 
     // Preview
-    const showHidePreviewBtn = buildVideoListItemToolbarButton(videoCardDiv, "imgs/preview_grey.svg", OPND_CONTAINER_VIDEO_LIST_ITEM_PREVIEW_CLASS, OPND_VIDEO_LIST_ITEM_PREVIEW_TOOLTIP_CLASS, "videoListItemShowHidePreview_visible", "videoListItemShowHidePreview_hidden", setPreviewVisible);
+    const showHidePreviewBtn = buildVideoListItemToolbarButton(videoCardDiv, "img/preview_grey.svg", OPND_CONTAINER_VIDEO_LIST_ITEM_PREVIEW_CLASS, OPND_VIDEO_LIST_ITEM_PREVIEW_TOOLTIP_CLASS, "videoListItemShowHidePreview_visible", "videoListItemShowHidePreview_hidden", setPreviewVisible);
     toolbarElem.appendChild(showHidePreviewBtn);
 
     // Duration
-    const showHideDurationBtn = buildVideoListItemToolbarButton(videoCardDiv, "imgs/duration_grey.svg", OPND_CONTAINER_VIDEO_LIST_ITEM_DURATION_CLASS, OPND_VIDEO_LIST_ITEM_DURATION_TOOLTIP_CLASS, "videoListItemShowHideDuration_visible", "videoListItemShowHideDuration_hidden", setDurationVisible);
+    const showHideDurationBtn = buildVideoListItemToolbarButton(videoCardDiv, "img/duration_grey.svg", OPND_CONTAINER_VIDEO_LIST_ITEM_DURATION_CLASS, OPND_VIDEO_LIST_ITEM_DURATION_TOOLTIP_CLASS, "videoListItemShowHideDuration_visible", "videoListItemShowHideDuration_hidden", setDurationVisible);
     toolbarElem.appendChild(showHideDurationBtn);
 
     return toolbarElem;

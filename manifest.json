@@ -6,19 +6,19 @@
     "default_locale": "en",
     "description": "__MSG_manifest_description__",
     "icons": {
-        "16": "imgs/icon_twitch-purple_16.png",
-        "32": "imgs/icon_twitch-purple_32.png",
-        "64": "imgs/icon_twitch-purple_64.png",
-        "128": "imgs/icon_twitch-purple_128.png"
+        "16": "img/icon_twitch-purple_16.png",
+        "32": "img/icon_twitch-purple_32.png",
+        "64": "img/icon_twitch-purple_64.png",
+        "128": "img/icon_twitch-purple_128.png"
     },
     "author": "snowwits@gmail.com",
     "minimum_chrome_version": "58.0",
     "browser_action": {
         "default_icon": {
-            "16": "imgs/icon_twitch-purple_16.png",
-            "32": "imgs/icon_twitch-purple_32.png",
-            "64": "imgs/icon_twitch-purple_64.png",
-            "128": "imgs/icon_twitch-purple_128.png"
+            "16": "img/icon_twitch-purple_16.png",
+            "32": "img/icon_twitch-purple_32.png",
+            "64": "img/icon_twitch-purple_64.png",
+            "128": "img/icon_twitch-purple_128.png"
         },
         "default_popup": "browser_action/popup.html"
     },
@@ -42,7 +42,7 @@
         "tabs"
     ],
     "web_accessible_resources": [
-        "imgs/*",
+        "img/*",
         "options/options.html"
     ]
 }
