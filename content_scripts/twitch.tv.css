@@ -24,6 +24,10 @@
     height: 2em;
 }
 
+.opnd-video-list-item-toolbar button:focus {
+    outline: 0; /* prevent Chrome from drawing a blue outline around the button */
+}
+
 .opnd-video-list-item-toolbar img {
     width: 1.5em; /* for analog layout to the regular twitch button SVGs: */
     height: 1.5em;
