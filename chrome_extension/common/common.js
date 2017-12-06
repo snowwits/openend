@@ -19,7 +19,7 @@
  * ====================================================================================================
  */
 // TODO: disable before publishing
-const LOG_ENABLED = false;
+const LOG_ENABLED = true;
 
 function logWithComponent(component, msg, ...substitutions) {
     if (LOG_ENABLED) {
@@ -34,6 +34,15 @@ function warnWithComponent(component, msg, ...substitutions) {
 function errorWithComponent(component, msg, ...substitutions) {
     console.error("OPND[" + component + "]: " + msg, ...substitutions);
 }
+
+
+/*
+ * ====================================================================================================
+ * TECHNICAL PARAMETERS (may be exposed as technical options later)
+ * ====================================================================================================
+ */
+const CHECK_PAGE_TASK_INTERVAL = 200; // 200ms
+const PAGE_CONFIGURATION_TIMEOUT = 45000; // 45s
 
 
 /*
@@ -94,7 +103,7 @@ function isSfmOption(optionName) {
     return optionName.includes("sfm");
 }
 
-const SfmEnabledForChannel = Object.freeze({
+const SfmEnabledState = Object.freeze({
     ENABLED: "ENABLED",
     DISABLED: "DISABLED",
     UNDETERMINED: "UNDETERMINED"
@@ -103,25 +112,25 @@ const SfmEnabledForChannel = Object.freeze({
 /**
  * @param options the options
  * @param channel {?Channel} the channel to check
- * @return {!string} {@link SfmEnabledForChannel}
+ * @return {!string} {@link SfmEnabledState}
  */
 function isSfmEnabledForChannel(options, channel) {
     const sfmEnabled = options[OPT_SFM_ENABLED_NAME];
     if (SfmEnabled.ALWAYS === sfmEnabled) {
-        return SfmEnabledForChannel.ENABLED;
+        return SfmEnabledState.ENABLED;
     } else if (SfmEnabled.NEVER === sfmEnabled) {
-        return SfmEnabledForChannel.DISABLED;
+        return SfmEnabledState.DISABLED;
     } else if (SfmEnabled.CUSTOM) {
         if (channel !== null) {
             const sfmChannels = options[OPT_SFM_CHANNELS_NAME];
             if (sfmChannels.includes(channel.qualifiedName)) {
-                return SfmEnabledForChannel.ENABLED;
+                return SfmEnabledState.ENABLED;
             }
             else {
-                return SfmEnabledForChannel.DISABLED;
+                return SfmEnabledState.DISABLED;
             }
         }
-        return SfmEnabledForChannel.UNDETERMINED;
+        return SfmEnabledState.UNDETERMINED;
     }
 }
 
@@ -138,7 +147,7 @@ function isSfmEnabledForChannel(options, channel) {
  */
 /**
  * @typedef {object} TabInfo
- * @property {!string} currentChannel the qualified name of current channel of the tab
+ * @property {!string} channel the qualified name of current channel of the tab
  */
 /**
  * @typedef {object} TabInfoMessage
@@ -156,11 +165,18 @@ const MSG_TYPE_TAB_INFO = "tabInfo";
 const MSG_BODY_NAME = "body";
 
 /**
- * The key for the local storage item "currentChannel". The value is the qualified name of the channel.
+ * The key for the TabInfo key "channel". The value is the qualified name of the channel.
  * @type {string}
  */
-const TAB_INFO_CURRENT_CHANNEL_NAME = "currentChannel";
-const TAB_INFO_CURRENT_CHANNEL_DEFAULT = "";
+const TAB_INFO_CHANNEL_NAME = "channel";
+const TAB_INFO_CHANNEL_DEFAULT = "";
+
+/**
+ * The key for the TabInfo key "platform". The value is the qualified name of the platform.
+ * @type {string}
+ */
+const TAB_INFO_PLATFORM_NAME = "platform";
+const TAB_INFO_PLATFORM_DEFAULT = "";
 
 
 /*
@@ -339,6 +355,18 @@ function extractDurationParts(duration) {
     return [hours, mins, secs];
 }
 
+/*
+ * ====================================================================================================
+ * ELEMENT UTILS
+ * ====================================================================================================
+ */
+function isTopFrame() {
+    return window === window.top;
+}
+
+function formatFrameType() {
+    return isTopFrame() ? "TOP_FRAME" : "SUB_FRAME";
+}
 
 /*
  * ====================================================================================================
@@ -690,7 +718,13 @@ class Platform {
     }
 }
 
-/* Global Page Type Flags */
+/**
+ * @typedef {Object} PageTypeResult
+ * @property {!string} pageType the page type
+ * @property {?Channel} channel the channel if it was a channel or channel sub page
+ * @property {?string} videoId the id of the video if it was a video page
+ */
+
 const TwitchPageType = Object.freeze({
     /**
      * "https://www.twitch.tv"
@@ -781,20 +815,17 @@ class TwitchPlatform extends Platform {
         return null;
     }
 
+    /**
+     *
+     * @override
+     */
     parseChannelFromUrl(hostname, pathname, search) {
-        const pageType = TWITCH_PLATFORM.determinePage(hostname, pathname, search);
+        const pageType = this.determinePage(hostname, pathname, search);
         if (pageType && pageType.channel) {
             return pageType.channel;
         }
         return null;
     }
-
-    /**
-     * @typedef {Object} PageTypeResult
-     * @property {!string} pageType the page type
-     * @property {?Channel} channel the channel if it was a channel or channel sub page
-     * @property {?string} videoId the id of the video if it was a video page
-     */
 
     /**
      * @param hostname the hostname
@@ -871,11 +902,104 @@ class TwitchPlatform extends Platform {
 
 const TWITCH_PLATFORM = Object.freeze(new TwitchPlatform());
 
+const MlgPageType = Object.freeze({
+    /**
+     * "http://www.mlg.com"
+     */
+    ROOT: "ROOT",
+
+    /**
+     * Video main page
+     *
+     * "http://www.mlg.com/video/overwatch-world-cup-blizzcon-day-1/_id/miLqHWYeQWW/_pid/24"
+     */
+    VIDEO: "VIDEO",
+    /**
+     * Player iframe
+     *
+     * //player2.majorleaguegaming.com/api/v2/player/embed/vod/mlg-vod?vid=miLqHWYeQWW&autoplay=true&esrc=jsapi
+     */
+    IFRAME_PLAYER: "IFRAME_PLAYER",
+
+    /**
+     * all others
+     */
+    UNKNOWN: "UNKNOWN",
+});
+
+class MlgPlatform extends Platform {
+    /**
+     * @override
+     */
+    get name() {
+        return "mlg.com";
+    }
+
+    /**
+     * @override
+     */
+    get displayName() {
+        return "MLG.com";
+    }
+
+    /**
+     * @override
+     */
+    parseChannelFromQualifiedName(qualifiedChannelName) {
+        return null;
+    }
+
+    /**
+     * @override
+     */
+    parseChannelFromUrl(hostname, pathname, search) {
+        return null;
+    }
+
+    /**
+     *
+     *
+     * @param hostname the hostname
+     * @param pathname the pathname
+     * @param search the query string
+     * @return {?PageTypeResult} the page type result or null if it isn't a mlg.com page
+     */
+    determinePage(hostname, pathname, search) {
+        if (hostname.includes("mlg.com")) {
+            if ("/" === pathname) {
+                return {
+                    pageType: MlgPageType.ROOT
+                };
+            }
+            if (pathname.startsWith("/video")) {
+                return {
+                    pageType: MlgPageType.VIDEO
+                };
+            }
+            return {
+                pageType: MlgPageType.UNKNOWN
+            };
+        } else if (hostname.includes("majorleaguegaming.com")) {
+            if (hostname.includes("player")) {
+                return {
+                    pageType: MlgPageType.IFRAME_PLAYER
+                };
+            }
+            return {
+                pageType: MlgPageType.UNKNOWN
+            };
+        }
+        return null;
+    }
+}
+
+const MLG_PLATFORM = Object.freeze(new MlgPlatform());
+
 /**
  *
  * @type {ReadonlyArray.<Platform>}
  */
-const ALL_PLATFORMS = Object.freeze([TWITCH_PLATFORM]);
+const ALL_PLATFORMS = Object.freeze([TWITCH_PLATFORM, MLG_PLATFORM]);
 
 class Channel {
     /**
@@ -900,6 +1024,16 @@ class Channel {
     get url() {
         this.platform.buildChannelUrl(this);
     }
+}
+
+
+function parsePlatformFromQualifiedName(platformQualifiedName) {
+    for (let i = 0; i < ALL_PLATFORMS.length; i++) {
+        if (ALL_PLATFORMS[i].name === platformQualifiedName) {
+            return ALL_PLATFORMS[i];
+        }
+    }
+    return null;
 }
 
 /**

@@ -47,24 +47,31 @@ function readNecessaryOptions() {
 function updateUiAfterTabInfoUpdate(tabInfo) {
     log("Updating UI after tab info received: %o", tabInfo);
 
-    const currentChannelText = tabInfo && TAB_INFO_CURRENT_CHANNEL_NAME in tabInfo ? tabInfo[TAB_INFO_CURRENT_CHANNEL_NAME] : TAB_INFO_CURRENT_CHANNEL_DEFAULT;
-    const currentChannel = parseChannelFromQualifiedName(currentChannelText);
+    // TODO: Show the platform on the popup and allow to enable/disable SFM for this platform (only if SfmEnabled.CUSTOM)
+    // Platform
+    //const platformText = tabInfo && TAB_INFO_PLATFORM_NAME in tabInfo ? tabInfo[TAB_INFO_PLATFORM_NAME] : TAB_INFO_PLATFORM_DEFAULT;
+    //const platform = parsePlatformFromQualifiedName(platformText);
+
+
+    // Channel
+    const channelText = tabInfo && TAB_INFO_CHANNEL_NAME in tabInfo ? tabInfo[TAB_INFO_CHANNEL_NAME] : TAB_INFO_CHANNEL_DEFAULT;
+    const channel = parseChannelFromQualifiedName(channelText);
 
     // First hide the elements
-    const currentChannelInfo = document.getElementById("currentChannelInfo");
-    currentChannelInfo.classList.add(OPND_HIDDEN_CLASS);
+    const channelInfo = document.getElementById("channelInfo");
+    channelInfo.classList.add(OPND_HIDDEN_CLASS);
 
-    const currentChannelElem = document.getElementById("currentChannel");
-    currentChannelElem.dataset.channel = currentChannelText;
-    currentChannelElem.textContent = currentChannelText;
+    const channelElem = document.getElementById("channel");
+    channelElem.dataset.channel = channelText;
+    channelElem.textContent = channelText;
 
-    const currentChannelSfmEnabledCheckbox = document.getElementById("currentChannelSfmEnabledCheckbox");
-    currentChannelSfmEnabledCheckbox.classList.add(OPND_HIDDEN_CLASS);
+    const channelSfmEnabledCheckbox = document.getElementById("channelSfmEnabledCheckbox");
+    channelSfmEnabledCheckbox.classList.add(OPND_HIDDEN_CLASS);
 
-    const currentChannelSpan = document.getElementById("currentChannelLabel");
-    if (currentChannel !== null) {
-        currentChannelSpan.textContent = chrome.i18n.getMessage("browserAction_currentChannel");
-        currentChannelInfo.classList.remove(OPND_HIDDEN_CLASS);
+    const channelSpan = document.getElementById("channelLabel");
+    if (channel !== null) {
+        channelSpan.textContent = chrome.i18n.getMessage("browserAction_channel");
+        channelInfo.classList.remove(OPND_HIDDEN_CLASS);
 
         chrome.storage.sync.get({[OPT_SFM_CHANNELS_NAME]: OPT_SFM_CHANNELS_DEFAULT}, function (items) {
             if (chrome.runtime.lastError) {
@@ -73,11 +80,11 @@ function updateUiAfterTabInfoUpdate(tabInfo) {
             }
             log("[sync storage] Gotten %o", items);
 
-            updateCurrentChannelSfmEnabledCheckbox(currentChannelSfmEnabledCheckbox, currentChannel.qualifiedName, items[OPT_SFM_CHANNELS_NAME]);
-            currentChannelSfmEnabledCheckbox.classList.remove(OPND_HIDDEN_CLASS);
+            updateChannelSfmEnabledCheckbox(channelSfmEnabledCheckbox, channel.qualifiedName, items[OPT_SFM_CHANNELS_NAME]);
+            channelSfmEnabledCheckbox.classList.remove(OPND_HIDDEN_CLASS);
         });
     } else {
-        currentChannelSpan.textContent = "";
+        channelSpan.textContent = "";
     }
 }
 
@@ -88,10 +95,10 @@ function updateUiAfterTabInfoUpdate(tabInfo) {
 function updateUiAfterOptionsUpdate(items) {
     // If the channels changed, may need to change the button mode and label
     if (OPT_SFM_CHANNELS_NAME in items) {
-        const currentChannelElem = document.getElementById("currentChannel");
-        const currentChannelSfmEnabledCheckbox = document.getElementById("currentChannelSfmEnabledCheckbox");
-        const currentChannelQualifiedName = currentChannelElem.dataset.channel;
-        updateCurrentChannelSfmEnabledCheckbox(currentChannelSfmEnabledCheckbox, currentChannelQualifiedName, items[OPT_SFM_CHANNELS_NAME]);
+        const channelElem = document.getElementById("channel");
+        const channelSfmEnabledCheckbox = document.getElementById("channelSfmEnabledCheckbox");
+        const channelQualifiedName = channelElem.dataset.channel;
+        updateChannelSfmEnabledCheckbox(channelSfmEnabledCheckbox, channelQualifiedName, items[OPT_SFM_CHANNELS_NAME]);
     }
     if (OPT_SFM_ENABLED_NAME in items) {
         setRadioValues("sfmEnabled", items[OPT_SFM_ENABLED_NAME]);
@@ -100,12 +107,12 @@ function updateUiAfterOptionsUpdate(items) {
 
 /**
  *
- * @param currentChannelSfmEnabledCheckbox {!Element} the checkbox
- * @param currentChannelQualifiedName {!string} the qualified name of the current channel
+ * @param channelSfmEnabledCheckbox {!Element} the checkbox
+ * @param channelQualifiedName {!string} the qualified name of the current channel
  * @param sfmChannels {!Array.<string>} array qualified channel names (the {@link OPT_SFM_CHANNELS_NAME} option)
  */
-function updateCurrentChannelSfmEnabledCheckbox(currentChannelSfmEnabledCheckbox, currentChannelQualifiedName, sfmChannels) {
-    currentChannelSfmEnabledCheckbox.checked = sfmChannels.includes(currentChannelQualifiedName);
+function updateChannelSfmEnabledCheckbox(channelSfmEnabledCheckbox, channelQualifiedName, sfmChannels) {
+    channelSfmEnabledCheckbox.checked = sfmChannels.includes(channelQualifiedName);
 }
 
 function handleSfmEnabledChanged() {
@@ -120,12 +127,12 @@ function handleSfmEnabledChanged() {
     });
 }
 
-function handleCurrentChannelSfmEnabledChanged() {
-    // this: currentChannelSfmEnabledCheckbox
-    const currentChannelElem = document.getElementById("currentChannel");
-    const channelQualifiedName = currentChannelElem.dataset.channel;
+function handleChannelSfmEnabledChanged() {
+    // this: channelSfmEnabledCheckbox
+    const channelElem = document.getElementById("channel");
+    const channelQualifiedName = channelElem.dataset.channel;
 
-    const currentChannelSfmEnabledCheckbox = this;
+    const channelSfmEnabledCheckbox = this;
 
     if (channelQualifiedName && channelQualifiedName.length > 0) {
         chrome.storage.sync.get({[OPT_SFM_CHANNELS_NAME]: OPT_SFM_CHANNELS_DEFAULT}, function (items) {
@@ -135,7 +142,7 @@ function handleCurrentChannelSfmEnabledChanged() {
             }
             const channels = items[OPT_SFM_CHANNELS_NAME];
             let newChannels;
-            if (currentChannelSfmEnabledCheckbox.checked === true) {
+            if (channelSfmEnabledCheckbox.checked === true) {
                 newChannels = sortedSetPlus(channels, channelQualifiedName);
             }
             else {
@@ -264,14 +271,14 @@ function init() {
     listenForRadioChanges("sfmEnabled", handleSfmEnabledChanged);
 
     // Init Current channel
-    const currentChannelLabel = document.getElementById("currentChannelLabel");
-    currentChannelLabel.innerHTML = chrome.i18n.getMessage("browserAction_currentChannel");
+    const channelLabel = document.getElementById("channelLabel");
+    channelLabel.innerHTML = chrome.i18n.getMessage("browserAction_channel");
 
-    const currentChannelSfmEnabledCheckbox = document.getElementById("currentChannelSfmEnabledCheckbox");
-    currentChannelSfmEnabledCheckbox.onchange = handleCurrentChannelSfmEnabledChanged;
+    const channelSfmEnabledCheckbox = document.getElementById("channelSfmEnabledCheckbox");
+    channelSfmEnabledCheckbox.onchange = handleChannelSfmEnabledChanged;
 
-    const currentChannelSfmEnabledLabel = document.getElementById("currentChannelSfmEnabledLabel");
-    currentChannelSfmEnabledLabel.innerHTML = chrome.i18n.getMessage("browserAction_currentChannelSfmEnabled");
+    const channelSfmEnabledLabel = document.getElementById("channelSfmEnabledLabel");
+    channelSfmEnabledLabel.innerHTML = chrome.i18n.getMessage("browserAction_channelSfmEnabled");
 
     const openOptionsBtn = document.getElementById("openOptionsBtn");
     openOptionsBtn.innerHTML = chrome.i18n.getMessage("menu_open_options");

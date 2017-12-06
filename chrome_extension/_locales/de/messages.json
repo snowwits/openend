@@ -125,10 +125,10 @@
     "options_restoreDefaults_successMsg": {
         "message": "Standardwerte wiederhergestellt."
     },
-    "browserAction_currentChannel": {
+    "browserAction_channel": {
         "message": "Aktueller Kanal"
     },
-    "browserAction_currentChannelSfmEnabled": {
+    "browserAction_channelSfmEnabled": {
         "message": "Spoilerfreien Modus aktivieren<br>(nur wirksam wenn \"Nur auf ausgewählten Kanälen\" ausgewählt ist)"
     }
 }

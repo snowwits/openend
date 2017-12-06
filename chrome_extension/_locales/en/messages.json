@@ -163,11 +163,11 @@
         "message": "Restored default options.",
         "description": "Message to be displayed after a successful Restore Defaults action."
     },
-    "browserAction_currentChannel": {
+    "browserAction_channel": {
         "message": "Current channel",
         "description": "The current channel label."
     },
-    "browserAction_currentChannelSfmEnabled": {
+    "browserAction_channelSfmEnabled": {
         "message": "Enable Spoiler-Free Mode<br>(only effective if \"Only on selected channels\" selected)",
         "description": "The label for the Spoiler-Free Mode state of the channel."
     },

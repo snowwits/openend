@@ -1,8 +1,8 @@
 {
     "manifest_version": 2,
     "name": "Open End",
-    "version": "0.1.2",
-    "version_name": "0.1.2 (BETA)",
+    "version": "0.2.0",
+    "version_name": "0.2.0-SNAPSHOT (BETA)",
     "default_locale": "en",
     "description": "__MSG_manifest_description__",
     "icons": {
@@ -32,6 +32,19 @@
             "js": [
                 "common/common.js",
                 "content_scripts/twitch.tv.js"
+            ],
+            "run_at": "document_end"
+        },
+        {
+            "matches": ["*://*.mlg.com/*", "*://*.majorleaguegaming.com/*"],
+            "all_frames": true,
+            "css": [
+                "common/common.css",
+                "content_scripts/mlg.com.css"
+            ],
+            "js": [
+                "common/common.js",
+                "content_scripts/mlg.com.js"
             ],
             "run_at": "document_end"
         }

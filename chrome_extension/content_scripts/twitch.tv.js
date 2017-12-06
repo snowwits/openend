@@ -21,11 +21,6 @@ function error(msg, ...substitutions) {
  * CONSTANTS
  * ====================================================================================================
  */
-/* Global Constants */
-/* Technical Parameters */
-const CHECK_PAGE_TASK_INTERVAL = 200; // 200ms
-const PAGE_CONFIGURATION_TIMEOUT = 30000; // 30s
-
 /* Constants element IDs and classes */
 const TWITCH_PROGRESS_TOTAL_TIME_DIV_CLASS = "player-seek__time--total";
 const TWITCH_PROGRESS_SLIDER_DIV_CLASS = "js-player-slider";
@@ -77,7 +72,7 @@ let GLOBAL_options = getDefaultOptionsCopy();
 let GLOBAL_channel = null;
 
 /* Variables that need to be changed after options or channel changes */
-let GLOBAL_sfmEnabledForPage = SfmEnabledForChannel.UNDETERMINED;
+let GLOBAL_sfmEnabledForPage = SfmEnabledState.UNDETERMINED;
 /**
  * Flags whether the dependencies of certain options have been configured yet
  */
@@ -167,7 +162,7 @@ function resetGlobalPageStateFlags(changedOptions) {
     // If something about SFM enabled changed, sfmEnabledForPage needs re-determination.
     // Also, all SFM dependencies need reconfiguration (they may be independent from sfmEnabledForPage, for example video list items on a directory/game/XXX page can be from several channels).
     if (OPT_SFM_ENABLED_NAME in changedOptions || OPT_SFM_CHANNELS_NAME in changedOptions) {
-        updateSfmEnabledForPage(SfmEnabledForChannel.UNDETERMINED);
+        updateSfmEnabledForPage(SfmEnabledState.UNDETERMINED);
 
         setSfmOptionsToNotConfigured();
     }
@@ -213,7 +208,7 @@ function startCheckPageTask() {
             else {
                 GLOBAL_elementsLoadedTimeoutReached = true;
                 if (!isPageConfigured()) {
-                    warn("Elements loaded timeout reached (%d ms). Some components may not be configured. Configuration state: %o", PAGE_CONFIGURATION_TIMEOUT, formatPageConfigurationState());
+                    log("Elements loaded timeout reached (%d ms). Some components may not be configured. Configuration state: %o", PAGE_CONFIGURATION_TIMEOUT, formatPageConfigurationState());
                 }
             }
         }
@@ -300,7 +295,7 @@ function updateChannel(channel) {
         GLOBAL_channel = channel;
         log("Updated [channel] to [%o]", GLOBAL_channel);
 
-        updateSfmEnabledForPage(SfmEnabledForChannel.UNDETERMINED);
+        updateSfmEnabledForPage(SfmEnabledState.UNDETERMINED);
 
         // Notify about TabInfo change
         const tabInfoMessage = buildTabInfoMessage();
@@ -318,15 +313,15 @@ function determineSfmEnabledForPage() {
 }
 
 function isSfmEnabledForPageDetermined() {
-    return SfmEnabledForChannel.UNDETERMINED !== GLOBAL_sfmEnabledForPage;
+    return SfmEnabledState.UNDETERMINED !== GLOBAL_sfmEnabledForPage;
 }
 
 function isSfmEnabledForPage() {
-    return SfmEnabledForChannel.ENABLED === GLOBAL_sfmEnabledForPage;
+    return SfmEnabledState.ENABLED === GLOBAL_sfmEnabledForPage;
 }
 
 function isSfmDisabledForPage() {
-    return SfmEnabledForChannel.DISABLED === GLOBAL_sfmEnabledForPage;
+    return SfmEnabledState.DISABLED === GLOBAL_sfmEnabledForPage;
 }
 
 function updateSfmEnabledForPage(sfmEnabledForPage) {
@@ -361,8 +356,6 @@ function configurePlayer() {
                 toolbarElem = buildPlayerToolbar();
                 injectionContainer.appendChild(toolbarElem);
                 log("Injected Open End player toolbar");
-            } else {
-                warn("Could not inject Open End player toolbar because injection container could not be found");
             }
         }
         if (toolbarElem) {
@@ -560,7 +553,7 @@ function configureVideoListItems() {
 
             const channel = getVideoChannel(videoCardDiv);
             const sfmEnabledForChannel = isSfmEnabledForChannel(GLOBAL_options, channel);
-            if (SfmEnabledForChannel.ENABLED === sfmEnabledForChannel) {
+            if (SfmEnabledState.ENABLED === sfmEnabledForChannel) {
                 setVisible(videoTitleContainer, setTitleVisible);
                 setVisible(videoPreviewContainer, setPreviewVisible);
                 setVisible(videoDurationContainer, setDurationVisible);
@@ -1031,11 +1024,12 @@ function listenForMessages() {
  * @return TabInfoMessage
  */
 function buildTabInfoMessage() {
-    const channelQualifiedName = GLOBAL_channel !== null ? GLOBAL_channel.qualifiedName : TAB_INFO_CURRENT_CHANNEL_DEFAULT;
+    const channelQualifiedName = GLOBAL_channel !== null ? GLOBAL_channel.qualifiedName : TAB_INFO_CHANNEL_DEFAULT;
     return {
         [MSG_TYPE_NAME]: MSG_TYPE_TAB_INFO,
         [MSG_BODY_NAME]: {
-            [TAB_INFO_CURRENT_CHANNEL_NAME]: channelQualifiedName
+            [TAB_INFO_PLATFORM_NAME]: TWITCH_PLATFORM.name,
+            [TAB_INFO_CHANNEL_NAME]: channelQualifiedName
         }
     };
 }
@@ -1088,7 +1082,7 @@ function reconfigurePageAfterOptionsUpdate(changedOptions) {
  * ====================================================================================================
  */
 function init() {
-    log("Initializing...");
+    log("Initializing on %s...", document.location.href);
 
     resetGlobalPageFlags();
     determinePageType();
