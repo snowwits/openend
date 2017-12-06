@@ -61,7 +61,7 @@ Open End prevents those kinds of spoilers by hiding certain information on Twitc
 7. Close the options
 
 ### 3.4 Navigate in the video without a seek bar
-- You can use the arrow keys (<-, ->) on your keyboard for 10 second time jumps
+- You can use the arrow keys (<-, ->) on your keyboard for 5 second time jumps
 - If a video is run in Spoiler-Free Mode, Open End adds a quick navigation toolbar which you can use to make larger time jumps
 - The length of the time jumps can be specified in the same format as twitch time stamps
   - E.g. \"2\" for 2 minutes or \"1h2m3s\" for 1 hour, 2 minutes and 3 seconds".
