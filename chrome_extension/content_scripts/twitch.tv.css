@@ -15,10 +15,6 @@
     /*display: none;*/
 }
 
-.opnd-hidden {
-    display: none;
-}
-
 #opnd-player-toolbar img {
     width: 2em; /* for analog layout to the regular twitch button SVGs: */
     height: 2em;

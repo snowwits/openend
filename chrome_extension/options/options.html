@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Open End Options</title>
+    <link rel="stylesheet" type="text/css" href="options.css">
+    <script src="../common/common.js"></script>
+    <script src="options.js"></script>
+</head>
+
+<body>
+
+
+<div id="options">
+    <h3 id="sfm_enabled-label"></h3>
+
+    <div>
+        <input type="radio" id="sfm_enabled_never" name="sfm_enabled" value="NEVER">
+        <label id="sfm_enabled_never-label" for="sfm_enabled_never"></label>
+        <br>
+        <input type="radio" id="sfm_enabled_always" name="sfm_enabled" value="ALWAYS">
+        <label id="sfm_enabled_always-label" for="sfm_enabled_always"></label>
+        <br>
+        <input type="radio" id="sfm_enabled_custom" name="sfm_enabled" value="CUSTOM">
+        <label id="sfm_enabled_custom-label" for="sfm_enabled_custom"></label>
+    </div>
+    <div>
+        <div>
+            <!-- We need to set the background to white in here to override the Chrome's default
+            (grey, looks like it's disabled) -->
+            <select id="sfm_channels" multiple size="6" style="background: white;"></select>
+            <button id="sfm_removeChannel"></button>
+        </div>
+        <div>
+            <input type="text" id="sfm_channelToAdd">
+            <button id="sfm_addChannel"></button>
+        </div>
+    </div>
+
+    <hr/>
+
+    <h3 id="sfm_configure-label"></h3>
+
+    <h4 id="sfm_player-label"></h4>
+    <div>
+        <label id="sfm_player_hideDuration-label" for="sfm_player_hideDuration"></label>
+        <input type="checkbox" id="sfm_player_hideDuration">
+    </div>
+    <div>
+        <label id="sfm_player_jumpDistance-label" for="sfm_player_jumpDistance"></label>
+        <input type="text" id="sfm_player_jumpDistance">
+    </div>
+
+    <h4 id="sfm_videoList-label"></h4>
+    <div>
+        <label id="sfm_videoList_hideTitle-label" for="sfm_videoList_hideTitle"></label>
+        <input type="checkbox" id="sfm_videoList_hideTitle">
+    </div>
+    <div>
+        <label id="sfm_videoList_hidePreview-label" for="sfm_videoList_hidePreview"></label>
+        <input type="checkbox" id="sfm_videoList_hidePreview">
+    </div>
+    <div>
+        <label id="sfm_videoList_hideDuration-label" for="sfm_videoList_hideDuration"></label>
+        <input type="checkbox" id="sfm_videoList_hideDuration">
+    </div>
+
+    <hr/>
+
+    <h3 id="general-label"></h3>
+    <div>
+        <label id="general_theatreMode-label" for="general_theatreMode"></label>
+        <input type="checkbox" id="general_theatreMode">
+    </div>
+</div>
+
+<hr/>
+
+<div id="buttonBar">
+    <div>
+        <button id="save"></button>
+        <button id="restoreDefaults"></button>
+    </div>
+    <div id="statusContainer">
+        <span id="status"></span>
+    </div>
+</div>
+
+</body>
+</html>

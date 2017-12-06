@@ -1,0 +1,51 @@
+{
+    "manifest_version": 2,
+    "name": "Open End",
+    "version": "0.1.2",
+    "version_name": "0.1.2 (BETA)",
+    "default_locale": "en",
+    "description": "__MSG_manifest_description__",
+    "icons": {
+        "16": "img/icon_twitch-purple_16.png",
+        "32": "img/icon_twitch-purple_32.png",
+        "64": "img/icon_twitch-purple_64.png",
+        "128": "img/icon_twitch-purple_128.png"
+    },
+    "author": "snowwits@gmail.com",
+    "minimum_chrome_version": "58.0",
+    "browser_action": {
+        "default_icon": {
+            "16": "img/icon_twitch-purple_16.png",
+            "32": "img/icon_twitch-purple_32.png",
+            "64": "img/icon_twitch-purple_64.png",
+            "128": "img/icon_twitch-purple_128.png"
+        },
+        "default_popup": "browser_action/popup.html"
+    },
+    "content_scripts": [
+        {
+            "matches": ["*://*.twitch.tv/*"],
+            "css": [
+                "common/common.css",
+                "content_scripts/twitch.tv.css"
+            ],
+            "js": [
+                "common/common.js",
+                "content_scripts/twitch.tv.js"
+            ],
+            "run_at": "document_end"
+        }
+    ],
+    "options_ui": {
+        "page": "options/options.html",
+        "chrome_style": true
+    },
+    "permissions": [
+        "storage",
+        "tabs"
+    ],
+    "web_accessible_resources": [
+        "img/*",
+        "options/options.html"
+    ]
+}
