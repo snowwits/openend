@@ -1,7 +1,7 @@
 # Open End
 Chrome extension that lets you hide the title, preview and duration of videos on Twitch.tv to prevent spoilers when watching e-sports or sports videos.
 
-#Table of Contents  
+# Table of Contents  
 1. [Description](#1.-description)  
 2. [Features](#2.-features)
 3. [Usage](#3.-usage)
