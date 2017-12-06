@@ -2,13 +2,13 @@
 Chrome extension that lets you hide the title, preview and duration of videos on Twitch.tv to prevent spoilers when watching e-sports or sports videos.
 
 # Table of Contents  
-1. [Description](#1.-description)  
-2. [Features](#2.-features)
-3. [Usage](#3.-usage)
-4. [Roadmap and Version Notes](#4.-roadmap-and-version-notes)
-5. [Contact](#5.-contact)
-6. [License](#6.-license)
-6. [Credits](#7.-credits)
+1. [Description](#1-description)  
+2. [Features](#2-features)
+3. [Usage](#3-usage)
+4. [Roadmap and Version Notes](#4-roadmap-and-version-notes)
+5. [Contact](#5-contact)
+6. [License](#6-license)
+6. [Credits](#7-credits)
 
 ## 1. Description 
 Sometimes you can't or don't want to watch a e-sports or sports event live. But when you are watching the videos later, the titles, preview thumbnails or durations of videos can often give away the ending. For example, if you are watching a best-of-3 series and the video has almost reached its end during second match, you know that it will be a 2:0 victory.
@@ -37,9 +37,9 @@ Open End prevents those kinds of spoilers by hiding certain information on Twitc
 - **Options:** On the popup you can click on the "Options..." button to open the options of the extension. Explore the options and customize the extension as you like it
 - **Player toolbar:** If the Spoiler-Free Mode is enabled for a channel, an Open End toolbar will be added to the player tha provides a button to show/hide the duration and quick video navigation features
   - The toolbar can be configured in the options
-  - To learn how to navigate in a video, see [3.4](#3.4-navigate-in-the-video-without-a-seek-bar)
+  - To learn how to navigate in a video, see [3.4](#34-navigate-in-the-video-without-a-seek-bar)
 - **Video lists:** Open End can hide certain information about videos in videos lists.
-  - What information is hidden can be configured in the options , see [3.5](#3.5-customize-what-information-about-videos-in-video-lists-is-hidden)
+  - What information is hidden can be configured in the options , see [3.5](#35-customize-what-information-about-videos-in-video-lists-is-hidden)
 
 ### 3.2 Enable/Disable Spoiler-Free Mode
 1. Click on the Open End icon in the Chrome toolbar
