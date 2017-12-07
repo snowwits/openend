@@ -73,8 +73,8 @@ Open End prevents those kinds of spoilers by hiding certain information on Twitc
 3. Go to the section "Items in video lists"
 4. Check/uncheck the options under that section according to your preferences  
 
-### 3.6 Basic overwatchleague.com & MLG.com support for the OWL pre-season matches
-The version "0.2.1 (BETA)" includes very basic support for overwatchleague.com & MLG.com. This means:
+### 3.6 Basic support for OverwatchLeague.com & MLG.com for the OWL pre-season matches
+The version "0.2.1 (BETA)" includes very basic support for overwatchleague.com & mlg.com. This means:
 - To enable the Spoiler-Free Mode on these sites, you have to select "Enable Spoiler-Free Mode: [x] Always" on the toolbar icon popup or in the options
 - When the Spoiler-Free Mode is enabled, the following things are hidden:
   - The progress bar and the duration of videos being played
