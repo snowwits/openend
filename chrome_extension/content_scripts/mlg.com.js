@@ -65,7 +65,8 @@ let GLOBAL_configuredFlags = getDefaultConfiguredFlagsCopy();
  */
 function getDefaultConfiguredFlagsCopy() {
     return {
-        [OPT_SFM_PLAYER_HIDE_DURATION_NAME]: false
+        [OPT_SFM_PLAYER_HIDE_DURATION_NAME]: false,
+        [OPT_SFM_VIDEO_LIST_HIDE_DURATION_NAME]: false
     };
 }
 
@@ -158,6 +159,7 @@ function configurePage() {
     }
     determineSfmEnabledForPage();
     configurePlayer();
+    configureVideoListItems();
 }
 
 function isPageConfigured() {
@@ -262,6 +264,36 @@ function isPlayerConfigured() {
 
 function isPlayerDurationConfigured() {
     return GLOBAL_pageType !== MlgPageType.IFRAME_PLAYER || isConfigured(OPT_SFM_PLAYER_HIDE_DURATION_NAME);
+}
+
+
+/**
+ * overwatchleague.com
+ *
+ * Duration:
+ * <span class="Card-timecode">27:04</span>
+ */
+function configureVideoListItems() {
+    if(isVideoListItemsConfigured()){
+        return;
+    }
+    const durationSpans = document.getElementsByClassName("Card-timecode");
+    if (durationSpans.length > 0) {
+        let setDurationVisible;
+        if (isSfmEnabledForPage()) {
+            setDurationVisible = !GLOBAL_options[OPT_SFM_VIDEO_LIST_HIDE_DURATION_NAME];
+        }
+        else {
+            setDurationVisible = true;
+        }
+        const opndContainers = getOrWrapAllInOpndContainers(durationSpans);
+        setVisible(opndContainers, setDurationVisible);
+        setConfigured(OPT_SFM_VIDEO_LIST_HIDE_DURATION_NAME, true)
+    }
+}
+
+function isVideoListItemsConfigured() {
+    return isConfigured(OPT_SFM_VIDEO_LIST_HIDE_DURATION_NAME);
 }
 
 

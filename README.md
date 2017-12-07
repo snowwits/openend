@@ -89,7 +89,7 @@ If you have questions or feature requests you can contact me:
 - Reddit: [/u/snowwits](https://www.reddit.com/user/snowwits)
 
 ## 6. License
-[Apache License 2.0](LICENSE.md)
+Exclusive copyright for now.
 
 ## 7. Credits
 - Google: Material Design icons
