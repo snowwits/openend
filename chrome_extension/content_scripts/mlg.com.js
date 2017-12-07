@@ -163,7 +163,7 @@ function configurePage() {
 }
 
 function isPageConfigured() {
-    return isSfmEnabledForPageDetermined() && isPlayerConfigured()
+    return isSfmEnabledForPageDetermined() && isPlayerConfigured() && isVideoListItemsConfigured();
 }
 
 function formatPageConfigurationState() {
@@ -272,18 +272,32 @@ function isPlayerDurationConfigured() {
  *
  * Duration:
  * <span class="Card-timecode">27:04</span>
+ *
+ * On mlg.com
+ * Duration:
+ * <div data-v-c420a302="" class="md-card-content">
+ *     <div data-v-c420a302="" class="card-row">
+ *         <div data-v-c420a302="" class="title">Overwatch League Preseason Day 1 Highlights</div>
+ *         <div data-v-c420a302="" class="info">17 minutes ago&nbsp;&nbsp;·&nbsp;&nbsp;4:03</div>
+ *         <div data-v-c420a302="" class="subhead">Check out the best moments of Day 1 and tune into MLG for Day 2, broadcasting live at 2 pm (EST).</div>
+ *     </div>
+ *     <div data-v-c420a302="" class="card-row">
+ *         <div data-v-c420a302="" class="card-cell"></div>
+ *     </div>
+ * </div>
  */
 function configureVideoListItems() {
+    console.log(formatFrameType() + ": Configuring video list items");
     if (isVideoListItemsConfigured()) {
         return;
     }
-    console.log("Configuring video list items");
     // We can't wrap these spans because then they aren't shown at all, so we have to wrap their content
     let opndContainers = [];
+    // On overwatchleague.com
     // Search for the inner containers
-    const existingOpndInnerContainers = document.querySelectorAll(".Card-timecode ." + OPND_INNER_CONTAINER_CLASS);
-    if (existingOpndInnerContainers.length > 0) {
-        opndContainers = existingOpndInnerContainers;
+    const existingOwlOpndInnerContainers = document.querySelectorAll(".Card-timecode ." + OPND_INNER_CONTAINER_CLASS);
+    if (existingOwlOpndInnerContainers.length > 0) {
+        opndContainers = existingOwlOpndInnerContainers;
     } else {
         const durationSpans = document.getElementsByClassName("Card-timecode");
         if (durationSpans.length > 0) {
@@ -301,6 +315,33 @@ function configureVideoListItems() {
             opndContainers = newOpndInnerContainers;
         }
     }
+
+    // On MLG.com
+    // Search for the inner containers
+    const existingMlgOpndInnerContainers = document.querySelectorAll(".md-card-content .info ." + OPND_INNER_CONTAINER_CLASS);
+    if (existingMlgOpndInnerContainers.length > 0) {
+        opndContainers = existingMlgOpndInnerContainers;
+    } else {
+        const mlgInfoSpans = document.querySelectorAll(".md-card-content .info");
+        if (mlgInfoSpans.length > 0) {
+            const newOpndInnerContainers = [];
+            for (let i = 0; i < mlgInfoSpans.length; i++) {
+                const mlgInfoSpan = mlgInfoSpans[i];
+                const innerHtmlValue = mlgInfoSpan.innerHTML;
+                const indexOfPoint = innerHtmlValue.indexOf("·");
+                const dateHtmlValue = innerHtmlValue.substring(0, indexOfPoint+1);
+                const durationHtmlValue = innerHtmlValue.substring(indexOfPoint+1);
+                const innerContainer = document.createElement("span");
+                innerContainer.classList.add(OPND_CONTAINER_CLASS, OPND_INNER_CONTAINER_CLASS);
+                innerContainer.innerHTML = durationHtmlValue;
+                mlgInfoSpan.innerHTML = dateHtmlValue;
+                mlgInfoSpan.appendChild(innerContainer);
+                newOpndInnerContainers.push(innerContainer);
+            }
+            opndContainers = newOpndInnerContainers;
+        }
+    }
+
     if (opndContainers.length > 0) {
         let setDurationVisible;
         if (isSfmEnabledForPage()) {
@@ -315,7 +356,7 @@ function configureVideoListItems() {
 }
 
 function isVideoListItemsConfigured() {
-    return isConfigured(OPT_SFM_VIDEO_LIST_HIDE_DURATION_NAME);
+    return GLOBAL_pageType == MlgPageType.IFRAME_PLAYER || isConfigured(OPT_SFM_VIDEO_LIST_HIDE_DURATION_NAME);
 }
 
 
