@@ -76,7 +76,7 @@ Open End prevents those kinds of spoilers by hiding certain information on Twitc
 ### 3.6 Basic MLG support for the OWL pre-season matches
 The version "0.2.0 (BETA)" includes very basic MLG support. This means:
 - To enable the Spoiler-Free Mode on MLG.com, you have to select "Enable Spoiler-Free Mode: [x] Always" on the toolbar icon popup or in the options
-- When the Spoiler-Free Mode is enabled, the progress bar and the duration of videos on mlg.com are hidden
+- When the Spoiler-Free Mode is enabled, the progress bar and the duration of videos being played on mlg.com are hidden
   - You can toggle the visibility by switching between "Enable Spoiler-Free Mode:" "[x] Never" and "[x] Always"
 - Neither an Open End player toolbar nor a feature to hide information of videos in video lists are provided yet
 
