@@ -274,11 +274,34 @@ function isPlayerDurationConfigured() {
  * <span class="Card-timecode">27:04</span>
  */
 function configureVideoListItems() {
-    if(isVideoListItemsConfigured()){
+    if (isVideoListItemsConfigured()) {
         return;
     }
-    const durationSpans = document.getElementsByClassName("Card-timecode");
-    if (durationSpans.length > 0) {
+    console.log("Configuring video list items");
+    // We can't wrap these spans because then they aren't shown at all, so we have to wrap their content
+    let opndContainers = [];
+    // Search for the inner containers
+    const existingOpndInnerContainers = document.querySelectorAll(".Card-timecode ." + OPND_INNER_CONTAINER_CLASS);
+    if (existingOpndInnerContainers.length > 0) {
+        opndContainers = existingOpndInnerContainers;
+    } else {
+        const durationSpans = document.getElementsByClassName("Card-timecode");
+        if (durationSpans.length > 0) {
+            const newOpndInnerContainers = [];
+            for (let i = 0; i < durationSpans.length; i++) {
+                const durationSpan = durationSpans[i];
+                const innerHtmlValue = durationSpan.innerHTML;
+                const innerContainer = document.createElement("span");
+                innerContainer.classList.add(OPND_CONTAINER_CLASS, OPND_INNER_CONTAINER_CLASS);
+                innerContainer.innerHTML = innerHtmlValue;
+                durationSpan.innerHTML = "";
+                durationSpan.appendChild(innerContainer);
+                newOpndInnerContainers.push(innerContainer);
+            }
+            opndContainers = newOpndInnerContainers;
+        }
+    }
+    if (opndContainers.length > 0) {
         let setDurationVisible;
         if (isSfmEnabledForPage()) {
             setDurationVisible = !GLOBAL_options[OPT_SFM_VIDEO_LIST_HIDE_DURATION_NAME];
@@ -286,7 +309,6 @@ function configureVideoListItems() {
         else {
             setDurationVisible = true;
         }
-        const opndContainers = getOrWrapAllInOpndContainers(durationSpans);
         setVisible(opndContainers, setDurationVisible);
         setConfigured(OPT_SFM_VIDEO_LIST_HIDE_DURATION_NAME, true)
     }

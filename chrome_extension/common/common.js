@@ -189,6 +189,7 @@ const TAB_INFO_PLATFORM_DEFAULT = "";
  * @type {string}
  */
 const OPND_CONTAINER_CLASS = "opnd-container";
+const OPND_INNER_CONTAINER_CLASS = "opnd-inner-container";
 /**
  * The CSS class that is added to Open End containers to hide them and thus their content.
  * @type {string}
