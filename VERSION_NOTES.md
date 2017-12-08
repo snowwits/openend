@@ -11,10 +11,10 @@
 
 ## Version Notes
 
-### Open End `0.2.x (BETA)` (2017-12-06)
+### Open End "0.2.x (BETA)" (2017-12-06)
 - Very basic support for MLG.com and OverwatchLeague.com for the Overwatch League Pre-Season matches
   - Hides duration of currently played video and other videos if Spoiler-Free Mode is enabled
   
-### Open End `0.1.x (BETA)` (2017-12-05)
+### Open End "0.1.x (BETA)" (2017-12-05)
 - Very first BETA release
 
