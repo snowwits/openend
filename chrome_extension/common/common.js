@@ -148,6 +148,7 @@ function isSfmEnabledForChannel(options, channel) {
 /**
  * @typedef {object} TabInfo
  * @property {!string} channel the qualified name of current channel of the tab
+ * @property {!string} platform the qualified name of current platform of the tab
  */
 /**
  * @typedef {object} TabInfoMessage
@@ -1019,7 +1020,7 @@ class Channel {
 
 
     get displayName() {
-        return this.name + " (" + this.platform.displayName + ")";
+        return this.name;
     }
 
     get url() {
@@ -1028,9 +1029,14 @@ class Channel {
 }
 
 
-function parsePlatformFromQualifiedName(platformQualifiedName) {
+/**
+ *
+ * @param platformName the name of the platform
+ * @returns {?Platform} the parsed Platform or null if the given platformName does not match any platform
+ */
+function parsePlatformFromName(platformName) {
     for (let i = 0; i < ALL_PLATFORMS.length; i++) {
-        if (ALL_PLATFORMS[i].name === platformQualifiedName) {
+        if (ALL_PLATFORMS[i].name === platformName) {
             return ALL_PLATFORMS[i];
         }
     }

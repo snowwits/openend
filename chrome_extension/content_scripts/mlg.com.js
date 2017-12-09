@@ -356,7 +356,7 @@ function configureVideoListItems() {
 }
 
 function isVideoListItemsConfigured() {
-    return GLOBAL_pageType == MlgPageType.IFRAME_PLAYER || isConfigured(OPT_SFM_VIDEO_LIST_HIDE_DURATION_NAME);
+    return GLOBAL_pageType === MlgPageType.IFRAME_PLAYER || isConfigured(OPT_SFM_VIDEO_LIST_HIDE_DURATION_NAME);
 }
 
 

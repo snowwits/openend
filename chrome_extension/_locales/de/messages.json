@@ -12,8 +12,7 @@
         "message": "$JUMP_TIME$ zurückspringen",
         "placeholders": {
             "jump_time": {
-                "content": "$1",
-                "example": "2m"
+                "content": "$1"
             }
         }
     },
@@ -21,8 +20,7 @@
         "message": "$JUMP_TIME$ vorspringen",
         "placeholders": {
             "jump_time": {
-                "content": "$1",
-                "example": "2m"
+                "content": "$1"
             }
         }
     },
@@ -50,7 +48,7 @@
     "videoListItemShowHideDuration_hidden": {
         "message": "Dauer anzeigen"
     },
-    "menu_open_options": {
+    "menu_openOptions": {
         "message": "Optionen..."
     },
     "options_sfm_enabled": {
@@ -63,7 +61,10 @@
         "message": "Immer"
     },
     "options_sfm_enabled_custom": {
-        "message": "Nur auf ausgewählten Kanälen"
+        "message": "Benutzerdefiniert"
+    },
+    "options_sfm_custom": {
+        "message": "Benutzerdefinierter Spoilerfreier Modus"
     },
     "options_sfm_channelToAdd": {
         "message": "Hinzuzufügender Kanal"
@@ -125,10 +126,20 @@
     "options_restoreDefaults_successMsg": {
         "message": "Standardwerte wiederhergestellt."
     },
-    "browserAction_channel": {
-        "message": "Aktueller Kanal"
+    "browserAction_sfmCustom_platformEnabled": {
+        "message": "Auf $PLATFORM$ aktivieren (Plattform)",
+        "placeholders": {
+            "platform": {
+                "content": "$1"
+            }
+        }
     },
-    "browserAction_channelSfmEnabled": {
-        "message": "Spoilerfreien Modus aktivieren<br>(nur wirksam wenn \"Nur auf ausgewählten Kanälen\" ausgewählt ist)"
+    "browserAction_sfmCustom_channelEnabled": {
+        "message": "Auf $CHANNEL$ aktivieren (Kanal)",
+        "placeholders": {
+            "channel": {
+                "content": "$1"
+            }
+        }
     }
 }
