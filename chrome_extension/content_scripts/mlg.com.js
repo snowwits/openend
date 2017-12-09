@@ -252,7 +252,7 @@ function configurePlayer() {
             setDurationVisible = true;
         }
         const opndContainers = getOrWrapAllInOpndContainers(durationElements);
-        setVisible(opndContainers, setDurationVisible);
+        setAllVisible(opndContainers, setDurationVisible);
         setConfigured(OPT_SFM_PLAYER_HIDE_DURATION_NAME, true)
     }
 }
@@ -350,7 +350,7 @@ function configureVideoListItems() {
         else {
             setDurationVisible = true;
         }
-        setVisible(opndContainers, setDurationVisible);
+        setAllVisible(opndContainers, setDurationVisible);
         setConfigured(OPT_SFM_VIDEO_LIST_HIDE_DURATION_NAME, true)
     }
 }

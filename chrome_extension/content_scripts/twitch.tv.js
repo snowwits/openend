@@ -399,7 +399,7 @@ function updatePayerDurationVisibleAndShowHideButton(configuring, visible) {
     const opndContainersOfAllDurationElements = getOrWrapAllInOpndContainers(allDurationElements, OPND_CONTAINER_PLAYER_DURATION_CLASS);
 
     if (opndContainersOfAllDurationElements.length > 0) {
-        const setVisibleResult = setVisible(opndContainersOfAllDurationElements, visible);
+        const setVisibleResult = setAllVisible(opndContainersOfAllDurationElements, visible);
         log("Updated Player Duration visible to [%s]", setVisibleResult);
 
         // Update the Player Progress Visibility img src and alt
@@ -524,9 +524,9 @@ function configureVideoListItems() {
 
     // If SFM = enabled, configure according to the SFM config
     if (isSfmEnabledForPage()) {
-        setVisible(allTitleContainers, setTitleVisible);
-        setVisible(allPreviewContainers, setPreviewVisible);
-        setVisible(allDurationContainers, setDurationVisible);
+        setAllVisible(allTitleContainers, setTitleVisible);
+        setAllVisible(allPreviewContainers, setPreviewVisible);
+        setAllVisible(allDurationContainers, setDurationVisible);
 
         for (let i = 0; i < videoCardDivs.length; i++) {
             const videoCardDiv = videoCardDivs[i];
@@ -535,9 +535,9 @@ function configureVideoListItems() {
     }
     // If SFM = disabled, show everything and remove toolbars
     else if (isSfmDisabledForPage()) {
-        setVisible(allTitleContainers, true);
-        setVisible(allPreviewContainers, true);
-        setVisible(allDurationContainers, true);
+        setAllVisible(allTitleContainers, true);
+        setAllVisible(allPreviewContainers, true);
+        setAllVisible(allDurationContainers, true);
 
         removeVideoListItemToolbars();
     }
@@ -554,17 +554,17 @@ function configureVideoListItems() {
             const channel = getVideoChannel(videoCardDiv);
             const sfmEnabledForChannel = isSfmEnabledForChannel(GLOBAL_options, channel);
             if (SfmEnabledState.ENABLED === sfmEnabledForChannel) {
-                setVisible(videoTitleContainer, setTitleVisible);
-                setVisible(videoPreviewContainer, setPreviewVisible);
-                setVisible(videoDurationContainer, setDurationVisible);
+                setAllVisible(videoTitleContainer, setTitleVisible);
+                setAllVisible(videoPreviewContainer, setPreviewVisible);
+                setAllVisible(videoDurationContainer, setDurationVisible);
 
                 addVideoListItemToolbar(videoCardDiv);
             }
             // DISABLED or UNDETERMINED
             else {
-                setVisible(videoTitleContainer, true);
-                setVisible(videoPreviewContainer, true);
-                setVisible(videoDurationContainer, true);
+                setAllVisible(videoTitleContainer, true);
+                setAllVisible(videoPreviewContainer, true);
+                setAllVisible(videoDurationContainer, true);
 
                 removeVideoListItemToolbars(videoCardDiv);
             }
@@ -916,7 +916,7 @@ function buildVideoListItemToolbarButton(videoCardDiv, imgSrc, hideableContainer
 
     const btn = document.createElement("button");
     const actionHandler = () => {
-        const setVisibleResult = setVisible(videoCardDiv.getElementsByClassName(hideableContainerClass), null);
+        const setVisibleResult = setAllVisible(videoCardDiv.getElementsByClassName(hideableContainerClass), null);
         const tooltipSpan = videoCardDiv.querySelector("." + tooltipClass);
         updateShowHideTooltip(tooltipSpan, setVisibleResult, visibleTooltipMsg, hiddenTooltipMsg);
     };

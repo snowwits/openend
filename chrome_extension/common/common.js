@@ -413,26 +413,49 @@ function removeElement(element) {
 
 /**
  *
- * @param opndContainers {!Iterable.<Element>}
+ * @param elements {!Iterable.<Element>}
  * @param visible {?boolean} true, false or null (to toggle)
  * @return {?boolean} true if the elements were set visible, false if not. null if there were no elements
  */
-function setVisible(opndContainers, visible) {
+function setAllVisible(elements, visible) {
     let actuallySetVisible = visible;
-    for (let i = 0; i < opndContainers.length; i++) {
-        const opndContainer = opndContainers[i];
+    for (let i = 0; i < elements.length; i++) {
+        const elem = elements[i];
         if (actuallySetVisible === null) {
             // If the visible param is null,
             // we check the first element's visible state and use that to toggle all elements.
-            actuallySetVisible = opndContainer.classList.contains(OPND_HIDDEN_CLASS)
+            actuallySetVisible = elem.classList.contains(OPND_HIDDEN_CLASS)
         }
         if (actuallySetVisible) {
-            opndContainer.classList.remove(OPND_HIDDEN_CLASS);
+            elem.classList.remove(OPND_HIDDEN_CLASS);
         } else {
-            opndContainer.classList.add(OPND_HIDDEN_CLASS);
+            elem.classList.add(OPND_HIDDEN_CLASS);
         }
     }
     return actuallySetVisible;
+}
+
+/**
+ * @param element {!Element}
+ * @param visible {?boolean} true, false or null (to toggle)
+ * @return {!boolean} true if the element was set visible, false if not
+ */
+function setVisible(element, visible) {
+    if (visible === true) {
+        element.classList.remove(OPND_HIDDEN_CLASS);
+        return true;
+    } else if (visible === false) {
+        element.classList.add(OPND_HIDDEN_CLASS);
+        return false;
+    } else {
+        if (element.classList.contains(OPND_HIDDEN_CLASS)) {
+            element.classList.remove(OPND_HIDDEN_CLASS);
+            return true;
+        } else {
+            element.classList.add(OPND_HIDDEN_CLASS);
+            return false;
+        }
+    }
 }
 
 function getOrWrapAllInOpndContainers(elements, additionalClass = null) {

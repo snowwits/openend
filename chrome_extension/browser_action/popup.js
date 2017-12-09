@@ -76,21 +76,22 @@ function updateUiAfterTabInfoUpdate(tabInfo) {
     // Configure UI
     // Custom options
     if (platform === null && channel === null) {
-        sfmCustomDiv.classList.add(OPND_HIDDEN_CLASS);
+        setVisible(sfmCustomDiv, false);
     }
     else {
-        sfmCustomDiv.classList.remove(OPND_HIDDEN_CLASS);
+        setVisible(sfmCustomDiv, true);
     }
 
     // Platform
     sfmCustomPlatformDiv.dataset.channel = platformText;
     sfmCustomPlatformEnabledCheckbox.checked = false;
     if (platform === null) {
-        sfmCustomPlatformDiv.classList.add(OPND_HIDDEN_CLASS);
+        setVisible(sfmCustomPlatformDiv, false);
         sfmCustomPlatformEnabledLabel.textContent = "";
     } else {
-        sfmCustomPlatformDiv.classList.remove(OPND_HIDDEN_CLASS);
-        sfmCustomPlatformEnabledLabel.textContent = chrome.i18n.getMessage("browserAction_sfmCustom_platformEnabled", platform.displayName)
+        sfmCustomPlatformEnabledLabel.textContent = chrome.i18n.getMessage("browserAction_sfmCustom_platformEnabled", platform.displayName);
+        // TODO check options if platform enabled and update checkbox
+        setVisible(sfmCustomPlatformDiv, true);
     }
 
     // Channel
@@ -98,7 +99,7 @@ function updateUiAfterTabInfoUpdate(tabInfo) {
     sfmCustomChannelEnabledCheckbox.checked = false;
 
     if (channel === null) {
-        sfmCustomChannelDiv.classList.add(OPND_HIDDEN_CLASS);
+        setVisible(sfmCustomChannelDiv, false);
         sfmCustomChannelEnabledLabel.textContent = "";
     } else {
         sfmCustomChannelEnabledLabel.textContent = chrome.i18n.getMessage("browserAction_sfmCustom_channelEnabled", channel.displayName);
@@ -110,7 +111,7 @@ function updateUiAfterTabInfoUpdate(tabInfo) {
             log("[sync storage] Gotten %o", items);
 
             updateChannelSfmEnabledCheckbox(sfmCustomChannelEnabledCheckbox, channel.qualifiedName, items[OPT_SFM_CHANNELS_NAME]);
-            sfmCustomChannelDiv.classList.remove(OPND_HIDDEN_CLASS);
+            setVisible(sfmCustomChannelDiv, true);
         });
     }
 }
@@ -303,6 +304,7 @@ function init() {
 
     // Platform
     const sfmCustomPlatformEnabledCheckbox = document.getElementById(SFM_CUSTOM_PLATFORM_ENABLED_ID);
+    // TODO
     sfmCustomPlatformEnabledCheckbox.onchange = null;
 
     // Channel
