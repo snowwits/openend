@@ -19,7 +19,7 @@
  * ====================================================================================================
  */
 // TODO: disable before publishing
-const LOG_ENABLED = false;
+const LOG_ENABLED = true;
 
 function logWithComponent(component, msg, ...substitutions) {
     if (LOG_ENABLED) {
@@ -690,6 +690,21 @@ function createAnchor(href) {
  */
 const TWITCH_USERNAME_REGEX = new RegExp("^[a-zA-Z0-9][a-zA-Z0-9_]{3,24}$");
 
+
+class PlatformPage {
+    /**
+     *
+     * @param pageType {!string} the page type
+     * @param channel {?Channel} the channel if it is a channel or a channel sub page
+     * @param videoId {?string} videoId the id of the video if it is a video page
+     */
+    constructor(pageType, channel = null, videoId = null) {
+        this.pageType = pageType;
+        this.channel = channel;
+        this.videoId = videoId;
+    }
+}
+
 class Platform {
     /**
      * @return {!string} the name
@@ -707,11 +722,12 @@ class Platform {
 
     /**
      *
-     * @param channelName {!string} the name of the channel to create
+     * @param name {!string} the name of the channel to create
+     * @param displayName {?string} the display name of the channel (may be null if it is the same as the name)
      * @return {!Channel} the created channel
      * @throws error if the channel name is invalid on the platform
      */
-    buildChannel(channelName) {
+    buildChannel(name, displayName = null) {
         throw new Error("Not implemented");
     }
 
@@ -727,6 +743,7 @@ class Platform {
     /**
      *
      * @param qualifiedChannelName {!string}
+     * @return {?Channel} the parsed channel or null if the qualified name is invalid for this platform
      */
     parseChannelFromQualifiedName(qualifiedChannelName) {
         throw new Error("Not implemented");
@@ -734,21 +751,21 @@ class Platform {
 
     /**
      *
-     * @param hostname {!string} the hostname of the url
-     * @param pathname {!string} the pathname of the url
-     * @param search {!string} the query string of the url
+     * @param url {!URL} a {@link Location} or {@link HTMLAnchorElement}
+     * @return {?Channel} the parsed channel or null if the URL was not recognized
      */
-    parseChannelFromUrl(hostname, pathname, search) {
+    parseChannelFromUrl(url) {
+        throw new Error("Not implemented");
+    }
+
+    /**
+     * @param url {!URL} a {@link Location} or {@link HTMLAnchorElement}
+     * @return {?PlatformPage} the page or null if it isn't a page of that platform
+     */
+    parsePageFromUrl(url) {
         throw new Error("Not implemented");
     }
 }
-
-/**
- * @typedef {Object} PageTypeResult
- * @property {!string} pageType the page type
- * @property {?Channel} channel the channel if it was a channel or channel sub page
- * @property {?string} videoId the id of the video if it was a video page
- */
 
 const TwitchPageType = Object.freeze({
     /**
@@ -805,10 +822,13 @@ class TwitchPlatform extends Platform {
         return "Twitch.tv";
     }
 
-    buildChannel(channelName) {
-        if (TWITCH_USERNAME_REGEX.test(channelName)) {
-            const channelNameLowerCase = channelName.toLowerCase();
-            return new Channel(this, channelNameLowerCase);
+    /**
+     * @override
+     */
+    buildChannel(name, displayName = null) {
+        if (TWITCH_USERNAME_REGEX.test(name)) {
+            const channelNameLowerCase = name.toLowerCase();
+            return new Channel(this, channelNameLowerCase, displayName);
         }
         throw new Error("The given channel name is not a valid channel name (regex: " + TWITCH_USERNAME_REGEX + ")");
     }
@@ -841,11 +861,10 @@ class TwitchPlatform extends Platform {
     }
 
     /**
-     *
      * @override
      */
-    parseChannelFromUrl(hostname, pathname, search) {
-        const pageType = this.determinePage(hostname, pathname, search);
+    parseChannelFromUrl(url) {
+        const pageType = this.parsePageFromUrl(url);
         if (pageType && pageType.channel) {
             return pageType.channel;
         }
@@ -853,67 +872,42 @@ class TwitchPlatform extends Platform {
     }
 
     /**
-     * @param hostname the hostname
-     * @param pathname the pathname
-     * @param search the query string
-     * @return {?PageTypeResult} the page type result or null if it isn't a twitch page
+     * @override
      */
-    determinePage(hostname, pathname, search) {
+    parsePageFromUrl(url) {
         try {
             // For most content the host has to be twitch.tv
-            if ("www.twitch.tv" === hostname || "twitch.tv" === hostname) {
-                if ("/" === pathname) {
-                    return {
-                        pageType: TwitchPageType.ROOT
-                    };
+            if ("www.twitch.tv" === url.hostname || "twitch.tv" === url.hostname) {
+                if ("/" === url.pathname) {
+                    return new PlatformPage(TwitchPageType.ROOT);
                 }
                 // "/directory" is a special path
-                if ("/directory" === pathname || "/directory/" === pathname) {
-                    return {
-                        pageType: TwitchPageType.DIRECTORY
-                    };
+                if ("/directory" === url.pathname || "/directory/" === url.pathname) {
+                    return new PlatformPage(TwitchPageType.DIRECTORY);
                 }
-                if (pathname.startsWith("/directory")) {
-                    return {
-                        pageType: TwitchPageType.DIRECTORY_UNKNOWN_SUB_DIR
-                    };
+                if (url.pathname.startsWith("/directory")) {
+                    return new PlatformPage(TwitchPageType.DIRECTORY_UNKNOWN_SUB_DIR);
                 }
-                let match = new RegExp("^/videos/(\\d+)(?:/)?$").exec(pathname);
+                let match = new RegExp("^/videos/(\\d+)(?:/)?$").exec(url.pathname);
                 if (match !== null) {
-                    return {
-                        pageType: TwitchPageType.VIDEO,
-                        videoId: match[1]
-                    };
+                    return new PlatformPage(TwitchPageType.VIDEO, null, match[1]);
                 }
-                match = new RegExp("^/([^/]+)/videos/all(?:/)?$").exec(pathname);
+                match = new RegExp("^/([^/]+)/videos/all(?:/)?$").exec(url.pathname);
                 if (match !== null) {
-                    return {
-                        pageType: TwitchPageType.CHANNEL_VIDEOS,
-                        channel: this.buildChannel(match[1])
-                    };
+                    return new PlatformPage(TwitchPageType.CHANNEL_VIDEOS, this.buildChannel(match[1]));
                 }
-                match = new RegExp("^/([^/]+)(?:/)?$").exec(pathname);
+                match = new RegExp("^/([^/]+)(?:/)?$").exec(url.pathname);
                 if (match !== null) {
-                    return {
-                        pageType: TwitchPageType.CHANNEL,
-                        channel: this.buildChannel(match[1])
-                    };
+                    return new PlatformPage(TwitchPageType.CHANNEL, this.buildChannel(match[1]));
                 }
-                match = new RegExp("^/([^/]+)/.*$").exec(pathname);
+                match = new RegExp("^/([^/]+)/.*$").exec(url.pathname);
                 if (match !== null) {
-                    return {
-                        pageType: TwitchPageType.CHANNEL_UNKNOWN_SUB_DIR,
-                        channel: this.buildChannel(match[1])
-                    };
+                    return new PlatformPage(TwitchPageType.CHANNEL_UNKNOWN_SUB_DIR, this.buildChannel(match[1]));
                 }
-                return {
-                    pageType: TwitchPageType.UNKNOWN
-                };
-            } else if (hostname.includes("twitch.tv")) {
+                return new PlatformPage(TwitchPageType.UNKNOWN);
+            } else if (url.hostname.includes("twitch.tv")) {
                 // sub-hosts like "clips.twitch.tv" or "app.twitch.tv"
-                return {
-                    pageType: TwitchPageType.UNKNOWN
-                };
+                return new PlatformPage(TwitchPageType.UNKNOWN);
             }
             return null;
         }
@@ -939,6 +933,7 @@ const MlgPageType = Object.freeze({
      * "http://www.mlg.com/video/overwatch-world-cup-blizzcon-day-1/_id/miLqHWYeQWW/_pid/24"
      */
     VIDEO: "VIDEO",
+
     /**
      * Player iframe
      *
@@ -977,42 +972,27 @@ class MlgPlatform extends Platform {
     /**
      * @override
      */
-    parseChannelFromUrl(hostname, pathname, search) {
+    parseChannelFromUrl(url) {
         return null;
     }
 
     /**
-     *
-     *
-     * @param hostname the hostname
-     * @param pathname the pathname
-     * @param search the query string
-     * @return {?PageTypeResult} the page type result or null if it isn't a mlg.com page
+     * @override
      */
-    determinePage(hostname, pathname, search) {
-        if (hostname.includes("mlg.com")) {
+    parsePageFromUrl(url) {
+        if (url.hostname.includes("mlg.com")) {
             if ("/" === pathname) {
-                return {
-                    pageType: MlgPageType.ROOT
-                };
+                return new PlatformPage(MlgPageType.ROOT);
             }
-            if (pathname.startsWith("/video")) {
-                return {
-                    pageType: MlgPageType.VIDEO
-                };
+            if (url.pathname.startsWith("/video")) {
+                return new PlatformPage(MlgPageType.VIDEO);
             }
-            return {
-                pageType: MlgPageType.UNKNOWN
-            };
-        } else if (hostname.includes("majorleaguegaming.com")) {
-            if (hostname.includes("player")) {
-                return {
-                    pageType: MlgPageType.IFRAME_PLAYER
-                };
+            return new PlatformPage(MlgPageType.UNKNOWN);
+        } else if (url.hostname.includes("majorleaguegaming.com")) {
+            if (url.hostname.includes("player")) {
+                return new PlatformPage(MlgPageType.IFRAME_PLAYER);
             }
-            return {
-                pageType: MlgPageType.UNKNOWN
-            };
+            return new PlatformPage(MlgPageType.UNKNOWN);
         }
         return null;
     }
@@ -1031,19 +1011,25 @@ class Channel {
      *
      * @param platform {!Platform}
      * @param name {!string}
+     * @param displayName {?string} the display name of the channel
      */
-    constructor(platform, name) {
+    constructor(platform, name, displayName = null) {
         this.platform = platform;
         this.name = name;
+        this.displayName = displayName;
     }
 
     get qualifiedName() {
         return this.platform.name + "/" + this.name;
     }
 
+    get qualifiedDisplayNameOrName() {
+        return this.platform.displayName + "/" + this.displayNameOrName;
+    }
 
-    get displayName() {
-        return this.name;
+
+    get displayNameOrName() {
+        return this.displayName !== null ? this.displayName : this.name;
     }
 
     get url() {
@@ -1083,14 +1069,12 @@ function parseChannelFromQualifiedName(channelQualifiedName) {
 
 /**
  *
- * @param hostname {!string} the hostname of the url
- * @param pathname {!string} the pathname of the url
- * @param search {!string} the query string of the url
- * @return {?Channel} the parsed Channel or null if no platform could parse the qualified name
+ * @param url {!URL} a {@link Location} or {@link HTMLAnchorElement}
+ * @return {?Channel} the parsed channel or null if the URL was not recognized
  */
-function parseChannelFromUrl(hostname, pathname, search) {
+function parseChannelFromUrl(url) {
     for (let i = 0; i < ALL_PLATFORMS.length; i++) {
-        const channel = ALL_PLATFORMS[i].parseChannelFromUrl(hostname, pathname, search);
+        const channel = ALL_PLATFORMS[i].parseChannelFromUrl(url);
         if (channel !== null) {
             return channel;
         }

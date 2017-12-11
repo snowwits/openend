@@ -175,7 +175,7 @@ function resetGlobalPageStateFlags(changedOptions) {
 }
 
 function determinePageType() {
-    const pageTypeResult = TWITCH_PLATFORM.determinePage(window.location.hostname, window.location.pathname, window.location.search);
+    const pageTypeResult = TWITCH_PLATFORM.parsePageFromUrl(window.location);
     if (pageTypeResult) {
         GLOBAL_pageType = pageTypeResult.pageType;
         if (pageTypeResult.channel) {
@@ -259,8 +259,17 @@ function formatPageConfigurationState() {
  * ====================================================================================================
  */
 /**
- * <a data-target="channel-header__channel-link" data-a-target="user-channel-header-item" class="channel-header__user align-items-center flex flex-shrink-0 flex-nowrap pd-r-2 pd-y-05" href="/mdz_jimmy">
- * ...
+ * Channel link above the video player (when playing a video):
+ *
+ * <a data-target="channel-header__channel-link" data-a-target="user-channel-header-item" class="channel-header__user align-items-center flex flex-shrink-0 flex-nowrap pd-r-2 pd-y-05" href="/silkthread">
+ *  <div class="align-items-center flex flex-shrink-0 flex-nowrap">
+ *      <div class="channel-header__user-avatar channel-header__user-avatar--active align-items-stretch flex flex-shrink-0 mg-r-1">
+ *          <figure class="tw-avatar tw-avatar--size-36">
+ *              <img class="" src="https://static-cdn.jtvnw.net/jtv_user_pictures/silkthread-profile_image-9f2fe572026ab4d7-70x70.jpeg" alt="silkthread">
+ *          </figure>
+ *     </div>
+ *     <h5 class="">silkthread</h5>
+ *  </div>
  * </a>
  */
 function determineChannel() {
@@ -269,18 +278,24 @@ function determineChannel() {
     }
     const channelLinkAnchor = document.querySelector("a[data-target=channel-header__channel-link]");
     if (channelLinkAnchor) {
-        const pageTypResult = TWITCH_PLATFORM.determinePage(channelLinkAnchor.hostname, channelLinkAnchor.pathname, channelLinkAnchor.search);
+        const pageTypResult = TWITCH_PLATFORM.parsePageFromUrl(channelLinkAnchor);
         if (pageTypResult && pageTypResult.channel) {
+            const channelHeading = channelLinkAnchor.querySelector("h5");
+            if(channelHeading) {
+                pageTypResult.channel.displayName = channelHeading.textContent;
+            }
             updateChannel(pageTypResult.channel);
         }
         else {
-            warn("Failed to parse channel from hostname=%s, pathname=%s, search=%s", channelLinkAnchor.hostname, channelLinkAnchor.pathname, channelLinkAnchor.search);
+            warn("Failed to parse channel from anchor: %o", channelLinkAnchor);
         }
     }
 }
 
 function isChannelDetermined() {
-    return GLOBAL_channel !== null
+    // Channel is only determined if the displayName has been determined, too.
+    // That cannot be achieved by parsing the location URL, that can only be done by parsing the channel link
+    return GLOBAL_channel !== null && GLOBAL_channel.displayName !== null;
 }
 
 /**
@@ -669,7 +684,9 @@ function getVideoLengthStatDivs(videoCardDiv = null) {
 function getVideoChannel(videoCardDiv) {
     const channelAnchor = videoCardDiv.querySelector('a[data-test-selector="video-owner"]');
     if (channelAnchor) {
-        return TWITCH_PLATFORM.parseChannelFromUrl(channelAnchor.hostname, channelAnchor.pathname, channelAnchor.search);
+        const channel =  TWITCH_PLATFORM.parseChannelFromUrl(channelAnchor);
+        channel.displayName = channelAnchor.textContent;
+        return channel;
     }
     return null;
 }

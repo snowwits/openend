@@ -131,10 +131,7 @@ function parseChannel(channelString) {
         return channel;
     }
     const dummyAnchor = createAnchor(channelString);
-    if (dummyAnchor.hostname && dummyAnchor.pathname) {
-        return parseChannelFromUrl(dummyAnchor.hostname, dummyAnchor.pathname, dummyAnchor.search)
-    }
-    return null;
+    return parseChannelFromUrl(dummyAnchor);
 }
 
 /**

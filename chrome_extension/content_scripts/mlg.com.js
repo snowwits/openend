@@ -122,7 +122,7 @@ function resetGlobalPageStateFlags(changedOptions) {
 }
 
 function determinePageType() {
-    const pageTypeResult = MLG_PLATFORM.determinePage(window.location.hostname, window.location.pathname, window.location.search);
+    const pageTypeResult = MLG_PLATFORM.parsePageFromUrl(window.location);
     if (pageTypeResult) {
         GLOBAL_pageType = pageTypeResult.pageType;
     }

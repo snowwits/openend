@@ -102,7 +102,7 @@ function updateUiAfterTabInfoUpdate(tabInfo) {
         setVisible(sfmCustomChannelDiv, false);
         sfmCustomChannelEnabledLabel.textContent = "";
     } else {
-        sfmCustomChannelEnabledLabel.textContent = chrome.i18n.getMessage("browserAction_sfmCustom_channelEnabled", channel.displayName);
+        sfmCustomChannelEnabledLabel.textContent = chrome.i18n.getMessage("browserAction_sfmCustom_channelEnabled", channel.displayNameOrName);
         chrome.storage.sync.get({[OPT_SFM_CHANNELS_NAME]: OPT_SFM_CHANNELS_DEFAULT}, function (items) {
             if (chrome.runtime.lastError) {
                 error("[sync storage] Failed to get [%o]: %o", OPT_SFM_CHANNELS_NAME, chrome.runtime.lastError);
