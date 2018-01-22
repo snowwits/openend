@@ -67,7 +67,10 @@
         "message": "Benutzerdefinierter Spoilerfreier Modus"
     },
     "options_sfm_channelToAdd": {
-        "message": "Hinzuzufügender Kanal"
+        "message": "Qualifizierter Name oder URL:"
+    },
+    "options_channelToAddDisplayName": {
+        "message": "Anzeigename:"
     },
     "options_sfm_addChannel": {
         "message": "Kanal hinzufügen"
@@ -126,20 +129,10 @@
     "options_restoreDefaults_successMsg": {
         "message": "Standardwerte wiederhergestellt."
     },
-    "browserAction_sfmCustom_platformEnabled": {
-        "message": "Auf $PLATFORM$ aktivieren (Plattform)",
-        "placeholders": {
-            "platform": {
-                "content": "$1"
-            }
-        }
+    "browserAction_sfmCustom_platformHeader": {
+        "message": "Auf dieser Plattform aktivieren"
     },
-    "browserAction_sfmCustom_channelEnabled": {
-        "message": "Auf $CHANNEL$ aktivieren (Kanal)",
-        "placeholders": {
-            "channel": {
-                "content": "$1"
-            }
-        }
+    "browserAction_sfmCustom_channelHeader": {
+        "message": "Auf diesem Channel aktivieren"
     }
 }

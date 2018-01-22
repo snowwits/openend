@@ -3,17 +3,35 @@ body {
 }
 
 #options {
-    width: 450px;
+    width: 500px;
     height: 450px; /* height so that the div is not too larger than the Chrome options box and Chrome won't display their own scroll pane */
     overflow-y: auto;
 }
 
-#sfm_channels, #sfm_channelToAdd {
-    width: 16em;
+#sfm_channels {
+    width: 95%;
 }
 
-#sfm_removeChannel {
-    vertical-align: top;
+#sfm_channelToAdd_container {
+    width: 40%;
+    display: inline-block;
+}
+
+#sfm_channelToAdd {
+    width: 100%;
+}
+
+#sfm_channelToAddDisplayName_container {
+    width: 20%;
+    display: inline-block;
+}
+
+#sfm_channelToAddDisplayName {
+    width: 100%;
+}
+
+#sfm_addChannel_container {
+    display: inline-block;
 }
 
 #statusContainer {

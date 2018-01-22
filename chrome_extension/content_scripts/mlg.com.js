@@ -329,8 +329,8 @@ function configureVideoListItems() {
                 const mlgInfoSpan = mlgInfoSpans[i];
                 const innerHtmlValue = mlgInfoSpan.innerHTML;
                 const indexOfPoint = innerHtmlValue.indexOf("·");
-                const dateHtmlValue = innerHtmlValue.substring(0, indexOfPoint+1);
-                const durationHtmlValue = innerHtmlValue.substring(indexOfPoint+1);
+                const dateHtmlValue = innerHtmlValue.substring(0, indexOfPoint + 1);
+                const durationHtmlValue = innerHtmlValue.substring(indexOfPoint + 1);
                 const innerContainer = document.createElement("span");
                 innerContainer.classList.add(OPND_CONTAINER_CLASS, OPND_INNER_CONTAINER_CLASS);
                 innerContainer.innerHTML = durationHtmlValue;
@@ -370,15 +370,10 @@ function listenForMessages() {
 }
 
 /**
- * @return TabInfoMessage
+ * @return {!TabInfoMessage} the tab info message
  */
 function buildTabInfoMessage() {
-    return {
-        [MSG_TYPE_NAME]: MSG_TYPE_TAB_INFO,
-        [MSG_BODY_NAME]: {
-            [TAB_INFO_PLATFORM_NAME]: MLG_PLATFORM.name
-        }
-    };
+    return new TabInfoMessage(new TabInfo(MLG_PLATFORM.serialize()));
 }
 
 /**
@@ -389,12 +384,10 @@ function buildTabInfoMessage() {
  */
 function handleMessage(request, sender, sendResponse) {
     log("Received message from [%o]: %o", sender, request);
-    if (MSG_TYPE_NAME in request) {
-        if (MSG_TYPE_TAB_INFO_REQUEST === request[MSG_TYPE_NAME]) {
-            const tabInfoMessage = buildTabInfoMessage();
-            log("Responding to [Message:" + MSG_TYPE_TAB_INFO_REQUEST + "] with: %o", tabInfoMessage);
-            sendResponse(tabInfoMessage);
-        }
+    if (MessageType.TAB_INFO_REQUEST === request.type) {
+        const tabInfoMessage = buildTabInfoMessage();
+        log("Responding to [Message:" + MessageType.TAB_INFO_REQUEST + "] with: %o", tabInfoMessage);
+        sendResponse(tabInfoMessage);
     }
 }
 

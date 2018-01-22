@@ -12,7 +12,7 @@
 
 
 <div id="options">
-    <h3 id="sfm_enabled-label"></h3>
+    <h2 id="sfm_enabled-label"></h2>
 
     <div>
         <input type="radio" id="sfm_enabled_never" name="sfm_enabled" value="NEVER">
@@ -29,19 +29,35 @@
             <!-- We need to set the background to white in here to override the Chrome's default
             (grey, looks like it's disabled) -->
             <select id="sfm_channels" multiple size="6" style="background: white;"></select>
-            <button id="sfm_removeChannel"></button>
         </div>
         <div>
-            <input type="text" id="sfm_channelToAdd">
-            <button id="sfm_addChannel"></button>
+            <div id="sfm_channelToAdd_container">
+                <div>
+                    <label id="sfm_channelToAdd_label" for="sfm_channelToAdd"></label>
+                </div>
+                <div><input type="text" id="sfm_channelToAdd"></div>
+            </div>
+            <div id="sfm_channelToAddDisplayName_container">
+                <div><label id="sfm_channelToAddDisplayName_label" for="sfm_channelToAddDisplayName"></label></div>
+                <div><input type="text" id="sfm_channelToAddDisplayName"></div>
+            </div>
+            <div id="sfm_addChannel_container">
+                <div></div>
+                <div>
+                    <button id="sfm_addChannel"></button>
+                </div>
+            </div>
+        </div>
+        <div>
+            <button id="sfm_removeChannel"></button>
         </div>
     </div>
 
     <hr/>
 
-    <h3 id="sfm_configure-label"></h3>
+    <h2 id="sfm_configure-label"></h2>
 
-    <h4 id="sfm_player-label"></h4>
+    <h3 id="sfm_player-label"></h3>
     <div>
         <label id="sfm_player_hideDuration-label" for="sfm_player_hideDuration"></label>
         <input type="checkbox" id="sfm_player_hideDuration">
@@ -51,7 +67,7 @@
         <input type="text" id="sfm_player_jumpDistance">
     </div>
 
-    <h4 id="sfm_videoList-label"></h4>
+    <h3 id="sfm_videoList-label"></h3>
     <div>
         <label id="sfm_videoList_hideTitle-label" for="sfm_videoList_hideTitle"></label>
         <input type="checkbox" id="sfm_videoList_hideTitle">

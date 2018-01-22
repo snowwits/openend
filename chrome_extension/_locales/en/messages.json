@@ -87,8 +87,12 @@
         "message": "Custom Spoiler-free Mode"
     },
     "options_sfm_channelToAdd": {
-        "message": "Channel to add",
-        "description": "Label of the Channel To Add text input tooltip."
+        "message": "Qualified name or URL:",
+        "description": "The label for the channel's qualified name or URL input."
+    },
+    "options_channelToAddDisplayName": {
+        "message": "Display name:",
+        "description": "The label for the channel's display name input."
     },
     "options_sfm_addChannel": {
         "message": "Add channel",
@@ -166,25 +170,13 @@
         "message": "Restored default options.",
         "description": "Message to be displayed after a successful Restore Defaults action."
     },
-    "browserAction_sfmCustom_platformEnabled": {
-        "message": "Enabled on $PLATFORM$ (Platform)",
-        "description": "The label of the checkbox whether the SFM should be enabled for this platform",
-        "placeholders": {
-            "platform": {
-                "content": "$1",
-                "example": "Twitch.tv"
-            }
-        }
+    "browserAction_sfmCustom_platformHeader": {
+        "message": "Enabled on this platform",
+        "description": "The label of header of whether the SFM should be enabled for this platform"
     },
-    "browserAction_sfmCustom_channelEnabled": {
-        "message": "Enable on $CHANNEL$ (Channel)",
-        "description": "The label of the checkbox whether the SFM should be enabled for this channel",
-        "placeholders": {
-            "channel": {
-                "content": "$1",
-                "example": "Playoverwatch"
-            }
-        }
+    "browserAction_sfmCustom_channelHeader": {
+        "message": "Enable on this channel",
+        "description": "The label of header of whether the SFM should be enabled for this channel"
     },
     "hello": {
         "message": "Hello, $USER$",

@@ -17,7 +17,7 @@
 <h2>Open End</h2>
 
 <div id="sfmEnabled">
-    <h4 id="sfmEnabledLabel"></h4>
+    <h3 id="sfmEnabledLabel"></h3>
 
     <div>
         <input type="radio" id="sfmEnabledNever" name="sfmEnabled" value="NEVER">
@@ -32,12 +32,14 @@
 </div>
 
 <div id="sfmCustom">
-    <h4 id="sfmCustomLabel"></h4>
-    <div id="sfmCustomPlatform" class="opnd-hidden" data-platform="">
+    <h3 id="sfmCustomLabel"></h3>
+    <div id="sfmCustomPlatform" class="opnd-hidden" data-platformName="">
+        <h4 id="sfmCustomPlatformHeader"></h4>
         <input type="checkbox" id="sfmCustomPlatformEnabled">
         <label id="sfmCustomPlatformEnabledLabel" for="sfmCustomPlatformEnabled"></label>
     </div>
-    <div id="sfmCustomChannel" class="opnd-hidden" data-channel="">
+    <div id="sfmCustomChannel" class="opnd-hidden" data-channelQualifiedName="" data-channelDisplayName="">
+        <h4 id="sfmCustomChannelHeader"></h4>
         <input type="checkbox" id="sfmCustomChannelEnabled">
         <label id="sfmCustomChannelEnabledLabel" for="sfmCustomChannelEnabled"></label></div>
 </div>

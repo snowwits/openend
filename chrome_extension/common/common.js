@@ -58,6 +58,8 @@ const SfmEnabled = Object.freeze({
 
 const OPT_SFM_ENABLED_NAME = "sfmEnabled";
 const OPT_SFM_ENABLED_DEFAULT = SfmEnabled.NEVER;
+const OPT_SFM_PLATFORMS_NAME = "sfmPlatforms";
+const OPT_SFM_PLATFORMS_DEFAULT = Object.freeze([]);
 const OPT_SFM_CHANNELS_NAME = "sfmChannels";
 const OPT_SFM_CHANNELS_DEFAULT = Object.freeze([]);
 const OPT_SFM_PLAYER_HIDE_DURATION_NAME = "sfmPlayerHideDuration";
@@ -77,6 +79,7 @@ function getDefaultOptionsCopy() {
     return {
         [OPT_SFM_ENABLED_NAME]: OPT_SFM_ENABLED_DEFAULT,
         [OPT_SFM_CHANNELS_NAME]: OPT_SFM_CHANNELS_DEFAULT,
+        [OPT_SFM_PLATFORMS_NAME]: OPT_SFM_PLATFORMS_DEFAULT,
         [OPT_SFM_PLAYER_HIDE_DURATION_NAME]: OPT_SFM_PLAYER_HIDE_DURATION_DEFAULT,
         [OPT_SFM_PLAYER_JUMP_DISTANCE_NAME]: OPT_SFM_PLAYER_JUMP_DISTANCE_DEFAULT,
         [OPT_SFM_VIDEO_LIST_HIDE_TITLE_NAME]: OPT_SFM_VIDEO_LIST_HIDE_TITLE_DEFAULT,
@@ -110,6 +113,19 @@ const SfmEnabledState = Object.freeze({
 });
 
 /**
+ *
+ * @param options the options
+ * @param platform {!Platform} the Platform
+ */
+function sfmPlatformsContain(options, platform) {
+    /**
+     * @type {!array.<!PlatformSerialized>}
+     */
+    const sfmPlatforms = options[OPT_SFM_PLATFORMS_NAME];
+    return sfmPlatforms.filter(pl => equalPlatforms(pl, platform)).length > 0;
+}
+
+/**
  * @param options the options
  * @param channel {?Channel} the channel to check
  * @return {!string} {@link SfmEnabledState}
@@ -122,16 +138,34 @@ function isSfmEnabledForChannel(options, channel) {
         return SfmEnabledState.DISABLED;
     } else if (SfmEnabled.CUSTOM) {
         if (channel !== null) {
-            const sfmChannels = options[OPT_SFM_CHANNELS_NAME];
-            if (sfmChannels.includes(channel.qualifiedName)) {
+            if(sfmPlatformsContain(options, channel.platform)){
                 return SfmEnabledState.ENABLED;
             }
             else {
-                return SfmEnabledState.DISABLED;
+                if (sfmChannelsContain(options, channel)) {
+                    return SfmEnabledState.ENABLED;
+                }
+                else {
+                    return SfmEnabledState.DISABLED;
+                }
             }
+
         }
         return SfmEnabledState.UNDETERMINED;
     }
+}
+
+/**
+ *
+ * @param options the options
+ * @param channel {!Channel} the channel
+ */
+function sfmChannelsContain(options, channel) {
+    /**
+     * @type {!array.<!ChannelSerialized>}
+     */
+    const sfmChannels = options[OPT_SFM_CHANNELS_NAME];
+    return sfmChannels.filter(ch => equalChannels(ch, channel)).length > 0;
 }
 
 
@@ -140,45 +174,46 @@ function isSfmEnabledForChannel(options, channel) {
  * MESSAGE PASSING
  * ====================================================================================================
  */
-/**
- * @typedef {object} Message
- * @property {!string} type the message type
- * @property {?object} body the message body
- */
-/**
- * @typedef {object} TabInfo
- * @property {!string} channel the qualified name of current channel of the tab
- * @property {!string} platform the qualified name of current platform of the tab
- */
-/**
- * @typedef {object} TabInfoMessage
- * @property {!string} type the TabInfo message type {@link MSG_TYPE_TAB_INFO}
- * @property {!TabInfo} body the tab info {@link TabInfo}
- */
-/**
- * @typedef {object} TabInfoRequestMessage
- * @property {!string} type the TabInfoReqest message type {@link MSG_TYPE_TAB_INFO_REQUEST}
- */
 
-const MSG_TYPE_NAME = "type";
-const MSG_TYPE_TAB_INFO_REQUEST = "tabInfoRequest";
-const MSG_TYPE_TAB_INFO = "tabInfo";
-const MSG_BODY_NAME = "body";
+const MessageType = Object.freeze({
+    TAB_INFO: "TAB_INFO",
+    TAB_INFO_REQUEST: "TAB_INFO_REQUEST"
+});
 
 /**
- * The key for the TabInfo key "channel". The value is the qualified name of the channel.
- * @type {string}
+ * @property type {!string} the message type {@link MessageType}
+ * @property body {?object} the message body
  */
-const TAB_INFO_CHANNEL_NAME = "channel";
-const TAB_INFO_CHANNEL_DEFAULT = "";
+class Message {
+    constructor(type, body = null) {
+        this.type = type;
+        this.body = body;
+    }
+}
+
 
 /**
- * The key for the TabInfo key "platform". The value is the qualified name of the platform.
- * @type {string}
+ * @property platform {!PlatformSerialized} the serialized platform of the current tab
+ * @property channel {?ChannelSerialized} the serialized channel of the current tab
  */
-const TAB_INFO_PLATFORM_NAME = "platform";
-const TAB_INFO_PLATFORM_DEFAULT = "";
+class TabInfo {
+    constructor(platform, channel = null) {
+        this.platform = platform;
+        this.channel = channel;
+    }
+}
 
+class TabInfoMessage extends Message {
+    constructor(tabInfo) {
+        super(MessageType.TAB_INFO, tabInfo);
+    }
+}
+
+class TabInfoRequestMessage extends Message {
+    constructor() {
+        super(MessageType.TAB_INFO_REQUEST);
+    }
+}
 
 /*
  * ====================================================================================================
@@ -359,7 +394,7 @@ function extractDurationParts(duration) {
 
 /*
  * ====================================================================================================
- * ELEMENT UTILS
+ * WINDOW UTILS
  * ====================================================================================================
  */
 function isTopFrame() {
@@ -375,6 +410,50 @@ function formatFrameType() {
  * ELEMENT UTILS
  * ====================================================================================================
  */
+
+/**
+ *
+ * @param elem {!HTMLElement}
+ * @param attrName {!string}
+ * @return {?string}
+ */
+function getAttr(elem, attrName) {
+    const attrValue = elem[attrName];
+    return attrValue.length > 0 ? attrValue : null;
+}
+
+/**
+ *
+ * @param elem {!HTMLElement}
+ * @param attrName {!string}
+ * @param attrValue {?string}
+ */
+function setAttr(elem, attrName, attrValue) {
+    elem[attrName] = attrValue ? attrValue : "";
+}
+
+
+/**
+ *
+ * @param elem {!HTMLElement}
+ * @param dataName {!string}
+ * @return {?string}
+ */
+function getData(elem, dataName) {
+    const dataValue = elem.dataset[dataName];
+    return dataValue.length > 0 ? dataValue : null;
+}
+
+/**
+ *
+ * @param elem {!HTMLElement}
+ * @param dataName {!string}
+ * @param dataValue {?string}
+ */
+function setData(elem, dataName, dataValue) {
+    elem.dataset[dataName] = dataValue ? dataValue : "";
+}
+
 /**
  *
  * @param classNames {Array.<string>} the class names
@@ -547,16 +626,6 @@ function listenForRadioChanges(radioName, changeHandler) {
     }
 }
 
-function getSelectOptionValues(selectId) {
-    const select = document.getElementById(selectId);
-    const optionValues = [];
-    for (let i = 0; i < select.length; i++) {
-        const option = select[i];
-        optionValues.push(option.value);
-    }
-    return optionValues;
-}
-
 /**
  *
  * @param checkboxId {string} the id of the checkbox element
@@ -577,16 +646,47 @@ function setTextInputValue(textInputId, value) {
 
 /**
  *
- * @param selectElem {HTMLSelectElement} the select element
- * @param optionValues {!Array.<string>} an array with all values
+ * @param optionElem {!HTMLOptionElement}
+ * @return {!Channel}
  */
-function setOptionsToSortedSetSelect(selectElem, optionValues) {
+function optionElemToChannel(optionElem) {
+    return parseChannelFromQualifiedName(optionElem.value, getData(optionElem, "displayName"));
+}
+
+function getSelectChannelsSerialized(selectId) {
+    const select = document.getElementById(selectId);
+    const channelsSerialized = [];
+    for (let i = 0; i < select.length; i++) {
+        const option = select[i];
+        const channel = optionElemToChannel(option);
+        channelsSerialized.push(channel.serialize());
+    }
+    return channelsSerialized;
+}
+
+/**
+ *
+ * @param channel {!Channel}
+ * @return {!HTMLOptionElement}
+ */
+function channelToOptionElem(channel) {
+    const optionElem = document.createElement("option");
+    optionElem.value = channel.qualifiedName;
+    setData(optionElem, "displayName", channel.displayName);
+    optionElem.innerText = channel.verboseQualifiedName;
+    return optionElem;
+}
+
+/**
+ *
+ * @param selectElem {!HTMLSelectElement} the select element
+ * @param channels {!Array.<!Channel>} an array with all values
+ */
+function setChannelsToSortedSetSelect(selectElem, channels) {
     clearSelectOptions(selectElem);
-    optionValues.sort();
-    for (let i = 0; i < optionValues.length; i++) {
-        const optionElem = document.createElement("option");
-        optionElem.value = optionValues[i];
-        optionElem.innerHTML = optionValues[i];
+    channels.sort(compareChannelsByVerboseQualifiedName);
+    for (let i = 0; i < channels.length; i++) {
+        const optionElem = channelToOptionElem(channels[i]);
         selectElem.appendChild(optionElem);
     }
 }
@@ -595,10 +695,13 @@ function clearSelectOptions(selectElem) {
     selectElem.options.length = 0;
 }
 
-function insertOptionInSortedSetSelect(selectElem, optionValue) {
-    const optionElem = document.createElement("option");
-    optionElem.value = optionValue;
-    optionElem.innerHTML = optionValue;
+/**
+ *
+ * @param selectElem {!HTMLSelectElement}
+ * @param channel {!Channel}
+ */
+function insertChannelInSortedSetSelect(selectElem, channel) {
+    const optionElem = channelToOptionElem(channel);
     // Make sure the value is not already present
     for (let i = 0; i < selectElem.options.length; i++) {
         const currentOptionElem = selectElem.options[i];
@@ -609,7 +712,7 @@ function insertOptionInSortedSetSelect(selectElem, optionValue) {
     // Insert it in the correct position
     for (let i = 0; i < selectElem.options.length; i++) {
         const currentOptionElem = selectElem.options[i];
-        if (optionElem.value < currentOptionElem.value) {
+        if (compareStringIgnoreCase(optionElem.textContent, currentOptionElem.textContent) < 0) {
             selectElem.add(optionElem, i);
             // Select the added option
             selectElem.selectedIndex = i;
@@ -618,6 +721,7 @@ function insertOptionInSortedSetSelect(selectElem, optionValue) {
     }
     // If it was not added yet, it is because the select has no options yet
     selectElem.appendChild(optionElem);
+
     selectElem.selectedIndex = selectElem.options.length - 1;
 }
 
@@ -642,8 +746,8 @@ function removeSelectedOptions(selectElem) {
  * @param labelId the id of the label element
  * @param messageName the message name of the localized label text
  */
-function setMsgToInnerHtml(labelId, messageName) {
-    document.getElementById(labelId).innerHTML = chrome.i18n.getMessage(messageName);
+function setMsgToTextContent(labelId, messageName) {
+    document.getElementById(labelId).textContent = chrome.i18n.getMessage(messageName);
 }
 
 /**
@@ -681,16 +785,6 @@ function createAnchor(href) {
  * CHANNEL AND PLATFORM
  * ====================================================================================================
  */
-/**
- * Source: https://www.reddit.com/r/Twitch/comments/32w5b2/username_requirements/cqf8yh0/
- * "letters, numbers, underscore, between 4 and 25 characters"
- * "cannot begin with underscore"
- *
- * @type {RegExp}
- */
-const TWITCH_USERNAME_REGEX = new RegExp("^[a-zA-Z0-9][a-zA-Z0-9_]{3,24}$");
-
-
 class PlatformPage {
     /**
      *
@@ -707,6 +801,36 @@ class PlatformPage {
 
 class Platform {
     /**
+     *
+     * @param platformSerialized {?PlatformSerialized}
+     * @return {?Platform}
+     */
+    static deserialize(platformSerialized) {
+        if (platformSerialized) {
+            return parsePlatformFromName(platformSerialized.name);
+        }
+        return null;
+    }
+
+    /**
+     *
+     * @param platformsSerialized {!Array.<!PlatformSerialized>}
+     * @return {!Array.<!Platform>}
+     */
+    static deserializeArray(platformsSerialized) {
+        return platformsSerialized.map(plSerialized => Platform.deserialize(plSerialized));
+    }
+
+    /**
+     *
+     * @param platforms {!Array.<!Platform>}
+     * @return {!Array.<!PlatformSerialized>}
+     */
+    static serializeArray(platforms) {
+        return platforms.map(pl => pl.serialize());
+    }
+
+    /**
      * @return {!string} the name
      */
     get name() {
@@ -718,6 +842,10 @@ class Platform {
      */
     get displayName() {
         throw new Error("Not implemented");
+    }
+
+    get verboseName() {
+        return this.displayName + " (" + this.name + ")";
     }
 
     /**
@@ -765,7 +893,21 @@ class Platform {
     parsePageFromUrl(url) {
         throw new Error("Not implemented");
     }
+
+    serialize() {
+        return new PlatformSerialized(this.name);
+    }
 }
+
+/**
+ * Source: https://www.reddit.com/r/Twitch/comments/32w5b2/username_requirements/cqf8yh0/
+ * "letters, numbers, underscore, between 4 and 25 characters"
+ * "cannot begin with underscore"
+ *
+ * @type {RegExp}
+ */
+const TWITCH_USERNAME_REGEX = new RegExp("^[a-zA-Z0-9][a-zA-Z0-9_]{3,24}$");
+
 
 const TwitchPageType = Object.freeze({
     /**
@@ -819,7 +961,7 @@ class TwitchPlatform extends Platform {
      * @override
      */
     get displayName() {
-        return "Twitch.tv";
+        return "Twitch";
     }
 
     /**
@@ -830,7 +972,7 @@ class TwitchPlatform extends Platform {
             const channelNameLowerCase = name.toLowerCase();
             return new Channel(this, channelNameLowerCase, displayName);
         }
-        throw new Error("The given channel name is not a valid channel name (regex: " + TWITCH_USERNAME_REGEX + ")");
+        throw new Error("The given channel name [" + name + "] is not a valid channel name (regex: " + TWITCH_USERNAME_REGEX + ")");
     }
 
     /**
@@ -959,7 +1101,7 @@ class MlgPlatform extends Platform {
      * @override
      */
     get displayName() {
-        return "MLG.com";
+        return "MLG";
     }
 
     /**
@@ -1009,6 +1151,36 @@ const ALL_PLATFORMS = Object.freeze([TWITCH_PLATFORM, MLG_PLATFORM]);
 class Channel {
     /**
      *
+     * @param channelSerialized {?ChannelSerialized}
+     * @return {?Channel}
+     */
+    static deserialize(channelSerialized) {
+        if (channelSerialized) {
+            return parseChannelFromQualifiedName(channelSerialized.qualifiedName, channelSerialized.displayName);
+        }
+        return null;
+    }
+
+    /**
+     *
+     * @param channelsSerialized {!Array.<!ChannelSerialized>}
+     * @return {!Array.<!Channel>}
+     */
+    static deserializeArray(channelsSerialized) {
+        return channelsSerialized.map(chSerialized => Channel.deserialize(chSerialized));
+    }
+
+    /**
+     *
+     * @param channels {!Array.<!Channel>}
+     * @return {!Array.<!ChannelSerialized>}
+     */
+    static serializeArray(channels) {
+        return channels.map(ch => ch.serialize());
+    }
+
+    /**
+     *
      * @param platform {!Platform}
      * @param name {!string}
      * @param displayName {?string} the display name of the channel
@@ -1023,17 +1195,28 @@ class Channel {
         return this.platform.name + "/" + this.name;
     }
 
-    get qualifiedDisplayNameOrName() {
-        return this.platform.displayName + "/" + this.displayNameOrName;
-    }
-
-
     get displayNameOrName() {
         return this.displayName !== null ? this.displayName : this.name;
     }
 
+    get qualifiedDisplayNameOrName() {
+        return this.platform.displayName + "/" + this.displayNameOrName;
+    }
+
+    get verboseName() {
+        return this.displayNameOrName + " (" + this.qualifiedName + ")";
+    }
+
+    get verboseQualifiedName() {
+        return this.qualifiedDisplayNameOrName + " (" + this.qualifiedName + ")";
+    }
+
     get url() {
         this.platform.buildChannelUrl(this);
+    }
+
+    serialize() {
+        return new ChannelSerialized(this.qualifiedName, this.displayName);
     }
 }
 
@@ -1054,13 +1237,15 @@ function parsePlatformFromName(platformName) {
 
 /**
  *
- * @param channelQualifiedName the qualified name of the channel
+ * @param channelQualifiedName {!string} the qualified name of the channel
+ * @param displayName {?string} the optional display name of the channel
  * @return {?Channel} the parsed Channel or null if no platform could parse the qualified name
  */
-function parseChannelFromQualifiedName(channelQualifiedName) {
+function parseChannelFromQualifiedName(channelQualifiedName, displayName = null) {
     for (let i = 0; i < ALL_PLATFORMS.length; i++) {
         const channel = ALL_PLATFORMS[i].parseChannelFromQualifiedName(channelQualifiedName);
         if (channel !== null) {
+            channel.displayName = displayName;
             return channel;
         }
     }
@@ -1070,14 +1255,94 @@ function parseChannelFromQualifiedName(channelQualifiedName) {
 /**
  *
  * @param url {!URL} a {@link Location} or {@link HTMLAnchorElement}
+ * @param displayName {?string} the optional display name of the channel
  * @return {?Channel} the parsed channel or null if the URL was not recognized
  */
-function parseChannelFromUrl(url) {
+function parseChannelFromUrl(url, displayName = null) {
     for (let i = 0; i < ALL_PLATFORMS.length; i++) {
         const channel = ALL_PLATFORMS[i].parseChannelFromUrl(url);
         if (channel !== null) {
+            channel.displayName = displayName;
             return channel;
         }
     }
     return null;
+}
+
+/**
+ * @property {!string} name the name of the platform
+ */
+class PlatformSerialized {
+    /**
+     *
+     * @param name {!string} the name of the platform
+     */
+    constructor(name) {
+        this.name = name;
+    }
+}
+
+/**
+ * @property {!string} qualifiedName the qualified name of the channel
+ * @property {?string} displayName the display name of the channel
+ */
+class ChannelSerialized {
+    /**
+     * @param {!string} qualifiedName the qualified name of the channel
+     * @param {?string} displayName the display name of the channel
+     */
+    constructor(qualifiedName, displayName) {
+        this.qualifiedName = qualifiedName;
+        this.displayName = displayName;
+    }
+}
+
+/**
+ *
+ * @param platform1 {!Platform|!PlatformSerialized}
+ * @param platform2 {!Platform|!PlatformSerialized}
+ * @return {!boolean}
+ */
+function equalPlatforms(platform1, platform2) {
+    return platform1.name === platform2.name;
+}
+
+/**
+ *
+ * @param platform1 {!Platform}
+ * @param platform2 {!Platform}
+ * @return {!number}
+ */
+function comparePlatformsByVerboseName(platform1, platform2) {
+    return compareStringIgnoreCase(platform1.verboseName, platform2.verboseName);
+}
+
+/**
+ *
+ * @param channel1 {!Channel|!ChannelSerialized}
+ * @param channel2 {!Channel|!ChannelSerialized}
+ * @return {!boolean}
+ */
+function equalChannels(channel1, channel2) {
+    return channel1.qualifiedName === channel2.qualifiedName;
+}
+
+/**
+ *
+ * @param channel1 {!Channel}
+ * @param channel2 {!Channel}
+ * @return {!number}
+ */
+function compareChannelsByVerboseQualifiedName(channel1, channel2) {
+    return compareStringIgnoreCase(channel1.verboseQualifiedName, channel2.verboseQualifiedName);
+}
+
+function compareStringIgnoreCase(s1, s2) {
+    const s1CaseInsensitive = s1.toUpperCase();
+    const s2CaseInsensitive = s2.toUpperCase();
+    if (s1CaseInsensitive < s2CaseInsensitive)
+        return -1;
+    if (s1CaseInsensitive > s2CaseInsensitive)
+        return 1;
+    return 0;
 }

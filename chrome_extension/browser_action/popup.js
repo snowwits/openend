@@ -25,14 +25,20 @@ const SFM_CUSTOM_ID = "sfmCustom";
 const SFM_CUSTOM_LABEL_ID = "sfmCustomLabel";
 
 const SFM_CUSTOM_PLATFORM_ID = "sfmCustomPlatform";
+const SFM_CUSTOM_PLATFORM_HEADER = "sfmCustomPlatformHeader";
 const SFM_CUSTOM_PLATFORM_ENABLED_ID = "sfmCustomPlatformEnabled";
 const SFM_CUSTOM_PLATFORM_ENABLED_LABEL_ID = "sfmCustomPlatformEnabledLabel";
 
 const SFM_CUSTOM_CHANNEL_ID = "sfmCustomChannel";
+const SFM_CUSTOM_CHANNEL_HEADER = "sfmCustomChannelHeader";
 const SFM_CUSTOM_CHANNEL_ENABLED_ID = "sfmCustomChannelEnabled";
 const SFM_CUSTOM_CHANNEL_ENABLED_LABEL_ID = "sfmCustomChannelEnabledLabel";
 
 const OPEN_OPTIONS_ID = "openOptions";
+
+const DATA_PLATFORM_NAME = "platformName";
+const DATA_CHANNEL_QUALIFIED_NAME = "channelQualifiedName";
+const DATA_CHANNEL_DISPLAY_NAME = "channelDisplayName";
 
 /*
  * ====================================================================================================
@@ -59,10 +65,18 @@ function updateUiAfterTabInfoUpdate(tabInfo) {
     log("Updating UI after tab info received: %o", tabInfo);
 
     // Get relevant info from TabInfo
-    const platformText = tabInfo && TAB_INFO_PLATFORM_NAME in tabInfo ? tabInfo[TAB_INFO_PLATFORM_NAME] : TAB_INFO_PLATFORM_DEFAULT;
-    const platform = parsePlatformFromName(platformText);
-    const channelText = tabInfo && TAB_INFO_CHANNEL_NAME in tabInfo ? tabInfo[TAB_INFO_CHANNEL_NAME] : TAB_INFO_CHANNEL_DEFAULT;
-    const channel = parseChannelFromQualifiedName(channelText);
+
+    const platformSerialized = tabInfo ? tabInfo.platform : null;
+    const platform = Platform.deserialize(platformSerialized);
+    const platformName = platform ? platform.name : "";
+    const channelSerialized = tabInfo ? tabInfo.channel : null;
+    const channel = Channel.deserialize(channelSerialized);
+    const channelQualifiedName = channel ? channel.qualifiedName : "";
+    const channelDisplayName = channel ? channel.displayName : "";
+    console.log("platformSerialized: %o", platformSerialized);
+    console.log("platform: %o", platform);
+    console.log("channelSerialized: %o", channelSerialized);
+    console.log("channel: %o", channel);
 
     // Get relevant elements
     const sfmCustomDiv = document.getElementById(SFM_CUSTOM_ID);
@@ -83,26 +97,35 @@ function updateUiAfterTabInfoUpdate(tabInfo) {
     }
 
     // Platform
-    sfmCustomPlatformDiv.dataset.channel = platformText;
+    sfmCustomPlatformDiv.dataset[DATA_PLATFORM_NAME] = platformName;
     sfmCustomPlatformEnabledCheckbox.checked = false;
     if (platform === null) {
         setVisible(sfmCustomPlatformDiv, false);
         sfmCustomPlatformEnabledLabel.textContent = "";
     } else {
-        sfmCustomPlatformEnabledLabel.textContent = chrome.i18n.getMessage("browserAction_sfmCustom_platformEnabled", platform.displayName);
-        // TODO check options if platform enabled and update checkbox
-        setVisible(sfmCustomPlatformDiv, true);
+        sfmCustomPlatformEnabledLabel.textContent = platform.verboseName;
+        chrome.storage.sync.get({[OPT_SFM_PLATFORMS_NAME]: OPT_SFM_PLATFORMS_DEFAULT}, function (items) {
+            if (chrome.runtime.lastError) {
+                error("[sync storage] Failed to get [%o]: %o", OPT_SFM_PLATFORMS_NAME, chrome.runtime.lastError);
+                return;
+            }
+            log("[sync storage] Gotten %o", items);
+
+            updatePlatformSfmEnabledCheckbox(sfmCustomPlatformEnabledCheckbox, items, platform);
+            setVisible(sfmCustomPlatformDiv, true);
+        });
     }
 
     // Channel
-    sfmCustomChannelDiv.dataset.channel = channelText;
+    sfmCustomChannelDiv.dataset[DATA_CHANNEL_QUALIFIED_NAME] = channelQualifiedName;
+    sfmCustomChannelDiv.dataset[DATA_CHANNEL_DISPLAY_NAME] = channelDisplayName;
     sfmCustomChannelEnabledCheckbox.checked = false;
 
     if (channel === null) {
         setVisible(sfmCustomChannelDiv, false);
         sfmCustomChannelEnabledLabel.textContent = "";
     } else {
-        sfmCustomChannelEnabledLabel.textContent = chrome.i18n.getMessage("browserAction_sfmCustom_channelEnabled", channel.displayNameOrName);
+        sfmCustomChannelEnabledLabel.textContent = channel.verboseName;
         chrome.storage.sync.get({[OPT_SFM_CHANNELS_NAME]: OPT_SFM_CHANNELS_DEFAULT}, function (items) {
             if (chrome.runtime.lastError) {
                 error("[sync storage] Failed to get [%o]: %o", OPT_SFM_CHANNELS_NAME, chrome.runtime.lastError);
@@ -110,7 +133,7 @@ function updateUiAfterTabInfoUpdate(tabInfo) {
             }
             log("[sync storage] Gotten %o", items);
 
-            updateChannelSfmEnabledCheckbox(sfmCustomChannelEnabledCheckbox, channel.qualifiedName, items[OPT_SFM_CHANNELS_NAME]);
+            updateChannelSfmEnabledCheckbox(sfmCustomChannelEnabledCheckbox, items, channel);
             setVisible(sfmCustomChannelDiv, true);
         });
     }
@@ -118,29 +141,46 @@ function updateUiAfterTabInfoUpdate(tabInfo) {
 
 /**
  *
- * @param items {object} the options object
+ * @param options {!object} the options object
  */
-function updateUiAfterOptionsUpdate(items) {
-    // If the channels changed, may need to change the button mode and label
-    if (OPT_SFM_CHANNELS_NAME in items) {
-        const channelElem = document.getElementById("channel");
-        const channelSfmEnabledCheckbox = document.getElementById("channelSfmEnabledCheckbox");
-        const channelQualifiedName = channelElem.dataset.channel;
-        updateChannelSfmEnabledCheckbox(channelSfmEnabledCheckbox, channelQualifiedName, items[OPT_SFM_CHANNELS_NAME]);
+function updateUiAfterOptionsUpdate(options) {
+    // If the platforms changed, may need to change the button mode and label
+    if (OPT_SFM_PLATFORMS_NAME in options) {
+        const platformElem = document.getElementById(SFM_CUSTOM_PLATFORM_ID);
+        const platformSfmEnabledCheckbox = document.getElementById(SFM_CUSTOM_PLATFORM_ENABLED_ID);
+        const platform = parsePlatformFromName(platformElem.dataset[DATA_PLATFORM_NAME]);
+        updatePlatformSfmEnabledCheckbox(platformSfmEnabledCheckbox, options, platform);
     }
-    if (OPT_SFM_ENABLED_NAME in items) {
-        setRadioValues("sfmEnabled", items[OPT_SFM_ENABLED_NAME]);
+    // If the channels changed, may need to change the button mode and label
+    if (OPT_SFM_CHANNELS_NAME in options) {
+        const channelElem = document.getElementById(SFM_CUSTOM_CHANNEL_ID);
+        const channelSfmEnabledCheckbox = document.getElementById(SFM_CUSTOM_CHANNEL_ENABLED_ID);
+        const channel = parseChannelFromQualifiedName(channelElem.dataset[DATA_CHANNEL_QUALIFIED_NAME], channelElem.dataset[DATA_CHANNEL_DISPLAY_NAME]);
+        updateChannelSfmEnabledCheckbox(channelSfmEnabledCheckbox, options, channel);
+    }
+    if (OPT_SFM_ENABLED_NAME in options) {
+        setRadioValues("sfmEnabled", options[OPT_SFM_ENABLED_NAME]);
     }
 }
 
 /**
  *
- * @param channelSfmEnabledCheckbox {!Element} the checkbox
- * @param channelQualifiedName {!string} the qualified name of the current channel
- * @param sfmChannels {!Array.<string>} array qualified channel names (the {@link OPT_SFM_CHANNELS_NAME} option)
+ * @param platformSfmEnabledCheckbox {!HTMLInputElement} the checkbox
+ * @param options {!object} the options
+ * @param platform {!Platform} the platform
  */
-function updateChannelSfmEnabledCheckbox(channelSfmEnabledCheckbox, channelQualifiedName, sfmChannels) {
-    channelSfmEnabledCheckbox.checked = sfmChannels.includes(channelQualifiedName);
+function updatePlatformSfmEnabledCheckbox(platformSfmEnabledCheckbox, options, platform) {
+    platformSfmEnabledCheckbox.checked = sfmPlatformsContain(options, platform);
+}
+
+/**
+ *
+ * @param channelSfmEnabledCheckbox {!HTMLInputElement} the checkbox
+ * @param options the options
+ * @param channel {!Channel} the channel
+ */
+function updateChannelSfmEnabledCheckbox(channelSfmEnabledCheckbox, options, channel) {
+    channelSfmEnabledCheckbox.checked = sfmChannelsContain(options, channel);
 }
 
 function handleSfmEnabledChanged() {
@@ -155,46 +195,90 @@ function handleSfmEnabledChanged() {
     });
 }
 
-function handleChannelSfmEnabledChanged() {
-    const channelElem = document.getElementById("sfmCustomChannel");
-    const channelQualifiedName = channelElem.dataset.channel;
+function handlePlatformSfmEnabledChanged() {
+    const platformElem = document.getElementById("sfmCustomPlatform");
+    const platformName = getData(platformElem, DATA_PLATFORM_NAME);
+    const platform = parsePlatformFromName(platformName);
 
-    // this: <checkbox id="sfmCustomChannelEnabled">
-    const sfmCustomChannelEnabledCheckbox = this;
+    // this: <checkbox id="sfmCustomPlatformEnabled">
+    const sfmCustomPlatformEnabledCheckbox = this;
 
-    if (channelQualifiedName && channelQualifiedName.length > 0) {
-        chrome.storage.sync.get({[OPT_SFM_CHANNELS_NAME]: OPT_SFM_CHANNELS_DEFAULT}, function (items) {
+    if (platform) {
+        chrome.storage.sync.get({[OPT_SFM_PLATFORMS_NAME]: OPT_SFM_PLATFORMS_DEFAULT}, function (items) {
             if (chrome.runtime.lastError) {
-                error("[sync storage] Failed to get option [%s]: %o", OPT_SFM_CHANNELS_NAME, chrome.runtime.lastError);
+                error("[sync storage] Failed to get option [%s]: %o", OPT_SFM_PLATFORMS_NAME, chrome.runtime.lastError);
                 return;
             }
-            const channels = items[OPT_SFM_CHANNELS_NAME];
-            let newChannels;
-            if (sfmCustomChannelEnabledCheckbox.checked === true) {
-                newChannels = sortedSetPlus(channels, channelQualifiedName);
+            const platformsSerialized = items[OPT_SFM_PLATFORMS_NAME];
+            const platforms = Platform.deserializeArray(platformsSerialized);
+            let newPlatforms;
+            if (sfmCustomPlatformEnabledCheckbox.checked === true) {
+                newPlatforms = sortedSetPlus(platforms, platform, equalPlatforms, comparePlatformsByVerboseName);
             }
             else {
-                newChannels = sortedSetMinus(channels, channelQualifiedName);
+                newPlatforms = sortedSetMinus(platforms, platform, equalPlatforms);
             }
-            chrome.storage.sync.set({[OPT_SFM_CHANNELS_NAME]: newChannels}, function () {
+            const newPlatformsSerialized = Platform.serializeArray(newPlatforms);
+            chrome.storage.sync.set({[OPT_SFM_PLATFORMS_NAME]: newPlatformsSerialized}, function () {
                 if (chrome.runtime.lastError) {
-                    error("[sync storage] Failed to set option [%s] to [%o]: %o", OPT_SFM_CHANNELS_NAME, newChannels, chrome.runtime.lastError);
+                    error("[sync storage] Failed to set option [%s] to [%o]: %o", OPT_SFM_PLATFORMS_NAME, newPlatformsSerialized, chrome.runtime.lastError);
                     return;
                 }
-                log("[sync storage] Set option [%s] to [%o]", OPT_SFM_CHANNELS_NAME, newChannels);
+                log("[sync storage] Set option [%s] to [%o]", OPT_SFM_PLATFORMS_NAME, newPlatformsSerialized);
             });
         });
     }
 }
 
-function sortedSetPlus(array, plusItem) {
-    return Array.from(new Set(array).add(plusItem)).sort();
+function handleChannelSfmEnabledChanged() {
+    const channelElem = document.getElementById("sfmCustomChannel");
+    const channelQualifiedName = getData(channelElem, DATA_CHANNEL_QUALIFIED_NAME);
+    const channelDisplayName = getData(channelElem, DATA_CHANNEL_DISPLAY_NAME);
+    const channel = parseChannelFromQualifiedName(channelQualifiedName, channelDisplayName);
+
+    // this: <checkbox id="sfmCustomChannelEnabled">
+    const sfmCustomChannelEnabledCheckbox = this;
+
+    if (channel) {
+        chrome.storage.sync.get({[OPT_SFM_CHANNELS_NAME]: OPT_SFM_CHANNELS_DEFAULT}, function (items) {
+            if (chrome.runtime.lastError) {
+                error("[sync storage] Failed to get option [%s]: %o", OPT_SFM_CHANNELS_NAME, chrome.runtime.lastError);
+                return;
+            }
+            const channelsSerialized = items[OPT_SFM_CHANNELS_NAME];
+            const channels = Channel.deserializeArray(channelsSerialized);
+            let newChannels;
+            if (sfmCustomChannelEnabledCheckbox.checked === true) {
+                newChannels = sortedSetPlus(channels, channel, equalChannels, compareChannelsByVerboseQualifiedName);
+            }
+            else {
+                newChannels = sortedSetMinus(channels, channel, equalChannels);
+            }
+            const newChannelsSerialized = Channel.serializeArray(newChannels);
+            chrome.storage.sync.set({[OPT_SFM_CHANNELS_NAME]: newChannelsSerialized}, function () {
+                if (chrome.runtime.lastError) {
+                    error("[sync storage] Failed to set option [%s] to [%o]: %o", OPT_SFM_CHANNELS_NAME, newChannelsSerialized, chrome.runtime.lastError);
+                    return;
+                }
+                log("[sync storage] Set option [%s] to [%o]", OPT_SFM_CHANNELS_NAME, newChannelsSerialized);
+            });
+        });
+    }
 }
 
-function sortedSetMinus(array, minusItem) {
+function sortedSetPlus(array, plusItem, equalsFunction, compareFunction) {
+    if (array.some(i => equalsFunction(i, plusItem))) {
+        return array;
+    }
+    array.push(plusItem);
+    array.sort(compareFunction);
+    return array;
+}
+
+function sortedSetMinus(array, minusItem, equalsFunction) {
     // Find item
-    const indexOfItem = array.indexOf(minusItem);
-    if (indexOfItem > -1) {
+    const indexOfItem = array.findIndex(e => equalsFunction(e, minusItem));
+    if (indexOfItem >= 0) {
         // Make copy
         const newArray = array.slice();
         // Delete 1 element, starting from index
@@ -204,7 +288,6 @@ function sortedSetMinus(array, minusItem) {
     else {
         return array;
     }
-
 }
 
 function handleOpenOptionsAction() {
@@ -238,15 +321,6 @@ function getCurrentTab(callback) {
 }
 
 /**
- * @return TabInfoRequestMessage
- */
-function buildTabInfoRequestMessage() {
-    return {
-        [MSG_TYPE_NAME]: MSG_TYPE_TAB_INFO_REQUEST
-    };
-}
-
-/**
  *
  * @param tab {Tab} the Chrome tab
  */
@@ -255,8 +329,8 @@ function handleCurrentTabAvailable(tab) {
         warn("Current tab has no ID: %o", tab);
         return;
     }
-    chrome.tabs.sendMessage(tab.id, buildTabInfoRequestMessage(), function (response) {
-        log("Received response for [Message:" + MSG_TYPE_TAB_INFO_REQUEST + "]: %o", response);
+    chrome.tabs.sendMessage(tab.id, new TabInfoRequestMessage(), function (response) {
+        log("Received response for [Message:" + MessageType.TAB_INFO_REQUEST + "]: %o", response);
         const tabInfo = response ? response.body : null;
         updateUiAfterTabInfoUpdate(tabInfo);
     });
@@ -270,10 +344,8 @@ function handleCurrentTabAvailable(tab) {
  */
 function handleMessage(request, sender, sendResponse) {
     log("Received message from [%o]: %o", sender, request);
-    if (MSG_TYPE_NAME in request) {
-        if (MSG_TYPE_TAB_INFO === request[MSG_TYPE_NAME]) {
-            updateUiAfterTabInfoUpdate(request.body);
-        }
+    if (MessageType.TAB_INFO === request.type) {
+        updateUiAfterTabInfoUpdate(request.body);
     }
 }
 
@@ -292,10 +364,10 @@ function handleStorageChange(changes, namespace) {
  */
 function init() {
     // Init SFM enabled
-    setMsgToInnerHtml("sfmEnabledLabel", "options_sfm_enabled");
-    setMsgToInnerHtml("sfmEnabledAlwaysLabel", "options_sfm_enabled_always");
-    setMsgToInnerHtml("sfmEnabledNeverLabel", "options_sfm_enabled_never");
-    setMsgToInnerHtml("sfmEnabledCustomLabel", "options_sfm_enabled_custom");
+    setMsgToTextContent("sfmEnabledLabel", "options_sfm_enabled");
+    setMsgToTextContent("sfmEnabledAlwaysLabel", "options_sfm_enabled_always");
+    setMsgToTextContent("sfmEnabledNeverLabel", "options_sfm_enabled_never");
+    setMsgToTextContent("sfmEnabledCustomLabel", "options_sfm_enabled_custom");
     listenForRadioChanges("sfmEnabled", handleSfmEnabledChanged);
 
     // Custom SFM options
@@ -303,11 +375,14 @@ function init() {
     sfmCustomLabel.innerHTML = chrome.i18n.getMessage("options_sfm_custom");
 
     // Platform
+    const sfmCustomPlatformHeader = document.getElementById(SFM_CUSTOM_PLATFORM_HEADER);
+    sfmCustomPlatformHeader.textContent = chrome.i18n.getMessage("browserAction_sfmCustom_platformHeader");
     const sfmCustomPlatformEnabledCheckbox = document.getElementById(SFM_CUSTOM_PLATFORM_ENABLED_ID);
-    // TODO
-    sfmCustomPlatformEnabledCheckbox.onchange = null;
+    sfmCustomPlatformEnabledCheckbox.onchange = handlePlatformSfmEnabledChanged;
 
     // Channel
+    const sfmCustomChannelHeader = document.getElementById(SFM_CUSTOM_CHANNEL_HEADER);
+    sfmCustomChannelHeader.textContent = chrome.i18n.getMessage("browserAction_sfmCustom_channelHeader");
     const sfmCustomChannelEnabledCheckbox = document.getElementById(SFM_CUSTOM_CHANNEL_ENABLED_ID);
     sfmCustomChannelEnabledCheckbox.onchange = handleChannelSfmEnabledChanged;
 

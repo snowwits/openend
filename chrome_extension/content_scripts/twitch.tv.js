@@ -281,7 +281,7 @@ function determineChannel() {
         const pageTypResult = TWITCH_PLATFORM.parsePageFromUrl(channelLinkAnchor);
         if (pageTypResult && pageTypResult.channel) {
             const channelHeading = channelLinkAnchor.querySelector("h5");
-            if(channelHeading) {
+            if (channelHeading) {
                 pageTypResult.channel.displayName = channelHeading.textContent;
             }
             updateChannel(pageTypResult.channel);
@@ -684,7 +684,7 @@ function getVideoLengthStatDivs(videoCardDiv = null) {
 function getVideoChannel(videoCardDiv) {
     const channelAnchor = videoCardDiv.querySelector('a[data-test-selector="video-owner"]');
     if (channelAnchor) {
-        const channel =  TWITCH_PLATFORM.parseChannelFromUrl(channelAnchor);
+        const channel = TWITCH_PLATFORM.parseChannelFromUrl(channelAnchor);
         channel.displayName = channelAnchor.textContent;
         return channel;
     }
@@ -1038,17 +1038,10 @@ function listenForMessages() {
 }
 
 /**
- * @return TabInfoMessage
+ * @return {!TabInfoMessage} the tab info message
  */
 function buildTabInfoMessage() {
-    const channelQualifiedName = GLOBAL_channel !== null ? GLOBAL_channel.qualifiedName : TAB_INFO_CHANNEL_DEFAULT;
-    return {
-        [MSG_TYPE_NAME]: MSG_TYPE_TAB_INFO,
-        [MSG_BODY_NAME]: {
-            [TAB_INFO_PLATFORM_NAME]: TWITCH_PLATFORM.name,
-            [TAB_INFO_CHANNEL_NAME]: channelQualifiedName
-        }
-    };
+    return new TabInfoMessage(new TabInfo(TWITCH_PLATFORM.serialize(), GLOBAL_channel ? GLOBAL_channel.serialize() : null));
 }
 
 /**
@@ -1059,12 +1052,10 @@ function buildTabInfoMessage() {
  */
 function handleMessage(request, sender, sendResponse) {
     log("Received message from [%o]: %o", sender, request);
-    if (MSG_TYPE_NAME in request) {
-        if (MSG_TYPE_TAB_INFO_REQUEST === request[MSG_TYPE_NAME]) {
-            const tabInfoMessage = buildTabInfoMessage();
-            log("Responding to [Message:" + MSG_TYPE_TAB_INFO_REQUEST + "] with: %o", tabInfoMessage);
-            sendResponse(tabInfoMessage);
-        }
+    if (MessageType.TAB_INFO_REQUEST === request.type) {
+        const tabInfoMessage = buildTabInfoMessage();
+        log("Responding to [Message:" + MessageType.TAB_INFO_REQUEST + "] with: %o", tabInfoMessage);
+        sendResponse(tabInfoMessage);
     }
 }
 
