@@ -122,7 +122,7 @@ function sfmPlatformsContain(options, platform) {
      * @type {!array.<!PlatformSerialized>}
      */
     const sfmPlatforms = options[OPT_SFM_PLATFORMS_NAME];
-    return sfmPlatforms.filter(pl => equalPlatforms(pl, platform)).length > 0;
+    return sfmPlatforms.filter(pl => Platform.equal(pl, platform)).length > 0;
 }
 
 /**
@@ -138,7 +138,7 @@ function isSfmEnabledForChannel(options, channel) {
         return SfmEnabledState.DISABLED;
     } else if (SfmEnabled.CUSTOM) {
         if (channel !== null) {
-            if(sfmPlatformsContain(options, channel.platform)){
+            if (sfmPlatformsContain(options, channel.platform)) {
                 return SfmEnabledState.ENABLED;
             }
             else {
@@ -165,7 +165,7 @@ function sfmChannelsContain(options, channel) {
      * @type {!array.<!ChannelSerialized>}
      */
     const sfmChannels = options[OPT_SFM_CHANNELS_NAME];
-    return sfmChannels.filter(ch => equalChannels(ch, channel)).length > 0;
+    return sfmChannels.filter(ch => Channel.equal(ch, channel)).length > 0;
 }
 
 
@@ -287,6 +287,16 @@ function padLeft(number, width = 2, padChar = "0") {
         str = padChar + str;
     }
     return str;
+}
+
+function compareStringIgnoreCase(s1, s2) {
+    const s1CaseInsensitive = s1.toUpperCase();
+    const s2CaseInsensitive = s2.toUpperCase();
+    if (s1CaseInsensitive < s2CaseInsensitive)
+        return -1;
+    if (s1CaseInsensitive > s2CaseInsensitive)
+        return 1;
+    return 0;
 }
 
 
@@ -650,7 +660,7 @@ function setTextInputValue(textInputId, value) {
  * @return {!Channel}
  */
 function optionElemToChannel(optionElem) {
-    return parseChannelFromQualifiedName(optionElem.value, getData(optionElem, "displayName"));
+    return Channel.parseFromQualifiedName(optionElem.value, getData(optionElem, "displayName"));
 }
 
 function getSelectChannelsSerialized(selectId) {
@@ -684,7 +694,7 @@ function channelToOptionElem(channel) {
  */
 function setChannelsToSortedSetSelect(selectElem, channels) {
     clearSelectOptions(selectElem);
-    channels.sort(compareChannelsByVerboseQualifiedName);
+    channels.sort(Channel.compareByVerboseQualifiedName);
     for (let i = 0; i < channels.length; i++) {
         const optionElem = channelToOptionElem(channels[i]);
         selectElem.appendChild(optionElem);
@@ -785,6 +795,11 @@ function createAnchor(href) {
  * CHANNEL AND PLATFORM
  * ====================================================================================================
  */
+/*
+ * ====================================================================================================
+ * CHANNEL AND PLATFORM - API
+ * ====================================================================================================
+ */
 class PlatformPage {
     /**
      *
@@ -802,12 +817,46 @@ class PlatformPage {
 class Platform {
     /**
      *
+     * @param platformName the name of the platform
+     * @returns {?Platform} the parsed Platform or null if the given platformName does not match any platform
+     */
+    static parseFromName(platformName) {
+        for (let i = 0; i < ALL_PLATFORMS.length; i++) {
+            if (ALL_PLATFORMS[i].name === platformName) {
+                return ALL_PLATFORMS[i];
+            }
+        }
+        return null;
+    }
+
+    /**
+     *
+     * @param platform1 {!Platform|!PlatformSerialized}
+     * @param platform2 {!Platform|!PlatformSerialized}
+     * @return {!boolean}
+     */
+    static equal(platform1, platform2) {
+        return platform1.name === platform2.name;
+    }
+
+    /**
+     *
+     * @param platform1 {!Platform}
+     * @param platform2 {!Platform}
+     * @return {!number}
+     */
+    static compareByVerboseName(platform1, platform2) {
+        return compareStringIgnoreCase(platform1.verboseName, platform2.verboseName);
+    }
+
+    /**
+     *
      * @param platformSerialized {?PlatformSerialized}
      * @return {?Platform}
      */
     static deserialize(platformSerialized) {
         if (platformSerialized) {
-            return parsePlatformFromName(platformSerialized.name);
+            return Platform.parseFromName(platformSerialized.name);
         }
         return null;
     }
@@ -899,6 +948,166 @@ class Platform {
     }
 }
 
+class Channel {
+    /**
+     *
+     * @param channelQualifiedName {!string} the qualified name of the channel
+     * @param displayName {?string} the optional display name of the channel
+     * @return {?Channel} the parsed Channel or null if no platform could parse the qualified name
+     */
+    static parseFromQualifiedName(channelQualifiedName, displayName = null) {
+        for (let i = 0; i < ALL_PLATFORMS.length; i++) {
+            const channel = ALL_PLATFORMS[i].parseChannelFromQualifiedName(channelQualifiedName);
+            if (channel !== null) {
+                channel.displayName = displayName;
+                return channel;
+            }
+        }
+        return null;
+    }
+
+    /**
+     *
+     * @param url {!URL} a {@link Location} or {@link HTMLAnchorElement}
+     * @param displayName {?string} the optional display name of the channel
+     * @return {?Channel} the parsed channel or null if the URL was not recognized
+     */
+    static parseFromUrl(url, displayName = null) {
+        for (let i = 0; i < ALL_PLATFORMS.length; i++) {
+            const channel = ALL_PLATFORMS[i].parseChannelFromUrl(url);
+            if (channel !== null) {
+                channel.displayName = displayName;
+                return channel;
+            }
+        }
+        return null;
+    }
+
+    /**
+     *
+     * @param channel1 {!Channel|!ChannelSerialized}
+     * @param channel2 {!Channel|!ChannelSerialized}
+     * @return {!boolean}
+     */
+    static equal(channel1, channel2) {
+        return channel1.qualifiedName === channel2.qualifiedName;
+    }
+
+    /**
+     *
+     * @param channel1 {!Channel}
+     * @param channel2 {!Channel}
+     * @return {!number}
+     */
+    static compareByVerboseQualifiedName(channel1, channel2) {
+        return compareStringIgnoreCase(channel1.verboseQualifiedName, channel2.verboseQualifiedName);
+    }
+
+    /**
+     *
+     * @param channelSerialized {?ChannelSerialized}
+     * @return {?Channel}
+     */
+    static deserialize(channelSerialized) {
+        if (channelSerialized) {
+            return Channel.parseFromQualifiedName(channelSerialized.qualifiedName, channelSerialized.displayName);
+        }
+        return null;
+    }
+
+    /**
+     *
+     * @param channelsSerialized {!Array.<!ChannelSerialized>}
+     * @return {!Array.<!Channel>}
+     */
+    static deserializeArray(channelsSerialized) {
+        return channelsSerialized.map(chSerialized => Channel.deserialize(chSerialized));
+    }
+
+    /**
+     *
+     * @param channels {!Array.<!Channel>}
+     * @return {!Array.<!ChannelSerialized>}
+     */
+    static serializeArray(channels) {
+        return channels.map(ch => ch.serialize());
+    }
+
+    /**
+     *
+     * @param platform {!Platform}
+     * @param name {!string}
+     * @param displayName {?string} the display name of the channel
+     */
+    constructor(platform, name, displayName = null) {
+        this.platform = platform;
+        this.name = name;
+        this.displayName = displayName;
+    }
+
+    get qualifiedName() {
+        return this.platform.name + "/" + this.name;
+    }
+
+    get displayNameOrName() {
+        return this.displayName !== null ? this.displayName : this.name;
+    }
+
+    get qualifiedDisplayNameOrName() {
+        return this.platform.displayName + "/" + this.displayNameOrName;
+    }
+
+    get verboseName() {
+        return this.displayNameOrName + " (" + this.qualifiedName + ")";
+    }
+
+    get verboseQualifiedName() {
+        return this.qualifiedDisplayNameOrName + " (" + this.qualifiedName + ")";
+    }
+
+    get url() {
+        this.platform.buildChannelUrl(this);
+    }
+
+    serialize() {
+        return new ChannelSerialized(this.qualifiedName, this.displayName);
+    }
+}
+
+/**
+ * @property {!string} name the name of the platform
+ */
+class PlatformSerialized {
+    /**
+     *
+     * @param name {!string} the name of the platform
+     */
+    constructor(name) {
+        this.name = name;
+    }
+}
+
+/**
+ * @property {!string} qualifiedName the qualified name of the channel
+ * @property {?string} displayName the display name of the channel
+ */
+class ChannelSerialized {
+    /**
+     * @param {!string} qualifiedName the qualified name of the channel
+     * @param {?string} displayName the display name of the channel
+     */
+    constructor(qualifiedName, displayName) {
+        this.qualifiedName = qualifiedName;
+        this.displayName = displayName;
+    }
+}
+
+/*
+ * ====================================================================================================
+ * CHANNEL AND PLATFORM - TWITCH IMPL
+ * ====================================================================================================
+ */
+
 /**
  * Source: https://www.reddit.com/r/Twitch/comments/32w5b2/username_requirements/cqf8yh0/
  * "letters, numbers, underscore, between 4 and 25 characters"
@@ -907,7 +1116,6 @@ class Platform {
  * @type {RegExp}
  */
 const TWITCH_USERNAME_REGEX = new RegExp("^[a-zA-Z0-9][a-zA-Z0-9_]{3,24}$");
-
 
 const TwitchPageType = Object.freeze({
     /**
@@ -947,7 +1155,6 @@ const TwitchPageType = Object.freeze({
      */
     UNKNOWN: "UNKNOWN",
 });
-
 
 class TwitchPlatform extends Platform {
     /**
@@ -1061,7 +1268,11 @@ class TwitchPlatform extends Platform {
     }
 }
 
-const TWITCH_PLATFORM = Object.freeze(new TwitchPlatform());
+/*
+ * ====================================================================================================
+ * CHANNEL AND PLATFORM - MLG IMPL
+ * ====================================================================================================
+ */
 
 const MlgPageType = Object.freeze({
     /**
@@ -1140,6 +1351,13 @@ class MlgPlatform extends Platform {
     }
 }
 
+/*
+ * ====================================================================================================
+ * CHANNEL AND PLATFORM - ALL IMPLS
+ * ====================================================================================================
+ */
+
+const TWITCH_PLATFORM = Object.freeze(new TwitchPlatform());
 const MLG_PLATFORM = Object.freeze(new MlgPlatform());
 
 /**
@@ -1147,202 +1365,3 @@ const MLG_PLATFORM = Object.freeze(new MlgPlatform());
  * @type {ReadonlyArray.<Platform>}
  */
 const ALL_PLATFORMS = Object.freeze([TWITCH_PLATFORM, MLG_PLATFORM]);
-
-class Channel {
-    /**
-     *
-     * @param channelSerialized {?ChannelSerialized}
-     * @return {?Channel}
-     */
-    static deserialize(channelSerialized) {
-        if (channelSerialized) {
-            return parseChannelFromQualifiedName(channelSerialized.qualifiedName, channelSerialized.displayName);
-        }
-        return null;
-    }
-
-    /**
-     *
-     * @param channelsSerialized {!Array.<!ChannelSerialized>}
-     * @return {!Array.<!Channel>}
-     */
-    static deserializeArray(channelsSerialized) {
-        return channelsSerialized.map(chSerialized => Channel.deserialize(chSerialized));
-    }
-
-    /**
-     *
-     * @param channels {!Array.<!Channel>}
-     * @return {!Array.<!ChannelSerialized>}
-     */
-    static serializeArray(channels) {
-        return channels.map(ch => ch.serialize());
-    }
-
-    /**
-     *
-     * @param platform {!Platform}
-     * @param name {!string}
-     * @param displayName {?string} the display name of the channel
-     */
-    constructor(platform, name, displayName = null) {
-        this.platform = platform;
-        this.name = name;
-        this.displayName = displayName;
-    }
-
-    get qualifiedName() {
-        return this.platform.name + "/" + this.name;
-    }
-
-    get displayNameOrName() {
-        return this.displayName !== null ? this.displayName : this.name;
-    }
-
-    get qualifiedDisplayNameOrName() {
-        return this.platform.displayName + "/" + this.displayNameOrName;
-    }
-
-    get verboseName() {
-        return this.displayNameOrName + " (" + this.qualifiedName + ")";
-    }
-
-    get verboseQualifiedName() {
-        return this.qualifiedDisplayNameOrName + " (" + this.qualifiedName + ")";
-    }
-
-    get url() {
-        this.platform.buildChannelUrl(this);
-    }
-
-    serialize() {
-        return new ChannelSerialized(this.qualifiedName, this.displayName);
-    }
-}
-
-
-/**
- *
- * @param platformName the name of the platform
- * @returns {?Platform} the parsed Platform or null if the given platformName does not match any platform
- */
-function parsePlatformFromName(platformName) {
-    for (let i = 0; i < ALL_PLATFORMS.length; i++) {
-        if (ALL_PLATFORMS[i].name === platformName) {
-            return ALL_PLATFORMS[i];
-        }
-    }
-    return null;
-}
-
-/**
- *
- * @param channelQualifiedName {!string} the qualified name of the channel
- * @param displayName {?string} the optional display name of the channel
- * @return {?Channel} the parsed Channel or null if no platform could parse the qualified name
- */
-function parseChannelFromQualifiedName(channelQualifiedName, displayName = null) {
-    for (let i = 0; i < ALL_PLATFORMS.length; i++) {
-        const channel = ALL_PLATFORMS[i].parseChannelFromQualifiedName(channelQualifiedName);
-        if (channel !== null) {
-            channel.displayName = displayName;
-            return channel;
-        }
-    }
-    return null;
-}
-
-/**
- *
- * @param url {!URL} a {@link Location} or {@link HTMLAnchorElement}
- * @param displayName {?string} the optional display name of the channel
- * @return {?Channel} the parsed channel or null if the URL was not recognized
- */
-function parseChannelFromUrl(url, displayName = null) {
-    for (let i = 0; i < ALL_PLATFORMS.length; i++) {
-        const channel = ALL_PLATFORMS[i].parseChannelFromUrl(url);
-        if (channel !== null) {
-            channel.displayName = displayName;
-            return channel;
-        }
-    }
-    return null;
-}
-
-/**
- * @property {!string} name the name of the platform
- */
-class PlatformSerialized {
-    /**
-     *
-     * @param name {!string} the name of the platform
-     */
-    constructor(name) {
-        this.name = name;
-    }
-}
-
-/**
- * @property {!string} qualifiedName the qualified name of the channel
- * @property {?string} displayName the display name of the channel
- */
-class ChannelSerialized {
-    /**
-     * @param {!string} qualifiedName the qualified name of the channel
-     * @param {?string} displayName the display name of the channel
-     */
-    constructor(qualifiedName, displayName) {
-        this.qualifiedName = qualifiedName;
-        this.displayName = displayName;
-    }
-}
-
-/**
- *
- * @param platform1 {!Platform|!PlatformSerialized}
- * @param platform2 {!Platform|!PlatformSerialized}
- * @return {!boolean}
- */
-function equalPlatforms(platform1, platform2) {
-    return platform1.name === platform2.name;
-}
-
-/**
- *
- * @param platform1 {!Platform}
- * @param platform2 {!Platform}
- * @return {!number}
- */
-function comparePlatformsByVerboseName(platform1, platform2) {
-    return compareStringIgnoreCase(platform1.verboseName, platform2.verboseName);
-}
-
-/**
- *
- * @param channel1 {!Channel|!ChannelSerialized}
- * @param channel2 {!Channel|!ChannelSerialized}
- * @return {!boolean}
- */
-function equalChannels(channel1, channel2) {
-    return channel1.qualifiedName === channel2.qualifiedName;
-}
-
-/**
- *
- * @param channel1 {!Channel}
- * @param channel2 {!Channel}
- * @return {!number}
- */
-function compareChannelsByVerboseQualifiedName(channel1, channel2) {
-    return compareStringIgnoreCase(channel1.verboseQualifiedName, channel2.verboseQualifiedName);
-}
-
-function compareStringIgnoreCase(s1, s2) {
-    const s1CaseInsensitive = s1.toUpperCase();
-    const s2CaseInsensitive = s2.toUpperCase();
-    if (s1CaseInsensitive < s2CaseInsensitive)
-        return -1;
-    if (s1CaseInsensitive > s2CaseInsensitive)
-        return 1;
-    return 0;
-}

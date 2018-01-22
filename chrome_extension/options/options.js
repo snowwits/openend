@@ -128,12 +128,12 @@ function showStatusMsg(msg) {
  */
 function parseChannel(channelQualifiedNameOrUrl, channelDisplayName = null) {
     // Try to parse the given channel as url and as qualified name
-    let channel = parseChannelFromQualifiedName(channelQualifiedNameOrUrl, channelDisplayName);
+    let channel = Channel.parseFromQualifiedName(channelQualifiedNameOrUrl, channelDisplayName);
     if (channel) {
         return channel;
     }
     const dummyAnchor = createAnchor(channelQualifiedNameOrUrl);
-    return parseChannelFromUrl(dummyAnchor, channelDisplayName);
+    return Channel.parseFromUrl(dummyAnchor, channelDisplayName);
 }
 
 /**

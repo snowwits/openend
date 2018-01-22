@@ -148,14 +148,14 @@ function updateUiAfterOptionsUpdate(options) {
     if (OPT_SFM_PLATFORMS_NAME in options) {
         const platformElem = document.getElementById(SFM_CUSTOM_PLATFORM_ID);
         const platformSfmEnabledCheckbox = document.getElementById(SFM_CUSTOM_PLATFORM_ENABLED_ID);
-        const platform = parsePlatformFromName(platformElem.dataset[DATA_PLATFORM_NAME]);
+        const platform = Platform.parseFromName(platformElem.dataset[DATA_PLATFORM_NAME]);
         updatePlatformSfmEnabledCheckbox(platformSfmEnabledCheckbox, options, platform);
     }
     // If the channels changed, may need to change the button mode and label
     if (OPT_SFM_CHANNELS_NAME in options) {
         const channelElem = document.getElementById(SFM_CUSTOM_CHANNEL_ID);
         const channelSfmEnabledCheckbox = document.getElementById(SFM_CUSTOM_CHANNEL_ENABLED_ID);
-        const channel = parseChannelFromQualifiedName(channelElem.dataset[DATA_CHANNEL_QUALIFIED_NAME], channelElem.dataset[DATA_CHANNEL_DISPLAY_NAME]);
+        const channel = Channel.parseFromQualifiedName(channelElem.dataset[DATA_CHANNEL_QUALIFIED_NAME], channelElem.dataset[DATA_CHANNEL_DISPLAY_NAME]);
         updateChannelSfmEnabledCheckbox(channelSfmEnabledCheckbox, options, channel);
     }
     if (OPT_SFM_ENABLED_NAME in options) {
@@ -198,7 +198,7 @@ function handleSfmEnabledChanged() {
 function handlePlatformSfmEnabledChanged() {
     const platformElem = document.getElementById("sfmCustomPlatform");
     const platformName = getData(platformElem, DATA_PLATFORM_NAME);
-    const platform = parsePlatformFromName(platformName);
+    const platform = Platform.parseFromName(platformName);
 
     // this: <checkbox id="sfmCustomPlatformEnabled">
     const sfmCustomPlatformEnabledCheckbox = this;
@@ -213,10 +213,10 @@ function handlePlatformSfmEnabledChanged() {
             const platforms = Platform.deserializeArray(platformsSerialized);
             let newPlatforms;
             if (sfmCustomPlatformEnabledCheckbox.checked === true) {
-                newPlatforms = sortedSetPlus(platforms, platform, equalPlatforms, comparePlatformsByVerboseName);
+                newPlatforms = sortedSetPlus(platforms, platform, Platform.equal, Platform.compareByVerboseName);
             }
             else {
-                newPlatforms = sortedSetMinus(platforms, platform, equalPlatforms);
+                newPlatforms = sortedSetMinus(platforms, platform, Platform.equal);
             }
             const newPlatformsSerialized = Platform.serializeArray(newPlatforms);
             chrome.storage.sync.set({[OPT_SFM_PLATFORMS_NAME]: newPlatformsSerialized}, function () {
@@ -234,7 +234,7 @@ function handleChannelSfmEnabledChanged() {
     const channelElem = document.getElementById("sfmCustomChannel");
     const channelQualifiedName = getData(channelElem, DATA_CHANNEL_QUALIFIED_NAME);
     const channelDisplayName = getData(channelElem, DATA_CHANNEL_DISPLAY_NAME);
-    const channel = parseChannelFromQualifiedName(channelQualifiedName, channelDisplayName);
+    const channel = Channel.parseFromQualifiedName(channelQualifiedName, channelDisplayName);
 
     // this: <checkbox id="sfmCustomChannelEnabled">
     const sfmCustomChannelEnabledCheckbox = this;
@@ -249,10 +249,10 @@ function handleChannelSfmEnabledChanged() {
             const channels = Channel.deserializeArray(channelsSerialized);
             let newChannels;
             if (sfmCustomChannelEnabledCheckbox.checked === true) {
-                newChannels = sortedSetPlus(channels, channel, equalChannels, compareChannelsByVerboseQualifiedName);
+                newChannels = sortedSetPlus(channels, channel, Channel.equal, Channel.compareByVerboseQualifiedName);
             }
             else {
-                newChannels = sortedSetMinus(channels, channel, equalChannels);
+                newChannels = sortedSetMinus(channels, channel, Channel.equal);
             }
             const newChannelsSerialized = Channel.serializeArray(newChannels);
             chrome.storage.sync.set({[OPT_SFM_CHANNELS_NAME]: newChannelsSerialized}, function () {
