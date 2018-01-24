@@ -422,7 +422,7 @@ function updatePayerDurationVisibleAndShowHideButton(configuring, visible) {
         const showHidePlayerDurationImg = document.getElementById(OPND_PLAYER_SHOW_HIDE_DURATION_IMG_ID);
         if (showHidePlayerDurationImg) {
             showHidePlayerDurationImg.src = chrome.runtime.getURL(setVisibleResult ? "img/hide_white.svg" : "img/show_white.svg");
-            showHidePlayerDurationImg.alt = tooltip
+            showHidePlayerDurationImg.alt = tooltip;
         }
 
         const showHidePlayerDurationTooltipSpan = document.getElementById(OPND_PLAYER_SHOW_HIDE_DURATION_TOOLTIP_SPAN_ID);
@@ -611,7 +611,7 @@ function isVideoListItemsConfigured() {
 function addVideoListItemToolbar(videoCardDiv) {
     let toolbarElem = videoCardDiv.querySelector("." + OPND_VIDEO_LIST_ITEM_TOOLBAR_CLASS);
     if (!toolbarElem) {
-        const injectionContainerChild = videoCardDiv.querySelector('div[data-test-selector="video-title"]');
+        const injectionContainerChild = videoCardDiv.querySelector("div[data-test-selector='video-title']");
         if (injectionContainerChild) {
             toolbarElem = buildVideoListItemToolbar(videoCardDiv);
             injectionContainerChild.parentNode.insertBefore(toolbarElem, injectionContainerChild);
@@ -631,12 +631,12 @@ function removeVideoListItemToolbars(videoCardDiv = null) {
 
 function getVideoTitleOpndContainers(videoCardDiv = null) {
     const queryRoot = videoCardDiv ? videoCardDiv : document;
-    return wrapInOpndContainers(() => queryRoot.querySelectorAll('a[data-a-target="video-preview-card-title-link"]'), OPND_CONTAINER_VIDEO_LIST_ITEM_TITLE_CLASS);
+    return wrapInOpndContainers(() => queryRoot.querySelectorAll("a[data-a-target='video-preview-card-title-link']"), OPND_CONTAINER_VIDEO_LIST_ITEM_TITLE_CLASS);
 }
 
 function getVideoPreviewOpndContainers(videoCardDiv = null) {
     const queryRoot = videoCardDiv ? videoCardDiv : document;
-    return wrapInOpndContainers(() => queryRoot.querySelectorAll('div[data-test-selector="preview-image-wrapper"]'), OPND_CONTAINER_VIDEO_LIST_ITEM_PREVIEW_CLASS);
+    return wrapInOpndContainers(() => queryRoot.querySelectorAll("div[data-test-selector='preview-image-wrapper']"), OPND_CONTAINER_VIDEO_LIST_ITEM_PREVIEW_CLASS);
 }
 
 function getVideoDurationOpndContainers(videoCardDiv = null) {
@@ -644,8 +644,11 @@ function getVideoDurationOpndContainers(videoCardDiv = null) {
 }
 
 /**
- *
- * @param elementsGetter {!function() -> Iterable<Element>}
+ * @callback ElementsGetter
+ * @return {!Iterable<Element>}
+ */
+/**
+ * @param elementsGetter {ElementsGetter}
  * @param containerClass the addition CSS class for the opnd-container
  * @return {!Array.<Element>} the containers
  */
@@ -664,7 +667,7 @@ function getVideoLengthStatDivs(videoCardDiv = null) {
     if (videoStatDivs.length > 0) {
         for (let i = 0; i < videoStatDivs.length; ++i) {
             const videoStatDiv = videoStatDivs[i];
-            const videoLengthDiv = videoStatDiv.querySelector('div[data-test-selector="video-length"]');
+            const videoLengthDiv = videoStatDiv.querySelector("div[data-test-selector='video-length']");
             if (videoLengthDiv) {
                 videoLengthStatDivs.push(videoStatDiv);
             }
@@ -682,7 +685,7 @@ function getVideoLengthStatDivs(videoCardDiv = null) {
  * @return {?Channel} the channel if it can be determined
  */
 function getVideoChannel(videoCardDiv) {
-    const channelAnchor = videoCardDiv.querySelector('a[data-test-selector="video-owner"]');
+    const channelAnchor = videoCardDiv.querySelector("a[data-test-selector='video-owner']");
     if (channelAnchor) {
         const channel = TWITCH_PLATFORM.parseChannelFromUrl(channelAnchor);
         channel.displayName = channelAnchor.textContent;
@@ -780,10 +783,10 @@ function isTheatreModeConfigured() {
  */
 function isTheatreModeActive(theatreModeButton) {
     const innerHtml = theatreModeButton.innerHTML;
-    if (innerHtml.indexOf('xlink:href="#icon_theatre_deactivate"') !== -1) {
+    if (innerHtml.indexOf("xlink:href='#icon_theatre_deactivate'") !== -1) {
         return true;
     }
-    else if (innerHtml.indexOf('xlink:href="#icon_theatre"') !== -1) {
+    else if (innerHtml.indexOf("xlink:href='#icon_theatre'") !== -1) {
         return false;
     }
     warn("Could not determine if Theatre Mode is active");
@@ -932,12 +935,11 @@ function buildVideoListItemToolbarButton(videoCardDiv, imgSrc, hideableContainer
     tooltipWrapper.classList.add("tw-tooltip-wrapper");
 
     const btn = document.createElement("button");
-    const actionHandler = () => {
+    btn.onclick = () => {
         const setVisibleResult = setAllVisible(videoCardDiv.getElementsByClassName(hideableContainerClass), null);
         const tooltipSpan = videoCardDiv.querySelector("." + tooltipClass);
         updateShowHideTooltip(tooltipSpan, setVisibleResult, visibleTooltipMsg, hiddenTooltipMsg);
     };
-    btn.onclick = actionHandler;
 
     // Build button content span
     const content = document.createElement("span");

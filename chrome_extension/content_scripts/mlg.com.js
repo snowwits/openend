@@ -105,7 +105,7 @@ function setSfmOptionsToNotConfigured() {
 function resetGlobalPageFlags() {
     GLOBAL_elementsLoadedTimeoutReached = false;
 
-    resetGlobalPageStateFlags(GLOBAL_options)
+    resetGlobalPageStateFlags(GLOBAL_options);
 }
 
 function resetGlobalPageStateFlags(changedOptions) {
@@ -186,7 +186,7 @@ function determineSfmEnabledForPage() {
     if (SfmEnabled.ALWAYS === GLOBAL_options[OPT_SFM_ENABLED_NAME]) {
         sfmEnabledForPage = SfmEnabledState.ENABLED;
     } else {
-        sfmEnabledForPage = SfmEnabledState.DISABLED
+        sfmEnabledForPage = SfmEnabledState.DISABLED;
     }
     updateSfmEnabledForPage(sfmEnabledForPage);
 }
@@ -253,7 +253,7 @@ function configurePlayer() {
         }
         const opndContainers = getOrWrapAllInOpndContainers(durationElements);
         setAllVisible(opndContainers, setDurationVisible);
-        setConfigured(OPT_SFM_PLAYER_HIDE_DURATION_NAME, true)
+        setConfigured(OPT_SFM_PLAYER_HIDE_DURATION_NAME, true);
     }
 }
 
@@ -351,7 +351,7 @@ function configureVideoListItems() {
             setDurationVisible = true;
         }
         setAllVisible(opndContainers, setDurationVisible);
-        setConfigured(OPT_SFM_VIDEO_LIST_HIDE_DURATION_NAME, true)
+        setConfigured(OPT_SFM_VIDEO_LIST_HIDE_DURATION_NAME, true);
     }
 }
 

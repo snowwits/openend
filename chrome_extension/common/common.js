@@ -221,7 +221,8 @@ class TabInfoRequestMessage extends Message {
  * ====================================================================================================
  */
 /**
- * The CSS class of Open End container elements. To not interfere with the page CSS style, we wrap every element we want to hide in a custom container element and then hide that container.
+ * The CSS class of Open End container elements. To not interfere with the page CSS style,
+ * we wrap every element we want to hide in a custom container element and then hide that container.
  * @type {string}
  */
 const OPND_CONTAINER_CLASS = "opnd-container";
@@ -237,7 +238,8 @@ const OPND_HIDDEN_CLASS = "opnd-hidden";
  */
 const OPND_PLAYER_TOOLBAR_ID = "opnd-player-toolbar";
 /**
- * The CSS class of Open End containers that wrap elements of the player which contain a video's duration or the seek bar.
+ * The CSS class of Open End containers
+ * that wrap elements of the player which contain a video's duration or the seek bar.
  * @type {string}
  */
 const OPND_CONTAINER_PLAYER_DURATION_CLASS = "opnd-container-player-duration";
@@ -292,10 +294,12 @@ function padLeft(number, width = 2, padChar = "0") {
 function compareStringIgnoreCase(s1, s2) {
     const s1CaseInsensitive = s1.toUpperCase();
     const s2CaseInsensitive = s2.toUpperCase();
-    if (s1CaseInsensitive < s2CaseInsensitive)
+    if (s1CaseInsensitive < s2CaseInsensitive) {
         return -1;
-    if (s1CaseInsensitive > s2CaseInsensitive)
+    }
+    if (s1CaseInsensitive > s2CaseInsensitive) {
         return 1;
+    }
     return 0;
 }
 
@@ -306,6 +310,7 @@ function compareStringIgnoreCase(s1, s2) {
  * ====================================================================================================
  */
 const DURATION_PATTERN = "^(?:(\\d+)|(?:(\\d+)h)?(?:(\\d+)m)?(?:(\\d+)s)?)$";
+const DURATION_ONLY_NUM_PATTERN = "^\\d+$";
 
 /**
  * Suffixes the given duration string with a "m" as single numbers are interpreted as minutes.
@@ -314,8 +319,8 @@ const DURATION_PATTERN = "^(?:(\\d+)|(?:(\\d+)h)?(?:(\\d+)m)?(?:(\\d+)s)?)$";
  * @return {!string}
  */
 function normalizeDurationString(durationString) {
-    if (new RegExp("^\\d+$").test(durationString)) {
-        return durationString + "m"
+    if (new RegExp(DURATION_ONLY_NUM_PATTERN).test(durationString)) {
+        return durationString + "m";
     }
     return durationString;
 }
@@ -477,7 +482,7 @@ function getElementsByClassNames(classNames) {
             allElements.push(classes[j]);
         }
     }
-    return allElements
+    return allElements;
 }
 
 
@@ -492,7 +497,7 @@ function getSingleElementByClassName(className) {
 function removeElements(elements) {
     // Iterate from end to start because it could be a live list and removing from it would change the indices
     for (let i = elements.length - 1; i >= 0; i--) {
-        removeElement(elements[i])
+        removeElement(elements[i]);
     }
 }
 
@@ -513,7 +518,7 @@ function setAllVisible(elements, visible) {
         if (actuallySetVisible === null) {
             // If the visible param is null,
             // we check the first element's visible state and use that to toggle all elements.
-            actuallySetVisible = elem.classList.contains(OPND_HIDDEN_CLASS)
+            actuallySetVisible = elem.classList.contains(OPND_HIDDEN_CLASS);
         }
         if (actuallySetVisible) {
             elem.classList.remove(OPND_HIDDEN_CLASS);
@@ -572,7 +577,7 @@ function getOpndContainer(element) {
 }
 
 function wrapInOpndContainer(element, additionalClass = null) {
-    return wrap(element, createOpndContainer(additionalClass))
+    return wrap(element, createOpndContainer(additionalClass));
 }
 
 function createOpndContainer(additionalClass = null) {
@@ -613,7 +618,7 @@ function getTextInputValue(textInputId) {
  * @param radioName the name of all radio inputs in the group
  */
 function getRadioValue(radioName) {
-    return document.querySelector('input[name = "' + radioName + '"]:checked').value;
+    return document.querySelector("input[name = '" + radioName + "']:checked").value;
 }
 
 /**
@@ -622,7 +627,7 @@ function getRadioValue(radioName) {
  * @param selectedValue {string} the value of the selected radio
  */
 function setRadioValues(radioName, selectedValue) {
-    const allRadios = document.querySelectorAll('input[type="radio"][name = "' + radioName + '"]');
+    const allRadios = document.querySelectorAll("input[type='radio'][name = '" + radioName + "']");
     for (let i = 0; i < allRadios.length; i++) {
         const radio = allRadios[i];
         radio.checked = radio.value === selectedValue;
@@ -630,7 +635,7 @@ function setRadioValues(radioName, selectedValue) {
 }
 
 function listenForRadioChanges(radioName, changeHandler) {
-    const allRadios = document.querySelectorAll('input[type="radio"][name = "' + radioName + '"]');
+    const allRadios = document.querySelectorAll("input[type='radio'][name = '" + radioName + "']");
     for (let i = 0; i < allRadios.length; i++) {
         allRadios[i].onclick = changeHandler;
     }
@@ -795,6 +800,7 @@ function createAnchor(href) {
  * CHANNEL AND PLATFORM
  * ====================================================================================================
  */
+
 /*
  * ====================================================================================================
  * CHANNEL AND PLATFORM - API
@@ -1179,7 +1185,8 @@ class TwitchPlatform extends Platform {
             const channelNameLowerCase = name.toLowerCase();
             return new Channel(this, channelNameLowerCase, displayName);
         }
-        throw new Error("The given channel name [" + name + "] is not a valid channel name (regex: " + TWITCH_USERNAME_REGEX + ")");
+        throw new Error("The given channel name [" + name +
+            "] is not a valid channel name (regex: " + TWITCH_USERNAME_REGEX + ")");
     }
 
     /**
@@ -1334,7 +1341,7 @@ class MlgPlatform extends Platform {
      */
     parsePageFromUrl(url) {
         if (url.hostname.includes("mlg.com")) {
-            if ("/" === pathname) {
+            if ("/" === url.pathname) {
                 return new PlatformPage(MlgPageType.ROOT);
             }
             if (url.pathname.startsWith("/video")) {
