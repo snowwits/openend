@@ -50,14 +50,14 @@ const PAGE_CONFIGURATION_TIMEOUT = 45000; // 45s
  * OPTIONS (SYNC STORAGE)
  * ====================================================================================================
  */
-const SfmEnabled = Object.freeze({
+const SfmEnabledOpt = Object.freeze({
     NEVER: "NEVER",
     ALWAYS: "ALWAYS",
     CUSTOM: "CUSTOM"
 });
 
 const OPT_SFM_ENABLED_NAME = "sfmEnabled";
-const OPT_SFM_ENABLED_DEFAULT = SfmEnabled.NEVER;
+const OPT_SFM_ENABLED_DEFAULT = SfmEnabledOpt.NEVER;
 const OPT_SFM_PLATFORMS_NAME = "sfmPlatforms";
 const OPT_SFM_PLATFORMS_DEFAULT = Object.freeze([]);
 const OPT_SFM_CHANNELS_NAME = "sfmChannels";
@@ -132,11 +132,11 @@ function sfmPlatformsContain(options, platform) {
  */
 function isSfmEnabledForChannel(options, channel) {
     const sfmEnabled = options[OPT_SFM_ENABLED_NAME];
-    if (SfmEnabled.ALWAYS === sfmEnabled) {
+    if (SfmEnabledOpt.ALWAYS === sfmEnabled) {
         return SfmEnabledState.ENABLED;
-    } else if (SfmEnabled.NEVER === sfmEnabled) {
+    } else if (SfmEnabledOpt.NEVER === sfmEnabled) {
         return SfmEnabledState.DISABLED;
-    } else if (SfmEnabled.CUSTOM) {
+    } else if (SfmEnabledOpt.CUSTOM) {
         if (channel !== null) {
             if (sfmPlatformsContain(options, channel.platform)) {
                 return SfmEnabledState.ENABLED;

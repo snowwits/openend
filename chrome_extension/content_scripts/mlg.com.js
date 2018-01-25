@@ -181,9 +181,9 @@ function determineSfmEnabledForPage() {
         return;
     }
 
-    // Only if SfmEnabled.ALWAYS, as MLG has no channels
+    // Only if SfmEnabledOpt.ALWAYS, as MLG has no channels
     let sfmEnabledForPage;
-    if (SfmEnabled.ALWAYS === GLOBAL_options[OPT_SFM_ENABLED_NAME]) {
+    if (SfmEnabledOpt.ALWAYS === GLOBAL_options[OPT_SFM_ENABLED_NAME]) {
         sfmEnabledForPage = SfmEnabledState.ENABLED;
     } else {
         sfmEnabledForPage = SfmEnabledState.DISABLED;
