@@ -210,6 +210,19 @@ function init() {
         removeChannelsBtn.disabled = channelsSelect.selectedOptions.length === 0;
     };
     channelsSelect.onchange = handleSelectedChannelsChange;
+
+    // TODO: refactor into method observeMutations(target: Node, options: MutationObserverInit, callback: MutationCallback)
+    const observer = new MutationObserver(function (mutations) {
+        mutations.forEach(function (mutation) {
+            //console.log(mutation.type);
+            handleSelectedChannelsChange();
+        });
+    });
+    // Konfiguration des Observers
+    const config = {childList: true};
+    // eigentliche Observierung starten und Zielnode und Konfiguration übergeben
+    observer.observe(channelsSelect, config);
+
     handleSelectedChannelsChange();
 
     // Configure Spoiler-Free Mode

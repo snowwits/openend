@@ -149,7 +149,6 @@ function isSfmEnabledForChannel(options, channel) {
                     return SfmEnabledState.DISABLED;
                 }
             }
-
         }
         return SfmEnabledState.UNDETERMINED;
     }
@@ -736,7 +735,6 @@ function insertChannelInSortedSetSelect(selectElem, channel) {
     }
     // If it was not added yet, it is because the select has no options yet
     selectElem.appendChild(optionElem);
-
     selectElem.selectedIndex = selectElem.options.length - 1;
 }
 
