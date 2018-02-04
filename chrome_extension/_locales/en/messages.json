@@ -3,15 +3,15 @@
         "message": "Hides the duration and title of videos on Twitch.tv to prevent spoilers when watching e-sports or sports videos.",
         "description": "Extension description."
     },
-    "playerShowHideDuration_visible": {
+    "player_showHideDuration_visible": {
         "message": "Hide duration",
         "description": "Label of the Show/Hide Duration button for the visible state."
     },
-    "playerShowHideDuration_hidden": {
+    "player_showHideDuration_hidden": {
         "message": "Show duration",
         "description": "Label of the Show/Hide Duration button for the hidden state."
     },
-    "playerJumpBackward": {
+    "player_jumpBackward": {
         "message": "Jump $JUMP_TIME$ backward",
         "description": "Label of the Jump Backward button.",
         "placeholders": {
@@ -21,7 +21,7 @@
             }
         }
     },
-    "playerJumpForward": {
+    "player_jumpForward": {
         "message": "Jump $JUMP_TIME$ forward",
         "description": "Label of the Jump Forward button.",
         "placeholders": {
@@ -31,78 +31,147 @@
             }
         }
     },
-    "playerJump_help": {
+    "player_jump_help": {
         "message": "Time jump format: \"2\" for 2 minutes or \"1h2m3s\" for 1 hour, 2 minutes and 3 seconds",
         "description": "The help message to be displayed for the Jump Distance input."
     },
-    "playerJump_err": {
+    "player_jump_err": {
         "message": "Invalid jump distance",
         "description": "The error message to be displayed if the Jump Distance is invalid."
     },
-    "videoListItemShowHideTitle_visible": {
+    "videoListItem_showHideTitle_visible": {
         "message": "Hide title",
         "description": "Label of the Show/Hide Title button for the visible state."
     },
-    "videoListItemShowHideTitle_hidden": {
+    "videoListItem_showHideTitle_hidden": {
         "message": "Show title",
         "description": "Label of the Show/Hide Title button for the visible state."
     },
-    "videoListItemShowHidePreview_visible": {
+    "videoListItem_showHidePreview_visible": {
         "message": "Hide preview image",
         "description": "Label of the Show/Hide Preview button for the visible state."
     },
-    "videoListItemShowHidePreview_hidden": {
+    "videoListItem_showHidePreview_hidden": {
         "message": "Show preview image",
         "description": "Label of the Show/Hide Preview button for the visible state."
     },
-    "videoListItemShowHideDuration_visible": {
+    "videoListItem_showHideDuration_visible": {
         "message": "Hide duration",
         "description": "Label of the Show/Hide Duration button for the visible state."
     },
-    "videoListItemShowHideDuration_hidden": {
+    "videoListItem_showHideDuration_hidden": {
         "message": "Show duration",
         "description": "Label of the Show/Hide Duration button for the visible state."
+    },
+    "menu_sfmState_ENABLED": {
+        "message": "Spoiler-Free Mode enabled",
+        "description": ""
+    },
+    "menu_sfmState_DISABLED": {
+        "message": "Spoiler-Free Mode disabled",
+        "description": ""
+    },
+    "menu_sfmState_UNDETERMINED": {
+        "message": "",
+        "description": ""
+    },
+    "menu_sfmEnabled": {
+        "message": "Enable Spoiler-Free Mode",
+        "description": ""
+    },
+    "menu_sfmEnabled_globally": {
+        "message": "Globally",
+        "description": ""
+    },
+    "menu_sfmEnabled_globally_NEVER": {
+        "message": "Disable",
+        "description": ""
+    },
+    "menu_sfmEnabled_globally_ALWAYS": {
+        "message": "Enable",
+        "description": ""
+    },
+    "menu_sfmEnabled_globally_CUSTOM": {
+        "message": "Platform-dependent",
+        "description": ""
+    },
+    "menu_sfmEnabled_onPlatform": {
+        "message": "On the platform",
+        "description": ""
+    },
+    "menu_sfmEnabled_onPlatform_NEVER": {
+        "message": "Disable",
+        "description": ""
+    },
+    "menu_sfmEnabled_onPlatform_ALWAYS": {
+        "message": "Enable",
+        "description": ""
+    },
+    "menu_sfmEnabled_onPlatform_CUSTOM": {
+        "message": "Channel-dependent",
+        "description": ""
+    },
+    "menu_sfmEnabled_onChannel": {
+        "message": "On the channel",
+        "description": ""
+    },
+    "menu_sfmEnabled_onChannel_enable": {
+        "message": "Enable",
+        "description": ""
     },
     "menu_openOptions": {
         "message": "Options...",
         "description": "Label of the Options... button on the browser_action popup menu."
     },
-    "options_sfm_enabled": {
-        "message": "Enable Spoiler-Free Mode",
-        "description": "Label of the Enable Spoiler-Free Mode options section."
+    "options_sfmEnabled_globally": {
+        "message": "Enable globally",
+        "description": ""
     },
-    "options_sfm_enabled_never": {
+    "options_sfmEnabled_globally_NEVER": {
         "message": "Never",
-        "description": "Label of the Never Enable Spoiler-Free Mode option."
+        "description": ""
     },
-    "options_sfm_enabled_always": {
+    "options_sfmEnabled_globally_ALWAYS": {
         "message": "Always",
-        "description": "Label of the Always Enable Spoiler-Free Mode option."
+        "description": ""
     },
-    "options_sfm_enabled_custom": {
-        "message": "Custom",
-        "description": "Label of the Custom Enable Spoiler-Free Mode option."
+    "options_sfmEnabled_globally_CUSTOM": {
+        "message": "Custom (platform-dependent)",
+        "description": ""
     },
-    "options_sfm_custom": {
-        "message": "Custom Spoiler-free Mode"
+    "options_sfmCustom_platforms": {
+        "message": "Spoiler-Free Mode platforms",
+        "description": "Label of the platform text area tooltip."
     },
-    "options_sfm_channelToAdd": {
-        "message": "Qualified name or URL:",
-        "description": "The label for the channel's qualified name or URL input."
+    "options_sfmEnabled_onPlatform_NEVER": {
+        "message": "Never",
+        "description": ""
     },
-    "options_channelToAddDisplayName": {
-        "message": "Display name:",
-        "description": "The label for the channel's display name input."
+    "options_sfmEnabled_onPlatform_ALWAYS": {
+        "message": "Always",
+        "description": ""
     },
-    "options_sfm_addChannel": {
-        "message": "Add channel",
-        "description": "Label of the Add Channel button."
+    "options_sfmEnabled_onPlatform_CUSTOM": {
+        "message": "Custom (channel-dependent)",
+        "description": ""
     },
-    "options_sfm_channels": {
+    "options_sfmCustom_channels": {
         "message": "Spoiler-Free Mode channels",
         "description": "Label of the Channels text area tooltip."
     },
-    "options_sfm_removeChannels": {
+    "options_sfmCustom_channelToAdd": {
+        "message": "Qualified name or URL:",
+        "description": "The label for the channel's qualified name or URL input."
+    },
+    "options_sfmCustom_channelToAddDisplayName": {
+        "message": "Display name:",
+        "description": "The label for the channel's display name input."
+    },
+    "options_sfmCustom_addChannel": {
+        "message": "Add channel",
+        "description": "Label of the Add Channel button."
+    },
+    "options_sfmCustom_removeChannels": {
         "message": "Remove selected channels",
         "description": "Label of the Remove Channels button."
     },
@@ -146,10 +215,6 @@
         "message": "Start videos in theatre mode",
         "description": "Label of the Player: Theatre Mode option."
     },
-    "options_twitch": {
-        "message": "Twitch",
-        "description": "Label of the Twitch options section."
-    },
     "options_save": {
         "message": "Save",
         "description": "Label of the Save button."
@@ -169,14 +234,6 @@
     "options_restoreDefaults_successMsg": {
         "message": "Restored default options.",
         "description": "Message to be displayed after a successful Restore Defaults action."
-    },
-    "browserAction_sfmCustom_platformHeader": {
-        "message": "Enabled on this platform",
-        "description": "The label of header of whether the SFM should be enabled for this platform"
-    },
-    "browserAction_sfmCustom_channelHeader": {
-        "message": "Enable on this channel",
-        "description": "The label of header of whether the SFM should be enabled for this channel"
     },
     "hello": {
         "message": "Hello, $USER$",

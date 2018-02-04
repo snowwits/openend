@@ -8,10 +8,29 @@ h2 {
     font-weight: 500;
 }
 
-.opnd-hidden {
-    display: none;
+.topLevelContainer:not(:first-child) {
+    margin-top: 1em;
 }
 
-#general {
-    margin-top: 1.5em;
+.secondLevelContainer:not(:last-child) {
+    margin-bottom: 1em;
+}
+
+#sfmStateLabel {
+  font-size: 14px;
+}
+
+#sfmStateContainer img {
+    width: 2em;
+    height: 2em;
+    vertical-align: middle;
+}
+
+#sfmEnabledLabel {
+    font-size: 14px;
+    font-weight: bold;
+}
+
+#platform, #channel {
+    font-weight: bold;
 }

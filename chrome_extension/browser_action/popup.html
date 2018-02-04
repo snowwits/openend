@@ -1,13 +1,13 @@
 <!doctype html>
 <!--
- This page is shown when the extension button is clicked, because the
- "browser_action" field in manifest.json contains the "default_popup" key with
- value "popup.html".
+ This page is shown when the extension button is clicked, because the "browser_action" field in manifest.json
+ contains the "default_popup" key with value "popup.html".
  -->
 <html>
 <head>
     <meta charset="UTF-8">
     <title>Open End</title>
+    <link rel="stylesheet" type="text/css" href="../common/common.css">
     <link rel="stylesheet" type="text/css" href="popup.css">
     <script src="../common/common.js"></script>
     <script src="popup.js"></script>
@@ -16,35 +16,61 @@
 
 <h2>Open End</h2>
 
-<div id="sfmEnabled">
-    <h3 id="sfmEnabledLabel"></h3>
-
-    <div>
-        <input type="radio" id="sfmEnabledNever" name="sfmEnabled" value="NEVER">
-        <label id="sfmEnabledNeverLabel" for="sfmEnabledNever"></label>
-        <br>
-        <input type="radio" id="sfmEnabledAlways" name="sfmEnabled" value="ALWAYS">
-        <label id="sfmEnabledAlwaysLabel" for="sfmEnabledAlways"></label>
-        <br>
-        <input type="radio" id="sfmEnabledCustom" name="sfmEnabled" value="CUSTOM">
-        <label id="sfmEnabledCustomLabel" for="sfmEnabledCustom"></label>
-    </div>
+<div id="sfmStateContainer" class="topLevelContainer">
+    <img id="sfmStateIcon" src="" class="opnd-hidden"/>
+    <span id="sfmStateLabel"></span>
 </div>
 
-<div id="sfmCustom">
-    <h3 id="sfmCustomLabel"></h3>
-    <div id="sfmCustomPlatform" class="opnd-hidden" data-platformName="">
-        <h4 id="sfmCustomPlatformHeader"></h4>
-        <input type="checkbox" id="sfmCustomPlatformEnabled">
-        <label id="sfmCustomPlatformEnabledLabel" for="sfmCustomPlatformEnabled"></label>
+<hr/>
+
+<div id="sfmEnabledContainer" class="topLevelContainer">
+
+    <div class="secondLevelContainer">
+        <span id="sfmEnabledLabel"></span>
     </div>
-    <div id="sfmCustomChannel" class="opnd-hidden" data-channelQualifiedName="" data-channelDisplayName="">
-        <h4 id="sfmCustomChannelHeader"></h4>
-        <input type="checkbox" id="sfmCustomChannelEnabled">
-        <label id="sfmCustomChannelEnabledLabel" for="sfmCustomChannelEnabled"></label></div>
+
+    <div id="sfmEnabledGloballyContainer" class="secondLevelContainer">
+        <div>
+            <label id="sfmEnabledGloballyLabel" for="sfmEnabledGlobally" class="opnd-bold"></label>
+        </div>
+        <div>
+            <select id="sfmEnabledGlobally">
+                <option value="NEVER"></option>
+                <option value="ALWAYS"></option>
+                <option value="CUSTOM"></option>
+            </select>
+        </div>
+    </div>
+
+    <div id="sfmEnabledOnPlatformContainer" class="secondLevelContainer opnd-hidden">
+        <div>
+            <label id="sfmEnabledOnPlatformLabel" for="sfmEnabledOnPlatform"></label>
+            <span id="platform" data-platformName=""></span>
+        </div>
+        <div>
+            <select id="sfmEnabledOnPlatform">
+                <option value="NEVER"></option>
+                <option value="ALWAYS"></option>
+                <option value="CUSTOM"></option>
+            </select>
+        </div>
+    </div>
+
+    <div id="sfmEnabledOnChannelContainer" class="secondLevelContainer opnd-hidden">
+        <div>
+            <label id="sfmEnabledOnChannelLabel" for="sfmEnabledOnChannel"></label>
+            <span id="channel" data-channelQualifiedName="" data-channelDisplayName=""></span>
+        </div>
+        <div>
+            <input type="checkbox" id="sfmEnabledOnChannel"><span id="sfmEnabledOnChannelCheckboxLabel"></span>
+        </div>
+    </div>
+
 </div>
 
-<div id="general">
+<hr/>
+
+<div id="buttonBar" class="topLevelContainer">
     <button id="openOptions"></button>
 </div>
 

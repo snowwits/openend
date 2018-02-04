@@ -45,753 +45,6 @@ const CHECK_PAGE_TASK_INTERVAL = 200; // 200ms
 const PAGE_CONFIGURATION_TIMEOUT = 45000; // 45s
 
 
-/*
- * ====================================================================================================
- * OPTIONS (SYNC STORAGE)
- * ====================================================================================================
- */
-const SfmEnabledOpt = Object.freeze({
-    NEVER: "NEVER",
-    ALWAYS: "ALWAYS",
-    CUSTOM: "CUSTOM"
-});
-
-const OPT_SFM_ENABLED_NAME = "sfmEnabled";
-const OPT_SFM_ENABLED_DEFAULT = SfmEnabledOpt.NEVER;
-const OPT_SFM_PLATFORMS_NAME = "sfmPlatforms";
-const OPT_SFM_PLATFORMS_DEFAULT = Object.freeze([]);
-const OPT_SFM_CHANNELS_NAME = "sfmChannels";
-const OPT_SFM_CHANNELS_DEFAULT = Object.freeze([]);
-const OPT_SFM_PLAYER_HIDE_DURATION_NAME = "sfmPlayerHideDuration";
-const OPT_SFM_PLAYER_HIDE_DURATION_DEFAULT = true;
-const OPT_SFM_PLAYER_JUMP_DISTANCE_NAME = "sfmPlayerJumpDistance";
-const OPT_SFM_PLAYER_JUMP_DISTANCE_DEFAULT = "2m";
-const OPT_SFM_VIDEO_LIST_HIDE_TITLE_NAME = "sfmVideoListHideTitle";
-const OPT_SFM_VIDEO_LIST_HIDE_TITLE_DEFAULT = false;
-const OPT_SFM_VIDEO_LIST_HIDE_PREVIEW_NAME = "sfmVideoListHidePreview";
-const OPT_SFM_VIDEO_LIST_HIDE_PREVIEW_DEFAULT = false;
-const OPT_SFM_VIDEO_LIST_HIDE_DURATION_NAME = "sfmVideoListHideDuration";
-const OPT_SFM_VIDEO_LIST_HIDE_DURATION_DEFAULT = true;
-const OPT_GENERAL_THEATRE_MODE_NAME = "generalTheatreMode";
-const OPT_GENERAL_THEATRE_MODE_DEFAULT = false;
-
-function getDefaultOptionsCopy() {
-    return {
-        [OPT_SFM_ENABLED_NAME]: OPT_SFM_ENABLED_DEFAULT,
-        [OPT_SFM_CHANNELS_NAME]: OPT_SFM_CHANNELS_DEFAULT,
-        [OPT_SFM_PLATFORMS_NAME]: OPT_SFM_PLATFORMS_DEFAULT,
-        [OPT_SFM_PLAYER_HIDE_DURATION_NAME]: OPT_SFM_PLAYER_HIDE_DURATION_DEFAULT,
-        [OPT_SFM_PLAYER_JUMP_DISTANCE_NAME]: OPT_SFM_PLAYER_JUMP_DISTANCE_DEFAULT,
-        [OPT_SFM_VIDEO_LIST_HIDE_TITLE_NAME]: OPT_SFM_VIDEO_LIST_HIDE_TITLE_DEFAULT,
-        [OPT_SFM_VIDEO_LIST_HIDE_PREVIEW_NAME]: OPT_SFM_VIDEO_LIST_HIDE_PREVIEW_DEFAULT,
-        [OPT_SFM_VIDEO_LIST_HIDE_DURATION_NAME]: OPT_SFM_VIDEO_LIST_HIDE_DURATION_DEFAULT,
-        [OPT_GENERAL_THEATRE_MODE_NAME]: OPT_GENERAL_THEATRE_MODE_DEFAULT
-    };
-}
-
-function mapOptionChangesToItems(changes) {
-    const items = {};
-    for (let key in changes) {
-        items[key] = changes[key].newValue;
-    }
-    return Object.freeze(items);
-}
-
-/**
- *
- * @param optionName {!string} the option's name
- * @returns {!boolean} whether the option is a option to configure the Spoiler-Free mode (SFM)
- */
-function isSfmOption(optionName) {
-    return optionName.includes("sfm");
-}
-
-const SfmEnabledState = Object.freeze({
-    ENABLED: "ENABLED",
-    DISABLED: "DISABLED",
-    UNDETERMINED: "UNDETERMINED"
-});
-
-/**
- *
- * @param options the options
- * @param platform {!Platform} the Platform
- */
-function sfmPlatformsContain(options, platform) {
-    /**
-     * @type {!array.<!PlatformSerialized>}
-     */
-    const sfmPlatforms = options[OPT_SFM_PLATFORMS_NAME];
-    return sfmPlatforms.filter(pl => Platform.equal(pl, platform)).length > 0;
-}
-
-/**
- * @param options the options
- * @param channel {?Channel} the channel to check
- * @return {!string} {@link SfmEnabledState}
- */
-function isSfmEnabledForChannel(options, channel) {
-    const sfmEnabled = options[OPT_SFM_ENABLED_NAME];
-    if (SfmEnabledOpt.ALWAYS === sfmEnabled) {
-        return SfmEnabledState.ENABLED;
-    } else if (SfmEnabledOpt.NEVER === sfmEnabled) {
-        return SfmEnabledState.DISABLED;
-    } else if (SfmEnabledOpt.CUSTOM) {
-        if (channel !== null) {
-            if (sfmPlatformsContain(options, channel.platform)) {
-                return SfmEnabledState.ENABLED;
-            }
-            else {
-                if (sfmChannelsContain(options, channel)) {
-                    return SfmEnabledState.ENABLED;
-                }
-                else {
-                    return SfmEnabledState.DISABLED;
-                }
-            }
-        }
-        return SfmEnabledState.UNDETERMINED;
-    }
-}
-
-/**
- *
- * @param options the options
- * @param channel {!Channel} the channel
- */
-function sfmChannelsContain(options, channel) {
-    /**
-     * @type {!array.<!ChannelSerialized>}
-     */
-    const sfmChannels = options[OPT_SFM_CHANNELS_NAME];
-    return sfmChannels.filter(ch => Channel.equal(ch, channel)).length > 0;
-}
-
-
-/*
- * ====================================================================================================
- * MESSAGE PASSING
- * ====================================================================================================
- */
-
-const MessageType = Object.freeze({
-    TAB_INFO: "TAB_INFO",
-    TAB_INFO_REQUEST: "TAB_INFO_REQUEST"
-});
-
-/**
- * @property type {!string} the message type {@link MessageType}
- * @property body {?object} the message body
- */
-class Message {
-    constructor(type, body = null) {
-        this.type = type;
-        this.body = body;
-    }
-}
-
-
-/**
- * @property platform {!PlatformSerialized} the serialized platform of the current tab
- * @property channel {?ChannelSerialized} the serialized channel of the current tab
- */
-class TabInfo {
-    constructor(platform, channel = null) {
-        this.platform = platform;
-        this.channel = channel;
-    }
-}
-
-class TabInfoMessage extends Message {
-    constructor(tabInfo) {
-        super(MessageType.TAB_INFO, tabInfo);
-    }
-}
-
-class TabInfoRequestMessage extends Message {
-    constructor() {
-        super(MessageType.TAB_INFO_REQUEST);
-    }
-}
-
-/*
- * ====================================================================================================
- * ELEMENT IDS & CSS CLASSES
- * ====================================================================================================
- */
-/**
- * The CSS class of Open End container elements. To not interfere with the page CSS style,
- * we wrap every element we want to hide in a custom container element and then hide that container.
- * @type {string}
- */
-const OPND_CONTAINER_CLASS = "opnd-container";
-const OPND_INNER_CONTAINER_CLASS = "opnd-inner-container";
-/**
- * The CSS class that is added to Open End containers to hide them and thus their content.
- * @type {string}
- */
-const OPND_HIDDEN_CLASS = "opnd-hidden";
-/**
- * The ID of the Open End player toolbar.
- * @type {string}
- */
-const OPND_PLAYER_TOOLBAR_ID = "opnd-player-toolbar";
-/**
- * The CSS class of Open End containers
- * that wrap elements of the player which contain a video's duration or the seek bar.
- * @type {string}
- */
-const OPND_CONTAINER_PLAYER_DURATION_CLASS = "opnd-container-player-duration";
-
-/**
- * The CSS class of an Open End video ist item toolbar.
- * @type {string}
- */
-const OPND_VIDEO_LIST_ITEM_TOOLBAR_CLASS = "opnd-video-list-item-toolbar";
-/**
- * The CSS class of the Open End container of a video list item's title.
- * @type {string}
- */
-const OPND_CONTAINER_VIDEO_LIST_ITEM_TITLE_CLASS = "opnd-container-video-list-item-title";
-const OPND_VIDEO_LIST_ITEM_TITLE_TOOLTIP_CLASS = "opnd-video-list-item-title-tooltip";
-/**
- * The CSS class of the Open End container of a video list item's preview.
- * @type {string}
- */
-const OPND_CONTAINER_VIDEO_LIST_ITEM_PREVIEW_CLASS = "opnd-container-video-list-item-preview";
-const OPND_VIDEO_LIST_ITEM_PREVIEW_TOOLTIP_CLASS = "opnd-video-list-item-preview-tooltip";
-/**
- * The CSS class of the Open End container of a video list item's duration.
- * @type {string}
- */
-const OPND_CONTAINER_VIDEO_LIST_ITEM_DURATION_CLASS = "opnd-container-video-list-item-duration";
-const OPND_VIDEO_LIST_ITEM_DURATION_TOOLTIP_CLASS = "opnd-video-list-item-duration-tooltip";
-
-const OPND_PLAYER_SHOW_HIDE_DURATION_BTN_ID = "opnd-player-show-hide-duration-btn";
-const OPND_PLAYER_SHOW_HIDE_DURATION_IMG_ID = "opnd-player-show-hide-duration-img";
-const OPND_PLAYER_SHOW_HIDE_DURATION_TOOLTIP_SPAN_ID = "opnd-player-show-hide-duration-tooltip";
-const OPND_PLAYER_JUMP_DISTANCE_INPUT_ID = "opnd-player-jump-distance-input";
-const OPND_PLAYER_JUMP_BACKWARD_BTN_ID = "opnd-player-jump-backward-btn";
-const OPND_PLAYER_JUMP_BACKWARD_TOOLTIP_SPAN_ID = "opnd-player-jump-backward-tooltip";
-const OPND_PLAYER_JUMP_FORWARD_BTN_ID = "opnd-player-jump-forward-btn";
-const OPND_PLAYER_JUMP_FORWARD_TOOLTIP_SPAN_ID = "opnd-player-jump-forward-tooltip";
-
-
-/*
- * ====================================================================================================
- * STRING UTILS
- * ====================================================================================================
- */
-function padLeft(number, width = 2, padChar = "0") {
-    let str = number + "";
-    while (str.length < width) {
-        str = padChar + str;
-    }
-    return str;
-}
-
-function compareStringIgnoreCase(s1, s2) {
-    const s1CaseInsensitive = s1.toUpperCase();
-    const s2CaseInsensitive = s2.toUpperCase();
-    if (s1CaseInsensitive < s2CaseInsensitive) {
-        return -1;
-    }
-    if (s1CaseInsensitive > s2CaseInsensitive) {
-        return 1;
-    }
-    return 0;
-}
-
-
-/*
- * ====================================================================================================
- * DURATION UTILS
- * ====================================================================================================
- */
-const DURATION_PATTERN = "^(?:(\\d+)|(?:(\\d+)h)?(?:(\\d+)m)?(?:(\\d+)s)?)$";
-const DURATION_ONLY_NUM_PATTERN = "^\\d+$";
-
-/**
- * Suffixes the given duration string with a "m" as single numbers are interpreted as minutes.
- *
- * @param durationString {!string}
- * @return {!string}
- */
-function normalizeDurationString(durationString) {
-    if (new RegExp(DURATION_ONLY_NUM_PATTERN).test(durationString)) {
-        return durationString + "m";
-    }
-    return durationString;
-}
-
-/**
- * "01h02m03s" -> 1 * 60 * 60 + 2 * 60 + 3 = 3723
- * "2" -> "2m" -> 2 * 60 = 120
- *
- * @param durationString {!string}
- * @return {!number} the duration in seconds (integer, 0 if no match)
- */
-function parseDuration(durationString) {
-    if (durationString.length === 0) {
-        return 0;
-    }
-    // Regex: Either a single number ("2") or a duration string "01h02m03s".
-    // literal RegExp /.../ not working somehow
-    const regexDuration = new RegExp(DURATION_PATTERN);
-    const groups = regexDuration.exec(durationString);
-    if (groups === null) {
-        return 0;
-    }
-    // Interpret a single number as minutes
-    const singleNumber = parseDurationPart(groups, 1);
-    if (singleNumber > 0) {
-        return singleNumber * 60;
-    }
-    const hours = parseDurationPart(groups, 2);
-    const mins = parseDurationPart(groups, 3);
-    const secs = parseDurationPart(groups, 4);
-    return secs + mins * 60 + hours * 3600;
-}
-
-/**
- *
- * @param groups {!Array.<string>}
- * @param index {!number}
- * @return {!number} the parsed integer or 0
- */
-function parseDurationPart(groups, index) {
-    return typeof groups[index] !== "undefined" ? parseInt(groups[index]) : 0;
-}
-
-/**
- * 3723 = 1 * 60 * 60 + 2 * 60 + 3 -> "01h02m03s"
- *
- * @param duration {!number} the duration in seconds
- * @return {!string}
- */
-function formatDuration(duration) {
-    const parts = extractDurationParts(duration);
-    let formatted = "";
-    if (parts[0] > 0) {
-        formatted += padLeft(parts[0]) + "h";
-    }
-    if (parts[1] > 0) {
-        formatted += padLeft(parts[1]) + "m";
-    }
-    if (parts[2] > 0) {
-        formatted += padLeft(parts[2]) + "s";
-    }
-    return formatted;
-}
-
-/**
- * 3723 = 1h, 2m, 3s -> [1, 2, 3]
- *
- * @param duration {!number}
- * @return {[!number,!number,!number]}
- */
-function extractDurationParts(duration) {
-    let amount = duration;
-    // Calculate (and subtract) whole hours
-    const hours = Math.floor(amount / 3600);
-    amount -= hours * 3600;
-
-    // Calculate (and subtract) whole minutes
-    const mins = Math.floor(amount / 60);
-    amount -= mins * 60;
-
-    // What's left is seconds
-    const secs = amount % 60;
-
-    return [hours, mins, secs];
-}
-
-/*
- * ====================================================================================================
- * WINDOW UTILS
- * ====================================================================================================
- */
-function isTopFrame() {
-    return window === window.top;
-}
-
-function formatFrameType() {
-    return isTopFrame() ? "TOP_FRAME" : "SUB_FRAME";
-}
-
-/*
- * ====================================================================================================
- * ELEMENT UTILS
- * ====================================================================================================
- */
-
-/**
- *
- * @param elem {!HTMLElement}
- * @param attrName {!string}
- * @return {?string}
- */
-function getAttr(elem, attrName) {
-    const attrValue = elem[attrName];
-    return attrValue.length > 0 ? attrValue : null;
-}
-
-/**
- *
- * @param elem {!HTMLElement}
- * @param attrName {!string}
- * @param attrValue {?string}
- */
-function setAttr(elem, attrName, attrValue) {
-    elem[attrName] = attrValue ? attrValue : "";
-}
-
-
-/**
- *
- * @param elem {!HTMLElement}
- * @param dataName {!string}
- * @return {?string}
- */
-function getData(elem, dataName) {
-    const dataValue = elem.dataset[dataName];
-    return dataValue.length > 0 ? dataValue : null;
-}
-
-/**
- *
- * @param elem {!HTMLElement}
- * @param dataName {!string}
- * @param dataValue {?string}
- */
-function setData(elem, dataName, dataValue) {
-    elem.dataset[dataName] = dataValue ? dataValue : "";
-}
-
-/**
- *
- * @param classNames {Array.<string>} the class names
- * @return {Array} all elements that have any of the specified class names
- */
-function getElementsByClassNames(classNames) {
-    const allElements = [];
-    for (let i = 0; i < classNames.length; i++) {
-        const classes = document.getElementsByClassName(classNames[i]);
-        for (let j = 0; j < classes.length; j++) {
-            allElements.push(classes[j]);
-        }
-    }
-    return allElements;
-}
-
-
-function getSingleElementByClassName(className) {
-    const elements = document.getElementsByClassName(className);
-    if (elements.length === 1) {
-        return elements[0];
-    }
-    return null;
-}
-
-function removeElements(elements) {
-    // Iterate from end to start because it could be a live list and removing from it would change the indices
-    for (let i = elements.length - 1; i >= 0; i--) {
-        removeElement(elements[i]);
-    }
-}
-
-function removeElement(element) {
-    element.parentNode.removeChild(element);
-}
-
-/**
- *
- * @param elements {!Iterable.<Element>}
- * @param visible {?boolean} true, false or null (to toggle)
- * @return {?boolean} true if the elements were set visible, false if not. null if there were no elements
- */
-function setAllVisible(elements, visible) {
-    let actuallySetVisible = visible;
-    for (let i = 0; i < elements.length; i++) {
-        const elem = elements[i];
-        if (actuallySetVisible === null) {
-            // If the visible param is null,
-            // we check the first element's visible state and use that to toggle all elements.
-            actuallySetVisible = elem.classList.contains(OPND_HIDDEN_CLASS);
-        }
-        if (actuallySetVisible) {
-            elem.classList.remove(OPND_HIDDEN_CLASS);
-        } else {
-            elem.classList.add(OPND_HIDDEN_CLASS);
-        }
-    }
-    return actuallySetVisible;
-}
-
-/**
- * @param element {!Element}
- * @param visible {?boolean} true, false or null (to toggle)
- * @return {!boolean} true if the element was set visible, false if not
- */
-function setVisible(element, visible) {
-    if (visible === true) {
-        element.classList.remove(OPND_HIDDEN_CLASS);
-        return true;
-    } else if (visible === false) {
-        element.classList.add(OPND_HIDDEN_CLASS);
-        return false;
-    } else {
-        if (element.classList.contains(OPND_HIDDEN_CLASS)) {
-            element.classList.remove(OPND_HIDDEN_CLASS);
-            return true;
-        } else {
-            element.classList.add(OPND_HIDDEN_CLASS);
-            return false;
-        }
-    }
-}
-
-function getOrWrapAllInOpndContainers(elements, additionalClass = null) {
-    const opndContainers = [];
-    for (let i = 0; i < elements.length; i++) {
-        opndContainers.push(getOrWrapInOpndContainer(elements[i], additionalClass));
-    }
-    return opndContainers;
-}
-
-function getOrWrapInOpndContainer(element, additionalClass = null) {
-    const container = getOpndContainer(element);
-    if (container) {
-        return container;
-    }
-    return wrapInOpndContainer(element, additionalClass);
-}
-
-function getOpndContainer(element) {
-    const parent = element.parentNode;
-    if (parent.classList.contains(OPND_CONTAINER_CLASS)) {
-        return parent;
-    }
-    return null;
-}
-
-function wrapInOpndContainer(element, additionalClass = null) {
-    return wrap(element, createOpndContainer(additionalClass));
-}
-
-function createOpndContainer(additionalClass = null) {
-    const opndContainer = document.createElement("span");
-    opndContainer.classList.add(OPND_CONTAINER_CLASS);
-    if (additionalClass !== null) {
-        opndContainer.classList.add(additionalClass);
-    }
-    return opndContainer;
-}
-
-function wrap(element, wrapper) {
-    element.parentNode.insertBefore(wrapper, element);
-    wrapper.appendChild(element);
-    return wrapper;
-}
-
-/**
- *
- * @param checkboxId the id of the checkbox element
- * @return {boolean}
- */
-function getCheckboxValue(checkboxId) {
-    return document.getElementById(checkboxId).checked;
-}
-
-/**
- *
- * @param textInputId the id of the text input element
- * @return {string}
- */
-function getTextInputValue(textInputId) {
-    return document.getElementById(textInputId).value;
-}
-
-/**
- *
- * @param radioName the name of all radio inputs in the group
- */
-function getRadioValue(radioName) {
-    return document.querySelector("input[name = '" + radioName + "']:checked").value;
-}
-
-/**
- *
- * @param radioName {string} the name of all radio inputs in the group
- * @param selectedValue {string} the value of the selected radio
- */
-function setRadioValues(radioName, selectedValue) {
-    const allRadios = document.querySelectorAll("input[type='radio'][name = '" + radioName + "']");
-    for (let i = 0; i < allRadios.length; i++) {
-        const radio = allRadios[i];
-        radio.checked = radio.value === selectedValue;
-    }
-}
-
-function listenForRadioChanges(radioName, changeHandler) {
-    const allRadios = document.querySelectorAll("input[type='radio'][name = '" + radioName + "']");
-    for (let i = 0; i < allRadios.length; i++) {
-        allRadios[i].onclick = changeHandler;
-    }
-}
-
-/**
- *
- * @param checkboxId {string} the id of the checkbox element
- * @param checked {boolean} whether the checkbox should be checked
- */
-function setCheckboxValue(checkboxId, checked) {
-    document.getElementById(checkboxId).checked = checked;
-}
-
-/**
- *
- * @param textInputId {string} the id of the text input element
- * @param value {string} the value to set to the text input element
- */
-function setTextInputValue(textInputId, value) {
-    document.getElementById(textInputId).value = value;
-}
-
-/**
- *
- * @param optionElem {!HTMLOptionElement}
- * @return {!Channel}
- */
-function optionElemToChannel(optionElem) {
-    return Channel.parseFromQualifiedName(optionElem.value, getData(optionElem, "displayName"));
-}
-
-function getSelectChannelsSerialized(selectId) {
-    const select = document.getElementById(selectId);
-    const channelsSerialized = [];
-    for (let i = 0; i < select.length; i++) {
-        const option = select[i];
-        const channel = optionElemToChannel(option);
-        channelsSerialized.push(channel.serialize());
-    }
-    return channelsSerialized;
-}
-
-/**
- *
- * @param channel {!Channel}
- * @return {!HTMLOptionElement}
- */
-function channelToOptionElem(channel) {
-    const optionElem = document.createElement("option");
-    optionElem.value = channel.qualifiedName;
-    setData(optionElem, "displayName", channel.displayName);
-    optionElem.innerText = channel.verboseQualifiedName;
-    return optionElem;
-}
-
-/**
- *
- * @param selectElem {!HTMLSelectElement} the select element
- * @param channels {!Array.<!Channel>} an array with all values
- */
-function setChannelsToSortedSetSelect(selectElem, channels) {
-    clearSelectOptions(selectElem);
-    channels.sort(Channel.compareByVerboseQualifiedName);
-    for (let i = 0; i < channels.length; i++) {
-        const optionElem = channelToOptionElem(channels[i]);
-        selectElem.appendChild(optionElem);
-    }
-}
-
-function clearSelectOptions(selectElem) {
-    selectElem.options.length = 0;
-}
-
-/**
- *
- * @param selectElem {!HTMLSelectElement}
- * @param channel {!Channel}
- */
-function insertChannelInSortedSetSelect(selectElem, channel) {
-    const optionElem = channelToOptionElem(channel);
-    // Make sure the value is not already present
-    for (let i = 0; i < selectElem.options.length; i++) {
-        const currentOptionElem = selectElem.options[i];
-        if (currentOptionElem.value === optionElem.value) {
-            return;
-        }
-    }
-    // Insert it in the correct position
-    for (let i = 0; i < selectElem.options.length; i++) {
-        const currentOptionElem = selectElem.options[i];
-        if (compareStringIgnoreCase(optionElem.textContent, currentOptionElem.textContent) < 0) {
-            selectElem.add(optionElem, i);
-            // Select the added option
-            selectElem.selectedIndex = i;
-            return;
-        }
-    }
-    // If it was not added yet, it is because the select has no options yet
-    selectElem.appendChild(optionElem);
-    selectElem.selectedIndex = selectElem.options.length - 1;
-}
-
-/**
- *
- * @param selectElem {HTMLSelectElement} the select element
- */
-function removeSelectedOptions(selectElem) {
-    const removalIndices = [];
-    for (let i = 0; i < selectElem.selectedOptions.length; i++) {
-        removalIndices.push(selectElem.selectedOptions[i].index);
-    }
-    // Remove from end to start so the indices of the options to remove stay the same
-    for (let i = removalIndices.length - 1; i >= 0; i--) {
-        const removalIndex = removalIndices[i];
-        selectElem.remove(removalIndex);
-    }
-}
-
-/**
- *
- * @param labelId the id of the label element
- * @param messageName the message name of the localized label text
- */
-function setMsgToTextContent(labelId, messageName) {
-    document.getElementById(labelId).textContent = chrome.i18n.getMessage(messageName);
-}
-
-/**
- *
- * @param elementId the id of the element
- * @param messageName the message name of the localized title
- */
-function setMsgToTitle(elementId, messageName) {
-    document.getElementById(elementId).title = chrome.i18n.getMessage(messageName);
-}
-
-/**
- * Creates an anchor element that can be queried for:
- * <ul>
- *     <li>protocol</li>
- *     <li>port</li>
- *     <li>host</li>
- *     <li>hostname</li>
- *     <li>pathname</li>
- *     <li>search</li>
- *     <li>hash</li>
- *     </ul>
- * @param href {!string} url of the anchor
- * @return {!HTMLAnchorElement }
- */
-function createAnchor(href) {
-    const l = document.createElement("a");
-    l.href = href;
-    return l;
-}
-
 
 /*
  * ====================================================================================================
@@ -821,7 +74,7 @@ class PlatformPage {
 class Platform {
     /**
      *
-     * @param platformName the name of the platform
+     * @param platformName {?string} the name of the platform
      * @returns {?Platform} the parsed Platform or null if the given platformName does not match any platform
      */
     static parseFromName(platformName) {
@@ -1370,3 +623,836 @@ const MLG_PLATFORM = Object.freeze(new MlgPlatform());
  * @type {ReadonlyArray.<Platform>}
  */
 const ALL_PLATFORMS = Object.freeze([TWITCH_PLATFORM, MLG_PLATFORM]);
+
+
+/*
+ * ====================================================================================================
+ * OPTIONS (SYNC STORAGE)
+ * ====================================================================================================
+ */
+const SfmEnabled = Object.freeze({
+    NEVER: "NEVER",
+    ALWAYS: "ALWAYS",
+    CUSTOM: "CUSTOM"
+});
+
+const OPT_SFM_ENABLED_NAME = "sfmEnabled";
+const OPT_SFM_ENABLED_DEFAULT = SfmEnabled.NEVER;
+const OPT_SFM_PLATFORMS_NAME = "sfmPlatforms";
+const OPT_SFM_PLATFORMS_DEFAULT = getOptSfmPlatformsDefaultValue();
+const OPT_SFM_CHANNELS_NAME = "sfmChannels";
+const OPT_SFM_CHANNELS_DEFAULT = Object.freeze([]);
+const OPT_SFM_PLAYER_HIDE_DURATION_NAME = "sfmPlayerHideDuration";
+const OPT_SFM_PLAYER_HIDE_DURATION_DEFAULT = true;
+const OPT_SFM_PLAYER_JUMP_DISTANCE_NAME = "sfmPlayerJumpDistance";
+const OPT_SFM_PLAYER_JUMP_DISTANCE_DEFAULT = "2m";
+const OPT_SFM_VIDEO_LIST_HIDE_TITLE_NAME = "sfmVideoListHideTitle";
+const OPT_SFM_VIDEO_LIST_HIDE_TITLE_DEFAULT = false;
+const OPT_SFM_VIDEO_LIST_HIDE_PREVIEW_NAME = "sfmVideoListHidePreview";
+const OPT_SFM_VIDEO_LIST_HIDE_PREVIEW_DEFAULT = false;
+const OPT_SFM_VIDEO_LIST_HIDE_DURATION_NAME = "sfmVideoListHideDuration";
+const OPT_SFM_VIDEO_LIST_HIDE_DURATION_DEFAULT = true;
+const OPT_GENERAL_THEATRE_MODE_NAME = "generalTheatreMode";
+const OPT_GENERAL_THEATRE_MODE_DEFAULT = false;
+
+function getDefaultOptionsCopy() {
+    return {
+        [OPT_SFM_ENABLED_NAME]: OPT_SFM_ENABLED_DEFAULT,
+        [OPT_SFM_CHANNELS_NAME]: OPT_SFM_CHANNELS_DEFAULT,
+        [OPT_SFM_PLATFORMS_NAME]: OPT_SFM_PLATFORMS_DEFAULT,
+        [OPT_SFM_PLAYER_HIDE_DURATION_NAME]: OPT_SFM_PLAYER_HIDE_DURATION_DEFAULT,
+        [OPT_SFM_PLAYER_JUMP_DISTANCE_NAME]: OPT_SFM_PLAYER_JUMP_DISTANCE_DEFAULT,
+        [OPT_SFM_VIDEO_LIST_HIDE_TITLE_NAME]: OPT_SFM_VIDEO_LIST_HIDE_TITLE_DEFAULT,
+        [OPT_SFM_VIDEO_LIST_HIDE_PREVIEW_NAME]: OPT_SFM_VIDEO_LIST_HIDE_PREVIEW_DEFAULT,
+        [OPT_SFM_VIDEO_LIST_HIDE_DURATION_NAME]: OPT_SFM_VIDEO_LIST_HIDE_DURATION_DEFAULT,
+        [OPT_GENERAL_THEATRE_MODE_NAME]: OPT_GENERAL_THEATRE_MODE_DEFAULT
+    };
+}
+
+function mapOptionChangesToItems(changes) {
+    const items = {};
+    for (let key in changes) {
+        items[key] = changes[key].newValue;
+    }
+    return Object.freeze(items);
+}
+
+/**
+ *
+ * @param optionName {!string} the option's name
+ * @returns {!boolean} whether the option is a option to configure the Spoiler-Free mode (SFM)
+ */
+function isSfmOption(optionName) {
+    return optionName.includes("sfm");
+}
+
+const SfmState = Object.freeze({
+    ENABLED: "ENABLED",
+    DISABLED: "DISABLED",
+    UNDETERMINED: "UNDETERMINED"
+});
+
+/**
+ * @param options the options
+ * @param platform {?Platform} the platform to check
+ * @param channel {?Channel} the channel to check
+ * @return {!string} {@link SfmState}
+ */
+function checkSfmState(options, platform, channel) {
+    const sfmEnabledGlobally = options[OPT_SFM_ENABLED_NAME];
+    if (SfmEnabled.ALWAYS === sfmEnabledGlobally) {
+        return SfmState.ENABLED;
+    } else if (SfmEnabled.NEVER === sfmEnabledGlobally) {
+        return SfmState.DISABLED;
+    } else if (SfmEnabled.CUSTOM) {
+        if (platform === null) {
+            return SfmState.UNDETERMINED;
+        }
+        const sfmEnabledOnPlatform = checkSfmEnabledOnPlatform(options, platform);
+        if (SfmEnabled.ALWAYS === sfmEnabledOnPlatform) {
+            return SfmState.ENABLED;
+        }
+        else if (SfmEnabled.NEVER === sfmEnabledOnPlatform) {
+            return SfmState.DISABLED;
+        }
+        else if (SfmEnabled.CUSTOM === sfmEnabledOnPlatform) {
+            if (channel === null) {
+                return SfmState.UNDETERMINED;
+            }
+            if (checkSfmEnabledOnChannel(options, channel)) {
+                return SfmState.ENABLED;
+            }
+            else {
+                return SfmState.DISABLED;
+            }
+        }
+    }
+    return SfmState.UNDETERMINED;
+}
+
+/**
+ * @param options {!object<!string, !object>} the options
+ * @return {!object<!string, !string>} a copy of the map: {@link Platform}'s name -> {@link SfmEnabled} value
+ */
+function getOptSfmPlatforms(options) {
+    return JSON.parse(JSON.stringify(options[OPT_SFM_PLATFORMS_NAME]));
+}
+
+function getOptSfmPlatformsDefaultValue() {
+    const sfmPlatforms = {};
+    for (let i = 0; i < ALL_PLATFORMS.length; i++) {
+        const platformName = ALL_PLATFORMS[i].name;
+        sfmPlatforms[platformName] = SfmEnabled.NEVER;
+    }
+    console.log("SFMPLATFORMS DEFAULT: %o", sfmPlatforms);
+    return Object.freeze(sfmPlatforms);
+}
+
+/**
+ *
+ * @param options the options
+ * @param platform {!Platform} the Platform
+ * @return {!string} the {@SfmEnabled} value
+ */
+function checkSfmEnabledOnPlatform(options, platform) {
+    const sfmPlatforms = getOptSfmPlatforms(options);
+    for (const platformName in sfmPlatforms) {
+        if (platform.name === platformName) {
+            return sfmPlatforms[platformName];
+        }
+    }
+    throw new Error("Could not find the SfmEnabled value for platform " + platform + " in all platform options " + sfmPlatforms);
+}
+
+/**
+ *
+ * @param options the options
+ * @param channel {!Channel} the channel
+ */
+function checkSfmEnabledOnChannel(options, channel) {
+    /**
+     * @type {!array.<!ChannelSerialized>}
+     */
+    const sfmChannels = options[OPT_SFM_CHANNELS_NAME];
+    return sfmChannels.some(ch => Channel.equal(ch, channel));
+}
+
+/*
+ * ====================================================================================================
+ * MESSAGE PASSING
+ * ====================================================================================================
+ */
+
+const MessageType = Object.freeze({
+    TAB_INFO: "TAB_INFO",
+    TAB_INFO_REQUEST: "TAB_INFO_REQUEST"
+});
+
+/**
+ * @property type {!string} the message type {@link MessageType}
+ * @property body {?object} the message body
+ */
+class Message {
+    constructor(type, body = null) {
+        this.type = type;
+        this.body = body;
+    }
+}
+
+
+/**
+ * @property platform {!PlatformSerialized} the serialized platform of the current tab
+ * @property channel {?ChannelSerialized} the serialized channel of the current tab
+ * @property sfmState {!string} {@link SfmState}
+ */
+class TabInfo {
+    constructor(platform, channel = null, sfmState = SfmState.UNDETERMINED) {
+        this.platform = platform;
+        this.channel = channel;
+        this.sfmState = sfmState;
+    }
+}
+
+class TabInfoMessage extends Message {
+    constructor(tabInfo) {
+        super(MessageType.TAB_INFO, tabInfo);
+    }
+}
+
+class TabInfoRequestMessage extends Message {
+    constructor() {
+        super(MessageType.TAB_INFO_REQUEST);
+    }
+}
+
+/*
+ * ====================================================================================================
+ * ELEMENT IDS & CSS CLASSES
+ * ====================================================================================================
+ */
+/**
+ * The CSS class of Open End container elements. To not interfere with the page CSS style,
+ * we wrap every element we want to hide in a custom container element and then hide that container.
+ * @type {string}
+ */
+const OPND_CONTAINER_CLASS = "opnd-container";
+const OPND_INNER_CONTAINER_CLASS = "opnd-inner-container";
+/**
+ * The CSS class that is added to Open End containers to hide them and thus their content.
+ * @type {string}
+ */
+const OPND_HIDDEN_CLASS = "opnd-hidden";
+/**
+ * The ID of the Open End player toolbar.
+ * @type {string}
+ */
+const OPND_PLAYER_TOOLBAR_ID = "opnd-player-toolbar";
+/**
+ * The CSS class of Open End containers
+ * that wrap elements of the player which contain a video's duration or the seek bar.
+ * @type {string}
+ */
+const OPND_CONTAINER_PLAYER_DURATION_CLASS = "opnd-container-player-duration";
+
+/**
+ * The CSS class of an Open End video ist item toolbar.
+ * @type {string}
+ */
+const OPND_VIDEO_LIST_ITEM_TOOLBAR_CLASS = "opnd-video-list-item-toolbar";
+/**
+ * The CSS class of the Open End container of a video list item's title.
+ * @type {string}
+ */
+const OPND_CONTAINER_VIDEO_LIST_ITEM_TITLE_CLASS = "opnd-container-video-list-item-title";
+const OPND_VIDEO_LIST_ITEM_TITLE_TOOLTIP_CLASS = "opnd-video-list-item-title-tooltip";
+/**
+ * The CSS class of the Open End container of a video list item's preview.
+ * @type {string}
+ */
+const OPND_CONTAINER_VIDEO_LIST_ITEM_PREVIEW_CLASS = "opnd-container-video-list-item-preview";
+const OPND_VIDEO_LIST_ITEM_PREVIEW_TOOLTIP_CLASS = "opnd-video-list-item-preview-tooltip";
+/**
+ * The CSS class of the Open End container of a video list item's duration.
+ * @type {string}
+ */
+const OPND_CONTAINER_VIDEO_LIST_ITEM_DURATION_CLASS = "opnd-container-video-list-item-duration";
+const OPND_VIDEO_LIST_ITEM_DURATION_TOOLTIP_CLASS = "opnd-video-list-item-duration-tooltip";
+
+const OPND_PLAYER_SHOW_HIDE_DURATION_BTN_ID = "opnd-player-show-hide-duration-btn";
+const OPND_PLAYER_SHOW_HIDE_DURATION_IMG_ID = "opnd-player-show-hide-duration-img";
+const OPND_PLAYER_SHOW_HIDE_DURATION_TOOLTIP_SPAN_ID = "opnd-player-show-hide-duration-tooltip";
+const OPND_PLAYER_JUMP_DISTANCE_INPUT_ID = "opnd-player-jump-distance-input";
+const OPND_PLAYER_JUMP_BACKWARD_BTN_ID = "opnd-player-jump-backward-btn";
+const OPND_PLAYER_JUMP_BACKWARD_TOOLTIP_SPAN_ID = "opnd-player-jump-backward-tooltip";
+const OPND_PLAYER_JUMP_FORWARD_BTN_ID = "opnd-player-jump-forward-btn";
+const OPND_PLAYER_JUMP_FORWARD_TOOLTIP_SPAN_ID = "opnd-player-jump-forward-tooltip";
+
+
+/*
+ * ====================================================================================================
+ * STRING UTILS
+ * ====================================================================================================
+ */
+function padLeft(number, width = 2, padChar = "0") {
+    let str = number + "";
+    while (str.length < width) {
+        str = padChar + str;
+    }
+    return str;
+}
+
+function compareStringIgnoreCase(s1, s2) {
+    const s1CaseInsensitive = s1.toUpperCase();
+    const s2CaseInsensitive = s2.toUpperCase();
+    if (s1CaseInsensitive < s2CaseInsensitive) {
+        return -1;
+    }
+    if (s1CaseInsensitive > s2CaseInsensitive) {
+        return 1;
+    }
+    return 0;
+}
+
+
+/*
+ * ====================================================================================================
+ * ENUMUTILS
+ * ====================================================================================================
+ */
+/**
+ * @param enumObj {!object} the enum object
+ * @param msgKeyPrefix {!string}
+ * @return {Map<!string, !string>} enum value -> message key
+ */
+function buildEnumValueToMsgKeyMap(enumObj, msgKeyPrefix) {
+    const map = new Map();
+    for (const key in enumObj) {
+        const enumValue = enumObj[key];
+        map.set(enumValue, getEnumValueMsgKey(enumValue, msgKeyPrefix));
+    }
+    return map;
+}
+
+function getEnumValueMsgKey(enumValue, msgKeyPrefix) {
+    return msgKeyPrefix + enumValue;
+}
+
+
+/*
+ * ====================================================================================================
+ * DURATION UTILS
+ * ====================================================================================================
+ */
+const DURATION_PATTERN = "^(?:(\\d+)|(?:(\\d+)h)?(?:(\\d+)m)?(?:(\\d+)s)?)$";
+const DURATION_ONLY_NUM_PATTERN = "^\\d+$";
+
+/**
+ * Suffixes the given duration string with a "m" as single numbers are interpreted as minutes.
+ *
+ * @param durationString {!string}
+ * @return {!string}
+ */
+function normalizeDurationString(durationString) {
+    if (new RegExp(DURATION_ONLY_NUM_PATTERN).test(durationString)) {
+        return durationString + "m";
+    }
+    return durationString;
+}
+
+/**
+ * "01h02m03s" -> 1 * 60 * 60 + 2 * 60 + 3 = 3723
+ * "2" -> "2m" -> 2 * 60 = 120
+ *
+ * @param durationString {!string}
+ * @return {!number} the duration in seconds (integer, 0 if no match)
+ */
+function parseDuration(durationString) {
+    if (durationString.length === 0) {
+        return 0;
+    }
+    // Regex: Either a single number ("2") or a duration string "01h02m03s".
+    // literal RegExp /.../ not working somehow
+    const regexDuration = new RegExp(DURATION_PATTERN);
+    const groups = regexDuration.exec(durationString);
+    if (groups === null) {
+        return 0;
+    }
+    // Interpret a single number as minutes
+    const singleNumber = parseDurationPart(groups, 1);
+    if (singleNumber > 0) {
+        return singleNumber * 60;
+    }
+    const hours = parseDurationPart(groups, 2);
+    const mins = parseDurationPart(groups, 3);
+    const secs = parseDurationPart(groups, 4);
+    return secs + mins * 60 + hours * 3600;
+}
+
+/**
+ *
+ * @param groups {!Array.<string>}
+ * @param index {!number}
+ * @return {!number} the parsed integer or 0
+ */
+function parseDurationPart(groups, index) {
+    return typeof groups[index] !== "undefined" ? parseInt(groups[index]) : 0;
+}
+
+/**
+ * 3723 = 1 * 60 * 60 + 2 * 60 + 3 -> "01h02m03s"
+ *
+ * @param duration {!number} the duration in seconds
+ * @return {!string}
+ */
+function formatDuration(duration) {
+    const parts = extractDurationParts(duration);
+    let formatted = "";
+    if (parts[0] > 0) {
+        formatted += padLeft(parts[0]) + "h";
+    }
+    if (parts[1] > 0) {
+        formatted += padLeft(parts[1]) + "m";
+    }
+    if (parts[2] > 0) {
+        formatted += padLeft(parts[2]) + "s";
+    }
+    return formatted;
+}
+
+/**
+ * 3723 = 1h, 2m, 3s -> [1, 2, 3]
+ *
+ * @param duration {!number}
+ * @return {[!number,!number,!number]}
+ */
+function extractDurationParts(duration) {
+    let amount = duration;
+    // Calculate (and subtract) whole hours
+    const hours = Math.floor(amount / 3600);
+    amount -= hours * 3600;
+
+    // Calculate (and subtract) whole minutes
+    const mins = Math.floor(amount / 60);
+    amount -= mins * 60;
+
+    // What's left is seconds
+    const secs = amount % 60;
+
+    return [hours, mins, secs];
+}
+
+/*
+ * ====================================================================================================
+ * WINDOW UTILS
+ * ====================================================================================================
+ */
+function isTopFrame() {
+    return window === window.top;
+}
+
+function formatFrameType() {
+    return isTopFrame() ? "TOP_FRAME" : "SUB_FRAME";
+}
+
+/*
+ * ====================================================================================================
+ * ELEMENT UTILS
+ * ====================================================================================================
+ */
+
+/**
+ *
+ * @param elem {!HTMLElement}
+ * @param attrName {!string}
+ * @return {?string}
+ */
+function getAttr(elem, attrName) {
+    const attrValue = elem[attrName];
+    return attrValue.length > 0 ? attrValue : null;
+}
+
+/**
+ *
+ * @param elem {!HTMLElement}
+ * @param attrName {!string}
+ * @param attrValue {?string}
+ */
+function setAttr(elem, attrName, attrValue) {
+    elem[attrName] = attrValue ? attrValue : "";
+}
+
+
+/**
+ *
+ * @param elem {!HTMLElement}
+ * @param dataName {!string}
+ * @return {?string}
+ */
+function getData(elem, dataName) {
+    const dataValue = elem.dataset[dataName];
+    return dataValue.length > 0 ? dataValue : null;
+}
+
+/**
+ *
+ * @param elem {!HTMLElement}
+ * @param dataName {!string}
+ * @param dataValue {?string}
+ */
+function setData(elem, dataName, dataValue) {
+    elem.dataset[dataName] = dataValue ? dataValue : "";
+}
+
+/**
+ *
+ * @param classNames {Array.<string>} the class names
+ * @return {Array} all elements that have any of the specified class names
+ */
+function getElementsByClassNames(classNames) {
+    const allElements = [];
+    for (let i = 0; i < classNames.length; i++) {
+        const classes = document.getElementsByClassName(classNames[i]);
+        for (let j = 0; j < classes.length; j++) {
+            allElements.push(classes[j]);
+        }
+    }
+    return allElements;
+}
+
+
+function getSingleElementByClassName(className) {
+    const elements = document.getElementsByClassName(className);
+    if (elements.length === 1) {
+        return elements[0];
+    }
+    return null;
+}
+
+function removeElements(elements) {
+    // Iterate from end to start because it could be a live list and removing from it would change the indices
+    for (let i = elements.length - 1; i >= 0; i--) {
+        removeElement(elements[i]);
+    }
+}
+
+function removeElement(element) {
+    element.parentNode.removeChild(element);
+}
+
+/**
+ *
+ * @param elements {!Iterable.<Element>}
+ * @param visible {?boolean} true, false or null (to toggle)
+ * @return {?boolean} true if the elements were set visible, false if not. null if there were no elements
+ */
+function setAllVisible(elements, visible) {
+    let actuallySetVisible = visible;
+    for (let i = 0; i < elements.length; i++) {
+        const elem = elements[i];
+        if (actuallySetVisible === null) {
+            // If the visible param is null,
+            // we check the first element's visible state and use that to toggle all elements.
+            actuallySetVisible = elem.classList.contains(OPND_HIDDEN_CLASS);
+        }
+        if (actuallySetVisible) {
+            elem.classList.remove(OPND_HIDDEN_CLASS);
+        } else {
+            elem.classList.add(OPND_HIDDEN_CLASS);
+        }
+    }
+    return actuallySetVisible;
+}
+
+/**
+ * @param element {!Element}
+ * @param visible {?boolean} true, false or null (to toggle)
+ * @return {!boolean} true if the element was set visible, false if not
+ */
+function setVisible(element, visible) {
+    if (visible === true) {
+        element.classList.remove(OPND_HIDDEN_CLASS);
+        return true;
+    } else if (visible === false) {
+        element.classList.add(OPND_HIDDEN_CLASS);
+        return false;
+    } else {
+        if (element.classList.contains(OPND_HIDDEN_CLASS)) {
+            element.classList.remove(OPND_HIDDEN_CLASS);
+            return true;
+        } else {
+            element.classList.add(OPND_HIDDEN_CLASS);
+            return false;
+        }
+    }
+}
+
+function getOrWrapAllInOpndContainers(elements, additionalClass = null) {
+    const opndContainers = [];
+    for (let i = 0; i < elements.length; i++) {
+        opndContainers.push(getOrWrapInOpndContainer(elements[i], additionalClass));
+    }
+    return opndContainers;
+}
+
+function getOrWrapInOpndContainer(element, additionalClass = null) {
+    const container = getOpndContainer(element);
+    if (container) {
+        return container;
+    }
+    return wrapInOpndContainer(element, additionalClass);
+}
+
+function getOpndContainer(element) {
+    const parent = element.parentNode;
+    if (parent.classList.contains(OPND_CONTAINER_CLASS)) {
+        return parent;
+    }
+    return null;
+}
+
+function wrapInOpndContainer(element, additionalClass = null) {
+    return wrap(element, createOpndContainer(additionalClass));
+}
+
+function createOpndContainer(additionalClass = null) {
+    const opndContainer = document.createElement("span");
+    opndContainer.classList.add(OPND_CONTAINER_CLASS);
+    if (additionalClass !== null) {
+        opndContainer.classList.add(additionalClass);
+    }
+    return opndContainer;
+}
+
+function wrap(element, wrapper) {
+    element.parentNode.insertBefore(wrapper, element);
+    wrapper.appendChild(element);
+    return wrapper;
+}
+
+/**
+ *
+ * @param checkboxId the id of the checkbox element
+ * @return {boolean}
+ */
+function getCheckboxValue(checkboxId) {
+    return document.getElementById(checkboxId).checked;
+}
+
+/**
+ *
+ * @param textInputId the id of the text input element
+ * @return {string}
+ */
+function getTextInputValue(textInputId) {
+    return document.getElementById(textInputId).value;
+}
+
+/**
+ *
+ * @param radioName the name of all radio inputs in the group
+ */
+function getRadioValue(radioName) {
+    return document.querySelector("input[name = '" + radioName + "']:checked").value;
+}
+
+/**
+ *
+ * @param radioName {string} the name of all radio inputs in the group
+ * @param selectedValue {string} the value of the selected radio
+ */
+function setRadioValues(radioName, selectedValue) {
+    const allRadios = document.querySelectorAll("input[type='radio'][name = '" + radioName + "']");
+    for (let i = 0; i < allRadios.length; i++) {
+        const radio = allRadios[i];
+        radio.checked = radio.value === selectedValue;
+    }
+}
+
+function listenForRadioChanges(radioName, changeHandler) {
+    const allRadios = document.querySelectorAll("input[type='radio'][name = '" + radioName + "']");
+    for (let i = 0; i < allRadios.length; i++) {
+        allRadios[i].onclick = changeHandler;
+    }
+}
+
+/**
+ *
+ * @param checkboxId {string} the id of the checkbox element
+ * @param checked {boolean} whether the checkbox should be checked
+ */
+function setCheckboxValue(checkboxId, checked) {
+    document.getElementById(checkboxId).checked = checked;
+}
+
+/**
+ *
+ * @param textInputId {string} the id of the text input element
+ * @param value {string} the value to set to the text input element
+ */
+function setTextInputValue(textInputId, value) {
+    document.getElementById(textInputId).value = value;
+}
+
+/**
+ *
+ * @param selectElem {!HTMLSelectElement}
+ * @param valueToMsgKeyMap {Map<!string, !string>} option value -> message key
+ */
+function setSelectLabels(selectElem, valueToMsgKeyMap) {
+    for (let i = 0; i < selectElem.length; i++) {
+        const option = selectElem[i];
+        option.textContent = chrome.i18n.getMessage(valueToMsgKeyMap.get(option.value));
+    }
+}
+
+/**
+ *
+ * @param selectElem {!HTMLSelectElement}
+ * @param optionValue {!string}
+ * @return {!boolean} if the option value was found and successfully selected
+ */
+function setSelectedOption(selectElem, optionValue) {
+    for (let i = 0; i < selectElem.length; i++) {
+        const option = selectElem[i];
+        if (optionValue === option.value) {
+            selectElem.selectedIndex = i;
+            return true;
+        }
+    }
+    selectElem.selectedIndex = -1;
+    return false;
+}
+
+/**
+ *
+ * @param optionElem {!HTMLOptionElement}
+ * @return {!Channel}
+ */
+function optionElemToChannel(optionElem) {
+    return Channel.parseFromQualifiedName(optionElem.value, getData(optionElem, "displayName"));
+}
+
+function getSelectChannelsSerialized(selectId) {
+    const selectElem = document.getElementById(selectId);
+    const channelsSerialized = [];
+    for (let i = 0; i < selectElem.length; i++) {
+        const option = selectElem[i];
+        const channel = optionElemToChannel(option);
+        channelsSerialized.push(channel.serialize());
+    }
+    return channelsSerialized;
+}
+
+/**
+ *
+ * @param channel {!Channel}
+ * @return {!HTMLOptionElement}
+ */
+function channelToOptionElem(channel) {
+    const optionElem = document.createElement("option");
+    optionElem.value = channel.qualifiedName;
+    setData(optionElem, "displayName", channel.displayName);
+    optionElem.innerText = channel.verboseQualifiedName;
+    return optionElem;
+}
+
+/**
+ *
+ * @param selectElem {!HTMLSelectElement} the select element
+ * @param channels {!Array.<!Channel>} an array with all values
+ */
+function setChannelsToSortedSetSelect(selectElem, channels) {
+    clearSelectOptions(selectElem);
+    channels.sort(Channel.compareByVerboseQualifiedName);
+    for (let i = 0; i < channels.length; i++) {
+        const optionElem = channelToOptionElem(channels[i]);
+        selectElem.appendChild(optionElem);
+    }
+}
+
+function clearSelectOptions(selectElem) {
+    selectElem.options.length = 0;
+}
+
+/**
+ *
+ * @param selectElem {!HTMLSelectElement}
+ * @param channel {!Channel}
+ */
+function insertChannelInSortedSetSelect(selectElem, channel) {
+    const optionElem = channelToOptionElem(channel);
+    // Make sure the value is not already present
+    for (let i = 0; i < selectElem.options.length; i++) {
+        const currentOptionElem = selectElem.options[i];
+        if (currentOptionElem.value === optionElem.value) {
+            return;
+        }
+    }
+    // Insert it in the correct position
+    for (let i = 0; i < selectElem.options.length; i++) {
+        const currentOptionElem = selectElem.options[i];
+        if (compareStringIgnoreCase(optionElem.textContent, currentOptionElem.textContent) < 0) {
+            selectElem.add(optionElem, i);
+            // Select the added option
+            selectElem.selectedIndex = i;
+            return;
+        }
+    }
+    // If it was not added yet, it is because the select has no options yet
+    selectElem.appendChild(optionElem);
+    selectElem.selectedIndex = selectElem.options.length - 1;
+}
+
+/**
+ *
+ * @param selectElem {HTMLSelectElement} the select element
+ */
+function removeSelectedOptions(selectElem) {
+    const removalIndices = [];
+    for (let i = 0; i < selectElem.selectedOptions.length; i++) {
+        removalIndices.push(selectElem.selectedOptions[i].index);
+    }
+    // Remove from end to start so the indices of the options to remove stay the same
+    for (let i = removalIndices.length - 1; i >= 0; i--) {
+        const removalIndex = removalIndices[i];
+        selectElem.remove(removalIndex);
+    }
+}
+
+/**
+ *
+ * @param labelId the id of the label element
+ * @param messageName the message name of the localized label text
+ */
+function setMsgToTextContent(labelId, messageName) {
+    document.getElementById(labelId).textContent = chrome.i18n.getMessage(messageName);
+}
+
+/**
+ *
+ * @param elementId the id of the element
+ * @param messageName the message name of the localized title
+ */
+function setMsgToTitle(elementId, messageName) {
+    document.getElementById(elementId).title = chrome.i18n.getMessage(messageName);
+}
+
+/**
+ * Creates an anchor element that can be queried for:
+ * <ul>
+ *     <li>protocol</li>
+ *     <li>port</li>
+ *     <li>host</li>
+ *     <li>hostname</li>
+ *     <li>pathname</li>
+ *     <li>search</li>
+ *     <li>hash</li>
+ *     </ul>
+ * @param href {!string} url of the anchor
+ * @return {!HTMLAnchorElement }
+ */
+function createAnchor(href) {
+    const l = document.createElement("a");
+    l.href = href;
+    return l;
+}

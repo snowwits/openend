@@ -2,13 +2,13 @@
     "manifest_description": {
         "message": "Versteckt die Dauer und den Titel von Videos auf Twitch.tv, um vor Spoilern beim Gucken von (E-)Sport-Videos zu schützen."
     },
-    "playerShowHideDuration_visible": {
+    "player_showHideDuration_visible": {
         "message": "Videodauer verbergen"
     },
-    "playerShowHideDuration_hidden": {
+    "player_showHideDuration_hidden": {
         "message": "Videodauer anzeigen"
     },
-    "playerJumpBackward": {
+    "player_jumpBackward": {
         "message": "$JUMP_TIME$ zurückspringen",
         "placeholders": {
             "jump_time": {
@@ -16,7 +16,7 @@
             }
         }
     },
-    "playerJumpForward": {
+    "player_jumpForward": {
         "message": "$JUMP_TIME$ vorspringen",
         "placeholders": {
             "jump_time": {
@@ -24,28 +24,28 @@
             }
         }
     },
-    "playerJump_help": {
+    "player_jump_help": {
         "message": "Zeitsprungformat: \"2\" für zwei Minuten oder \"1h2m3s\" für 1 Stunde, 2 Minuten and 3 Sekunden"
     },
-    "playerJump_err": {
+    "player_jump_err": {
         "message": "Ungültige Zeitsprunglänge"
     },
-    "videoListItemShowHideTitle_visible": {
+    "videoListItem_showHideTitle_visible": {
         "message": "Titel verbergen"
     },
-    "videoListItemShowHideTitle_hidden": {
+    "videoListItem_showHideTitle_hidden": {
         "message": "Titel anzeigen"
     },
-    "videoListItemShowHidePreview_visible": {
+    "videoListItem_showHidePreview_visible": {
         "message": "Vorschaubild verbergen"
     },
-    "videoListItemShowHidePreview_hidden": {
+    "videoListItem_showHidePreview_hidden": {
         "message": "Vorschaubild anzeigen"
     },
-    "videoListItemShowHideDuration_visible": {
+    "videoListItem_showHideDuration_visible": {
         "message": "Dauer verbergen"
     },
-    "videoListItemShowHideDuration_hidden": {
+    "videoListItem_showHideDuration_hidden": {
         "message": "Dauer anzeigen"
     },
     "menu_openOptions": {

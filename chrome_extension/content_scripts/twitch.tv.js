@@ -72,7 +72,10 @@ let GLOBAL_options = getDefaultOptionsCopy();
 let GLOBAL_channel = null;
 
 /* Variables that need to be changed after options or channel changes */
-let GLOBAL_sfmEnabledForPage = SfmEnabledState.UNDETERMINED;
+/**
+ * @type {!string} {@link SfmState}
+ */
+let GLOBAL_sfmState = SfmState.UNDETERMINED;
 /**
  * Flags whether the dependencies of certain options have been configured yet
  */
@@ -159,10 +162,10 @@ function resetGlobalPageFlags() {
 }
 
 function resetGlobalPageStateFlags(changedOptions) {
-    // If something about SFM enabled changed, sfmEnabledForPage needs re-determination.
+    // If something about SFM enabled changed, sfmState needs re-determination.
     // Also, all SFM dependencies need reconfiguration (they may be independent from sfmEnabledForPage, for example video list items on a directory/game/XXX page can be from several channels).
-    if (OPT_SFM_ENABLED_NAME in changedOptions || OPT_SFM_CHANNELS_NAME in changedOptions) {
-        updateSfmEnabledForPage(SfmEnabledState.UNDETERMINED);
+    if (OPT_SFM_ENABLED_NAME in changedOptions || OPT_SFM_PLATFORMS_NAME in changedOptions || OPT_SFM_CHANNELS_NAME in changedOptions) {
+        updateSfmState(SfmState.UNDETERMINED);
 
         setSfmOptionsToNotConfigured();
     }
@@ -238,18 +241,18 @@ function configurePage() {
         return;
     }
     determineChannel();
-    determineSfmEnabledForPage();
+    determineSfmState();
     configurePlayer();
     configureVideoListItems();
     configureTheatreMode();
 }
 
 function isPageConfigured() {
-    return isChannelDetermined() && isSfmEnabledForPageDetermined() && isPlayerConfigured() && isVideoListItemsConfigured() && isTheatreModeConfigured();
+    return isChannelDetermined() && isSfmStateDetermined() && isPlayerConfigured() && isVideoListItemsConfigured() && isTheatreModeConfigured();
 }
 
 function formatPageConfigurationState() {
-    return `channelDetermined: ${isChannelDetermined()}, sfmEnabledForPageDetermined: ${isSfmEnabledForPageDetermined()}, playerConfigured: ${isPlayerConfigured()}, videoListItemsConfigured: ${isVideoListItemsConfigured()}, theatreModeConfigured: ${isTheatreModeConfigured()}`;
+    return `channelDetermined: ${isChannelDetermined()}, sfmEnabledForPageDetermined: ${isSfmStateDetermined()}, playerConfigured: ${isPlayerConfigured()}, videoListItemsConfigured: ${isVideoListItemsConfigured()}, theatreModeConfigured: ${isTheatreModeConfigured()}`;
 }
 
 
@@ -310,9 +313,9 @@ function updateChannel(channel) {
         GLOBAL_channel = channel;
         log("Updated [channel] to [%o]", GLOBAL_channel);
 
-        updateSfmEnabledForPage(SfmEnabledState.UNDETERMINED);
+        updateSfmState(SfmState.UNDETERMINED);
 
-        // Notify about TabInfo change
+        // Notify about TabInfo change (new channel)
         const tabInfoMessage = buildTabInfoMessage();
         chrome.runtime.sendMessage(tabInfoMessage, function (response) {
             log("Message [%o] was successfully sent", tabInfoMessage);
@@ -320,34 +323,40 @@ function updateChannel(channel) {
     }
 }
 
-function determineSfmEnabledForPage() {
-    if (isSfmEnabledForPageDetermined()) {
+function determineSfmState() {
+    if (isSfmStateDetermined()) {
         return;
     }
-    updateSfmEnabledForPage(isSfmEnabledForChannel(GLOBAL_options, GLOBAL_channel));
+    updateSfmState(checkSfmState(GLOBAL_options, TWITCH_PLATFORM, GLOBAL_channel));
 }
 
-function isSfmEnabledForPageDetermined() {
-    return SfmEnabledState.UNDETERMINED !== GLOBAL_sfmEnabledForPage;
+function isSfmStateDetermined() {
+    return SfmState.UNDETERMINED !== GLOBAL_sfmState;
 }
 
-function isSfmEnabledForPage() {
-    return SfmEnabledState.ENABLED === GLOBAL_sfmEnabledForPage;
+function isSfmStateEnabled() {
+    return SfmState.ENABLED === GLOBAL_sfmState;
 }
 
-function isSfmDisabledForPage() {
-    return SfmEnabledState.DISABLED === GLOBAL_sfmEnabledForPage;
+function isSfmStateDisabled() {
+    return SfmState.DISABLED === GLOBAL_sfmState;
 }
 
-function updateSfmEnabledForPage(sfmEnabledForPage) {
-    const isChange = GLOBAL_sfmEnabledForPage !== sfmEnabledForPage;
+function updateSfmState(sfmState) {
+    const isChange = GLOBAL_sfmState !== sfmState;
 
     // If the sfmEnabledForPage changed, SFM dependencies need reconfiguration
     if (isChange) {
-        GLOBAL_sfmEnabledForPage = sfmEnabledForPage;
-        log("Updated [sfmEnabledForPage] to [%o]", GLOBAL_sfmEnabledForPage);
+        GLOBAL_sfmState = sfmState;
+        log("Updated [sfmEnabledForPage] to [%o]", GLOBAL_sfmState);
 
         setSfmOptionsToNotConfigured();
+
+        // Notify about TabInfo change (new sfmState)
+        const tabInfoMessage = buildTabInfoMessage();
+        chrome.runtime.sendMessage(tabInfoMessage, function (response) {
+            log("Message [%o] was successfully sent", tabInfoMessage);
+        });
     }
 }
 
@@ -362,7 +371,7 @@ function configurePlayer() {
         return;
     }
 
-    if (isSfmEnabledForPage()) {
+    if (isSfmStateEnabled()) {
         let toolbarElem = document.getElementById(OPND_PLAYER_TOOLBAR_ID);
         if (!toolbarElem) {
             // Search for injection container for toolbar (the left button panel)
@@ -418,7 +427,7 @@ function updatePayerDurationVisibleAndShowHideButton(configuring, visible) {
         log("Updated Player Duration visible to [%s]", setVisibleResult);
 
         // Update the Player Progress Visibility img src and alt
-        const tooltip = chrome.i18n.getMessage(setVisibleResult ? "playerShowHideDuration_visible" : "playerShowHideDuration_hidden");
+        const tooltip = chrome.i18n.getMessage(setVisibleResult ? "player_showHideDuration_visible" : "player_showHideDuration_hidden");
         const showHidePlayerDurationImg = document.getElementById(OPND_PLAYER_SHOW_HIDE_DURATION_IMG_ID);
         if (showHidePlayerDurationImg) {
             showHidePlayerDurationImg.src = chrome.runtime.getURL(setVisibleResult ? "img/hide_white.svg" : "img/show_white.svg");
@@ -469,11 +478,11 @@ function updateJumpButtonsAfterJumpDistanceChange() {
         let backwardMsg;
         let forwardMsg;
         if (jumpDistanceValue > 0) {
-            backwardMsg = chrome.i18n.getMessage("playerJumpBackward", jumpDistanceInputValue);
-            forwardMsg = chrome.i18n.getMessage("playerJumpForward", jumpDistanceInputValue);
+            backwardMsg = chrome.i18n.getMessage("player_jumpBackward", jumpDistanceInputValue);
+            forwardMsg = chrome.i18n.getMessage("player_jumpForward", jumpDistanceInputValue);
         }
         else {
-            backwardMsg = forwardMsg = chrome.i18n.getMessage("playerJump_err");
+            backwardMsg = forwardMsg = chrome.i18n.getMessage("player_jump_err");
         }
 
         playerJumpBackwardTooltipSpan.setAttribute(TWITCH_PLAYER_TOOLTIP_SPAN_TEXT_ATTR, backwardMsg);
@@ -538,7 +547,7 @@ function configureVideoListItems() {
     const setDurationVisible = !GLOBAL_options[OPT_SFM_VIDEO_LIST_HIDE_DURATION_NAME];
 
     // If SFM = enabled, configure according to the SFM config
-    if (isSfmEnabledForPage()) {
+    if (isSfmStateEnabled()) {
         setAllVisible(allTitleContainers, setTitleVisible);
         setAllVisible(allPreviewContainers, setPreviewVisible);
         setAllVisible(allDurationContainers, setDurationVisible);
@@ -549,7 +558,7 @@ function configureVideoListItems() {
         }
     }
     // If SFM = disabled, show everything and remove toolbars
-    else if (isSfmDisabledForPage()) {
+    else if (isSfmStateDisabled()) {
         setAllVisible(allTitleContainers, true);
         setAllVisible(allPreviewContainers, true);
         setAllVisible(allDurationContainers, true);
@@ -567,8 +576,8 @@ function configureVideoListItems() {
             const videoDurationContainer = getVideoDurationOpndContainers(videoCardDiv);
 
             const channel = getVideoChannel(videoCardDiv);
-            const sfmEnabledForChannel = isSfmEnabledForChannel(GLOBAL_options, channel);
-            if (SfmEnabledState.ENABLED === sfmEnabledForChannel) {
+            const sfmEnabledForChannel = checkSfmState(GLOBAL_options, TWITCH_PLATFORM, channel);
+            if (SfmState.ENABLED === sfmEnabledForChannel) {
                 setAllVisible(videoTitleContainer, setTitleVisible);
                 setAllVisible(videoPreviewContainer, setPreviewVisible);
                 setAllVisible(videoDurationContainer, setDurationVisible);
@@ -809,7 +818,7 @@ function buildPlayerToolbar() {
     toolbar.appendChild(progressVisibilityBtn);
 
     // Build "Jump Back" button
-    const jumpBackwardBtn = buildPlayerToolbarButton(OPND_PLAYER_JUMP_BACKWARD_BTN_ID, handlePlayerJumpBackwardAction, OPND_PLAYER_JUMP_BACKWARD_TOOLTIP_SPAN_ID, "playerJumpBackward", null, "img/jump_backward_white.svg");
+    const jumpBackwardBtn = buildPlayerToolbarButton(OPND_PLAYER_JUMP_BACKWARD_BTN_ID, handlePlayerJumpBackwardAction, OPND_PLAYER_JUMP_BACKWARD_TOOLTIP_SPAN_ID, "player_jumpBackward", null, "img/jump_backward_white.svg");
     toolbar.appendChild(jumpBackwardBtn);
 
     // Build "Jump Distance" text input
@@ -817,11 +826,11 @@ function buildPlayerToolbar() {
     jumpDistanceInput.type = "text";
     jumpDistanceInput.id = OPND_PLAYER_JUMP_DISTANCE_INPUT_ID;
     jumpDistanceInput.pattern = DURATION_PATTERN;
-    jumpDistanceInput.title = chrome.i18n.getMessage("playerJump_help");
+    jumpDistanceInput.title = chrome.i18n.getMessage("player_jump_help");
     toolbar.appendChild(jumpDistanceInput);
 
     // Build "Jump Forward" button
-    const jumpForwardBtn = buildPlayerToolbarButton(OPND_PLAYER_JUMP_FORWARD_BTN_ID, handlePlayerJumpForwardAction, OPND_PLAYER_JUMP_FORWARD_TOOLTIP_SPAN_ID, "playerJumpForward", null, "img/jump_forward_white.svg");
+    const jumpForwardBtn = buildPlayerToolbarButton(OPND_PLAYER_JUMP_FORWARD_BTN_ID, handlePlayerJumpForwardAction, OPND_PLAYER_JUMP_FORWARD_TOOLTIP_SPAN_ID, "player_jumpForward", null, "img/jump_forward_white.svg");
     toolbar.appendChild(jumpForwardBtn);
 
     // Pressing Enter in the "Jump Distance" text input should trigger the "Jump Forward" button
@@ -900,15 +909,15 @@ function buildVideoListItemToolbar(videoCardDiv) {
     toolbarElem.classList.add(OPND_VIDEO_LIST_ITEM_TOOLBAR_CLASS);
 
     // Title
-    const showHideTitleBtn = buildVideoListItemToolbarButton(videoCardDiv, "img/title_grey.svg", OPND_CONTAINER_VIDEO_LIST_ITEM_TITLE_CLASS, OPND_VIDEO_LIST_ITEM_TITLE_TOOLTIP_CLASS, "videoListItemShowHideTitle_visible", "videoListItemShowHideTitle_hidden", setTitleVisible);
+    const showHideTitleBtn = buildVideoListItemToolbarButton(videoCardDiv, "img/title_grey.svg", OPND_CONTAINER_VIDEO_LIST_ITEM_TITLE_CLASS, OPND_VIDEO_LIST_ITEM_TITLE_TOOLTIP_CLASS, "videoListItem_showHideTitle_visible", "videoListItem_showHideTitle_hidden", setTitleVisible);
     toolbarElem.appendChild(showHideTitleBtn);
 
     // Preview
-    const showHidePreviewBtn = buildVideoListItemToolbarButton(videoCardDiv, "img/preview_grey.svg", OPND_CONTAINER_VIDEO_LIST_ITEM_PREVIEW_CLASS, OPND_VIDEO_LIST_ITEM_PREVIEW_TOOLTIP_CLASS, "videoListItemShowHidePreview_visible", "videoListItemShowHidePreview_hidden", setPreviewVisible);
+    const showHidePreviewBtn = buildVideoListItemToolbarButton(videoCardDiv, "img/preview_grey.svg", OPND_CONTAINER_VIDEO_LIST_ITEM_PREVIEW_CLASS, OPND_VIDEO_LIST_ITEM_PREVIEW_TOOLTIP_CLASS, "videoListItem_showHidePreview_visible", "videoListItem_showHidePreview_hidden", setPreviewVisible);
     toolbarElem.appendChild(showHidePreviewBtn);
 
     // Duration
-    const showHideDurationBtn = buildVideoListItemToolbarButton(videoCardDiv, "img/duration_grey.svg", OPND_CONTAINER_VIDEO_LIST_ITEM_DURATION_CLASS, OPND_VIDEO_LIST_ITEM_DURATION_TOOLTIP_CLASS, "videoListItemShowHideDuration_visible", "videoListItemShowHideDuration_hidden", setDurationVisible);
+    const showHideDurationBtn = buildVideoListItemToolbarButton(videoCardDiv, "img/duration_grey.svg", OPND_CONTAINER_VIDEO_LIST_ITEM_DURATION_CLASS, OPND_VIDEO_LIST_ITEM_DURATION_TOOLTIP_CLASS, "videoListItem_showHideDuration_visible", "videoListItem_showHideDuration_hidden", setDurationVisible);
     toolbarElem.appendChild(showHideDurationBtn);
 
     return toolbarElem;
@@ -1043,7 +1052,7 @@ function listenForMessages() {
  * @return {!TabInfoMessage} the tab info message
  */
 function buildTabInfoMessage() {
-    return new TabInfoMessage(new TabInfo(TWITCH_PLATFORM.serialize(), GLOBAL_channel ? GLOBAL_channel.serialize() : null));
+    return new TabInfoMessage(new TabInfo(TWITCH_PLATFORM.serialize(), GLOBAL_channel ? GLOBAL_channel.serialize() : null, GLOBAL_sfmState));
 }
 
 /**
@@ -1068,10 +1077,10 @@ function handleMessage(request, sender, sendResponse) {
  * ====================================================================================================
  */
 function listenForOptionsChanges() {
-    chrome.storage.onChanged.addListener(handleOptionUpdate);
+    chrome.storage.onChanged.addListener(handleOptionsChanged);
 }
 
-function handleOptionUpdate(changes, namespace) {
+function handleOptionsChanged(changes, namespace) {
     log("[%s storage] Option changes: %o", namespace, changes);
     for (const key in changes) {
         GLOBAL_options[key] = changes[key].newValue;

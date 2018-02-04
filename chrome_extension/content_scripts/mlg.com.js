@@ -44,7 +44,10 @@ let GLOBAL_options = getDefaultOptionsCopy();
 
 
 /* Variables that need to be changed after options change */
-let GLOBAL_sfmEnabledForPage = SfmEnabledState.UNDETERMINED;
+/**
+ * @type {!string} {@link SfmState}
+ */
+let GLOBAL_sfmState = SfmState.UNDETERMINED;
 /**
  * Flags whether the dependencies of certain options have been configured yet
  */
@@ -111,7 +114,7 @@ function resetGlobalPageFlags() {
 function resetGlobalPageStateFlags(changedOptions) {
     // If something about SFM enabled changed, sfmEnabledForPage needs re-determination.
     if (OPT_SFM_ENABLED_NAME in changedOptions) {
-        updateSfmEnabledForPage(SfmEnabledState.UNDETERMINED);
+        updateSfmState(SfmState.UNDETERMINED);
     }
     // All changed options need redetermination
     for (let optionName in GLOBAL_configuredFlags) {
@@ -157,60 +160,56 @@ function configurePage() {
     if (isPageConfigured()) {
         return;
     }
-    determineSfmEnabledForPage();
+    determineSfmState();
     configurePlayer();
     configureVideoListItems();
 }
 
 function isPageConfigured() {
-    return isSfmEnabledForPageDetermined() && isPlayerConfigured() && isVideoListItemsConfigured();
+    return isSfmStateDetermined() && isPlayerConfigured() && isVideoListItemsConfigured();
 }
 
 function formatPageConfigurationState() {
-    return `sfmEnabledForPageDetermined: ${isSfmEnabledForPageDetermined()}, playerConfigured: ${isPlayerConfigured()}`;
+    return `sfmEnabledForPageDetermined: ${isSfmStateDetermined()}, playerConfigured: ${isPlayerConfigured()}`;
 }
 
 
 /*
  * ====================================================================================================
- * CONFIGURATION: SfmEnabledForPage
+ * CONFIGURATION: SfmState
  * ====================================================================================================
  */
-function determineSfmEnabledForPage() {
-    if (isSfmEnabledForPageDetermined()) {
+function determineSfmState() {
+    if (isSfmStateDetermined()) {
         return;
     }
-
-    // Only if SfmEnabledOpt.ALWAYS, as MLG has no channels
-    let sfmEnabledForPage;
-    if (SfmEnabledOpt.ALWAYS === GLOBAL_options[OPT_SFM_ENABLED_NAME]) {
-        sfmEnabledForPage = SfmEnabledState.ENABLED;
-    } else {
-        sfmEnabledForPage = SfmEnabledState.DISABLED;
-    }
-    updateSfmEnabledForPage(sfmEnabledForPage);
+    updateSfmState(checkSfmState(GLOBAL_options, MLG_PLATFORM, null));
 }
 
 
-function isSfmEnabledForPageDetermined() {
-    return SfmEnabledState.UNDETERMINED !== GLOBAL_sfmEnabledForPage;
+function isSfmStateDetermined() {
+    return SfmState.UNDETERMINED !== GLOBAL_sfmState;
 }
 
-function isSfmEnabledForPage() {
-    return SfmEnabledState.ENABLED === GLOBAL_sfmEnabledForPage;
+function isSfmStateEnabled() {
+    return SfmState.ENABLED === GLOBAL_sfmState;
 }
 
-function isSfmDisabledForPage() {
-    return SfmEnabledState.DISABLED === GLOBAL_sfmEnabledForPage;
+function isSfmStateDisabled() {
+    return SfmState.DISABLED === GLOBAL_sfmState;
 }
 
-function updateSfmEnabledForPage(sfmEnabledForPage) {
-    const isChange = GLOBAL_sfmEnabledForPage !== sfmEnabledForPage;
+/**
+ *
+ * @param sfmState {!string} {@link SfmState}
+ */
+function updateSfmState(sfmState) {
+    const isChange = GLOBAL_sfmState !== sfmState;
 
     // If the sfmEnabledForPage changed, SFM dependencies need reconfiguration
     if (isChange) {
-        GLOBAL_sfmEnabledForPage = sfmEnabledForPage;
-        log("Updated [sfmEnabledForPage] to [%o]", GLOBAL_sfmEnabledForPage);
+        GLOBAL_sfmState = sfmState;
+        log("Updated [sfmEnabledForPage] to [%o]", GLOBAL_sfmState);
 
         setSfmOptionsToNotConfigured();
     }
@@ -245,7 +244,7 @@ function configurePlayer() {
     }
     if (durationElements.length > 0) {
         let setDurationVisible;
-        if (isSfmEnabledForPage()) {
+        if (isSfmStateEnabled()) {
             setDurationVisible = !GLOBAL_options[OPT_SFM_PLAYER_HIDE_DURATION_NAME];
         }
         else {
@@ -344,7 +343,7 @@ function configureVideoListItems() {
 
     if (opndContainers.length > 0) {
         let setDurationVisible;
-        if (isSfmEnabledForPage()) {
+        if (isSfmStateEnabled()) {
             setDurationVisible = !GLOBAL_options[OPT_SFM_VIDEO_LIST_HIDE_DURATION_NAME];
         }
         else {
@@ -373,7 +372,7 @@ function listenForMessages() {
  * @return {!TabInfoMessage} the tab info message
  */
 function buildTabInfoMessage() {
-    return new TabInfoMessage(new TabInfo(MLG_PLATFORM.serialize()));
+    return new TabInfoMessage(new TabInfo(MLG_PLATFORM.serialize(), null, GLOBAL_sfmState));
 }
 
 /**
