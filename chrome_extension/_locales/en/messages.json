@@ -96,7 +96,7 @@
         "description": ""
     },
     "menu_sfmEnabled_onPlatform": {
-        "message": "On the platform",
+        "message": "On this platform",
         "description": ""
     },
     "menu_sfmEnabled_onPlatform_NEVER": {
@@ -112,7 +112,7 @@
         "description": ""
     },
     "menu_sfmEnabled_onChannel": {
-        "message": "On the channel",
+        "message": "On this channel",
         "description": ""
     },
     "menu_sfmEnabled_onChannel_enable": {

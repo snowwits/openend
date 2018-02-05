@@ -262,7 +262,10 @@ function formatPageConfigurationState() {
  * ====================================================================================================
  */
 /**
- * Channel link above the video player (when playing a video):
+ * Channel link above the video player in a directory or watching a VOD (twitch.tv/<channel>/... twitch.tv/videos/<video-id>):
+ *
+ * OLD:
+ * @deprecated: Not up to date:
  *
  * <a data-target="channel-header__channel-link" data-a-target="user-channel-header-item" class="channel-header__user align-items-center flex flex-shrink-0 flex-nowrap pd-r-2 pd-y-05" href="/silkthread">
  *  <div class="align-items-center flex flex-shrink-0 flex-nowrap">
@@ -274,11 +277,49 @@ function formatPageConfigurationState() {
  *     <h5 class="">silkthread</h5>
  *  </div>
  * </a>
+ *
+ * Channel link above the video player on the channel main page (both when channel is online or offline):
+ *
+ * <div class="channel-header__banner-toggle channel-header__user channel-header__user--selected tw-align-items-center tw-flex tw-flex-shrink-0 tw-flex-nowrap tw-pd-r-2 tw-pd-y-05"
+ data-target="channel-header__channel-link" data-a-target="user-channel-header-item">
+ <div class="tw-align-items-center tw-flex tw-flex-shrink-0 tw-flex-nowrap">
+ <div class="channel-header__user-avatar channel-header__user-avatar--active tw-align-items-stretch tw-flex tw-flex-shrink-0 tw-mg-r-1">
+ <div class="tw-relative">
+ <figure class="tw-avatar tw-avatar--size-36"><img class="" src="https://static-cdn.jtvnw.net/jtv_user_pictures/0970ece79c664200-profile_image-70x70.png" alt="오버워치_이스포츠"></figure>
+ </div>
+ </div>
+ <h5 class="">오버워치_이스포츠</h5>
+ <div class="tw-tooltip-wrapper tw-inline-flex" aria-describedby="39e3faf8f9edaf01041d1a04b34c156f">
+ <div data-target="channel-header__verified-badge"
+ class="channel-header__verified tw-align-items-center tw-flex tw-mg-l-1">
+ <figure class="tw-svg">
+ <svg class="tw-svg__asset tw-svg__asset--verified tw-svg__asset--inherit" width="16px" height="16px"
+ version="1.1" viewBox="0 0 18 18" x="0px" y="0px">
+ <path d="M2.636 2.636L9 0l6.365 2.636L18 9l-2.635 6.365L9 18l-6.364-2.635L0 9l2.636-6.364zM7.38 13.11l6.097-6.42-1.45-1.378-4.726 4.98-1.613-1.52-1.37 1.458 3.065 2.88z"></path>
+ </svg>
+ </figure>
+ </div>
+ <div class="tw-tooltip tw-tooltip--right tw-tooltip--align-center" data-a-target="tw-tooltip-label"
+ role="tooltip" id="39e3faf8f9edaf01041d1a04b34c156f">Verified
+ </div>
+ </div>
+ </div>
+ </div>
+ *
+ *
+ *
+ *
  */
 function determineChannel() {
     if (isChannelDetermined()) {
         return;
     }
+
+    console.log("Trying to determine channel");
+
+    /**
+     * If on channel directory or video page, we can parse the channel link a element
+     */
     const channelLinkAnchor = document.querySelector("a[data-target=channel-header__channel-link]");
     if (channelLinkAnchor) {
         const pageTypResult = TWITCH_PLATFORM.parsePageFromUrl(channelLinkAnchor);
@@ -293,11 +334,36 @@ function determineChannel() {
             warn("Failed to parse channel from anchor: %o", channelLinkAnchor);
         }
     }
+
+    /*
+     *  If on channel main page, we need to parse the channel link div element
+     *
+     *  Sadly, the channel's qualified name is not present in this div,
+     *  so we have to take it from the (hopefully) already parsed channel from the URL (GLOBAL_channel).
+     */
+    if (GLOBAL_channel !== null) {
+        // Create a new channel instance because we want to replace the current channel object, not modify it
+        const channel = Channel.parseFromQualifiedName(GLOBAL_channel.qualifiedName);
+        const channelLinkDiv = document.querySelector("div[data-target=channel-header__channel-link]");
+        if (channelLinkDiv) {
+            const channelHeading = channelLinkDiv.querySelector("h5");
+            if (channelHeading) {
+                channel.displayName = channelHeading.textContent;
+                updateChannel(channel);
+            }
+        }
+        else {
+            warn("Failed to parse channel's display name from div: %o", channelLinkAnchor);
+        }
+    }
 }
 
 function isChannelDetermined() {
-    // Channel is only determined if the displayName has been determined, too.
-    // That cannot be achieved by parsing the location URL, that can only be done by parsing the channel link
+    /*
+     * Channel is only fully determined if the displayName has been determined, too.
+     * That cannot be achieved by parsing the location URL, that can only be done by parsing the channel link.
+     * See function determineChannel().
+     */
     return GLOBAL_channel !== null && GLOBAL_channel.displayName !== null;
 }
 

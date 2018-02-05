@@ -16,6 +16,14 @@ h2 {
     margin-bottom: 1em;
 }
 
+.secondLevelContainer > div:not(:last-child) {
+    margin-bottom: 0.20em;
+}
+
+.sectionLabel {
+    font-weight: bold;
+}
+
 #sfmStateLabel {
   font-size: 14px;
 }
@@ -33,4 +41,5 @@ h2 {
 
 #platform, #channel {
     font-weight: bold;
+    font-style: italic;
 }

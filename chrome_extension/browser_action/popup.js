@@ -148,8 +148,8 @@ function updateUiAfterTabInfoUpdate(tabInfo) {
     }
 
     // Channel
-    channelSpan.dataset[DATA_CHANNEL_QUALIFIED_NAME] = channelQualifiedName;
-    channelSpan.dataset[DATA_CHANNEL_DISPLAY_NAME] = channelDisplayName;
+    setData(channelSpan, DATA_CHANNEL_QUALIFIED_NAME, channelQualifiedName);
+    setData(channelSpan, DATA_CHANNEL_DISPLAY_NAME, channelDisplayName);
     channelSpan.textContent = channelVerboseName;
     if (channel === null) {
         setVisible(sfmEnabledOnChannelContainerDiv, false);
