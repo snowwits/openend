@@ -63,85 +63,85 @@
         "message": "Show duration",
         "description": "Label of the Show/Hide Duration button for the visible state."
     },
-    "menu_sfmState_ENABLED": {
+    "popup_sfmState_ENABLED": {
         "message": "Spoiler-Free Mode enabled",
         "description": ""
     },
-    "menu_sfmState_DISABLED": {
+    "popup_sfmState_DISABLED": {
         "message": "Spoiler-Free Mode disabled",
         "description": ""
     },
-    "menu_sfmState_UNDETERMINED": {
-        "message": "",
+    "popup_sfmState_UNDETERMINED": {
+        "message": "Spoiler-Free Mode state not yet determined",
         "description": ""
     },
-    "menu_sfmEnabled": {
+    "popup_sfmEnabled": {
         "message": "Enable Spoiler-Free Mode",
         "description": ""
     },
-    "menu_sfmEnabled_globally": {
-        "message": "Globally",
+    "popup_sfmEnabled_global": {
+        "message": "Global",
         "description": ""
     },
-    "menu_sfmEnabled_globally_NEVER": {
-        "message": "Disable",
-        "description": ""
-    },
-    "menu_sfmEnabled_globally_ALWAYS": {
-        "message": "Enable",
-        "description": ""
-    },
-    "menu_sfmEnabled_globally_CUSTOM": {
-        "message": "Platform-dependent",
-        "description": ""
-    },
-    "menu_sfmEnabled_onPlatform": {
-        "message": "On this platform",
-        "description": ""
-    },
-    "menu_sfmEnabled_onPlatform_NEVER": {
-        "message": "Disable",
-        "description": ""
-    },
-    "menu_sfmEnabled_onPlatform_ALWAYS": {
-        "message": "Enable",
-        "description": ""
-    },
-    "menu_sfmEnabled_onPlatform_CUSTOM": {
-        "message": "Channel-dependent",
-        "description": ""
-    },
-    "menu_sfmEnabled_onChannel": {
-        "message": "On this channel",
-        "description": ""
-    },
-    "menu_sfmEnabled_onChannel_enable": {
-        "message": "Enable",
-        "description": ""
-    },
-    "menu_openOptions": {
-        "message": "Options...",
-        "description": "Label of the Options... button on the browser_action popup menu."
-    },
-    "options_sfmEnabled_globally": {
-        "message": "Enable globally",
-        "description": ""
-    },
-    "options_sfmEnabled_globally_NEVER": {
+    "popup_sfmEnabled_global_NEVER": {
         "message": "Never",
         "description": ""
     },
-    "options_sfmEnabled_globally_ALWAYS": {
+    "popup_sfmEnabled_global_ALWAYS": {
         "message": "Always",
         "description": ""
     },
-    "options_sfmEnabled_globally_CUSTOM": {
-        "message": "Custom (platform-dependent)",
+    "popup_sfmEnabled_global_CUSTOM": {
+        "message": "Platform-dependent",
         "description": ""
     },
-    "options_sfmCustom_platforms": {
-        "message": "Spoiler-Free Mode platforms",
-        "description": "Label of the platform text area tooltip."
+    "popup_sfmEnabled_onPlatform": {
+        "message": "On this platform",
+        "description": ""
+    },
+    "popup_sfmEnabled_onPlatform_NEVER": {
+        "message": "Never",
+        "description": ""
+    },
+    "popup_sfmEnabled_onPlatform_ALWAYS": {
+        "message": "Always",
+        "description": ""
+    },
+    "popup_sfmEnabled_onPlatform_CUSTOM": {
+        "message": "Channel-dependent",
+        "description": ""
+    },
+    "popup_sfmEnabled_onChannel": {
+        "message": "On this channel",
+        "description": ""
+    },
+    "popup_sfmEnabled_onChannel_enable": {
+        "message": "Enable",
+        "description": ""
+    },
+    "popup_openOptions": {
+        "message": "Options...",
+        "description": "Label of the Options... button on the browser_action popup menu."
+    },
+    "options_sfmEnabled": {
+        "message": "Enable Spoiler-Free Mode",
+        "description": ""
+    },
+    "options_sfmEnabled_global": {
+        "message": "Global",
+        "description": ""
+    },
+    "options_sfmEnabled_global_NEVER": {
+        "message": "Never",
+        "description": ""
+    },
+    "options_sfmEnabled_global_ALWAYS": {
+        "message": "Always",
+        "description": ""
+    },
+    "options_sfmEnabled_global_CUSTOM": {
+        "message": "Platform-dependent",
+        "description": ""
     },
     "options_sfmEnabled_onPlatform_NEVER": {
         "message": "Never",
@@ -152,58 +152,62 @@
         "description": ""
     },
     "options_sfmEnabled_onPlatform_CUSTOM": {
-        "message": "Custom (channel-dependent)",
+        "message": "Channel-dependent",
         "description": ""
     },
-    "options_sfmCustom_channels": {
+    "options_sfmEnabled_platforms": {
+        "message": "Spoiler-Free Mode platforms",
+        "description": ""
+    },
+    "options_sfmEnabled_channels": {
         "message": "Spoiler-Free Mode channels",
         "description": "Label of the Channels text area tooltip."
     },
-    "options_sfmCustom_channelToAdd": {
+    "options_sfmEnabled_channelToAdd": {
         "message": "Qualified name or URL:",
         "description": "The label for the channel's qualified name or URL input."
     },
-    "options_sfmCustom_channelToAddDisplayName": {
+    "options_sfmEnabled_channelToAddDisplayName": {
         "message": "Display name:",
         "description": "The label for the channel's display name input."
     },
-    "options_sfmCustom_addChannel": {
+    "options_sfmEnabled_addChannel": {
         "message": "Add channel",
         "description": "Label of the Add Channel button."
     },
-    "options_sfmCustom_removeChannels": {
+    "options_sfmEnabled_removeChannels": {
         "message": "Remove selected channels",
         "description": "Label of the Remove Channels button."
     },
-    "options_sfm_configure": {
+    "options_sfmCfg": {
         "message": "Configure Spoiler-Free Mode",
         "description": "Label of the Configure Spoiler-Free Mode options section."
     },
-    "options_sfm_player": {
+    "options_sfmCfg_player": {
         "message": "Video player",
         "description": "Label of the Player options sub-section."
     },
-    "options_sfm_player_hideDuration": {
+    "options_sfmCfg_player_hideDuration": {
         "message": "Hide the video duration",
         "description": "Label of the Hide Duration option."
     },
-    "options_sfm_player_jumpDistance": {
+    "options_sfmCfg_player_jumpDistance": {
         "message": "Time jump distance",
         "description": "Label of the Jump Distance option."
     },
-    "options_sfm_videoList": {
+    "options_sfmCfg_videoList": {
         "message": "Items in video lists",
         "description": "Label of the Video List options sub-section."
     },
-    "options_sfm_videoList_hideTitle": {
+    "options_sfmCfg_videoList_hideTitle": {
         "message": "Hide the video title",
         "description": "Label of the Hide Title option."
     },
-    "options_sfm_videoList_hidePreview": {
+    "options_sfmCfg_videoList_hidePreview": {
         "message": "Hide the video preview",
         "description": "Label of the Hide Preview option."
     },
-    "options_sfm_videoList_hideDuration": {
+    "options_sfmCfg_videoList_hideDuration": {
         "message": "Hide the video duration",
         "description": "Label of the Hide Duration option."
     },

@@ -39,6 +39,17 @@ const TWITCH_PLAYER_TOOLTIP_SPAN_TEXT_ATTR = "data-tip";
 
 const TWITCH_VIDEO_LIST_ITEM_CARD_CLASS = "tw-card";
 
+/**
+ *  60 seconds (1 minute)
+ * @type {number}
+ */
+const PLAYER_JUMP_DISTANCE_SPIN_UP_STEP_DEFAULT = 60;
+
+/**
+ *  60 seconds (1 minute)
+ * @type {number}
+ */
+const PLAYER_JUMP_DISTANCE_SPIN_DOWN_STEP_DEFAULT = -60;
 
 /*
  * ====================================================================================================
@@ -164,11 +175,11 @@ function resetGlobalPageFlags() {
 function resetGlobalPageStateFlags(changedOptions) {
     // If something about SFM enabled changed, sfmState needs re-determination.
     // Also, all SFM dependencies need reconfiguration (they may be independent from sfmEnabledForPage, for example video list items on a directory/game/XXX page can be from several channels).
-    if (OPT_SFM_ENABLED_NAME in changedOptions || OPT_SFM_PLATFORMS_NAME in changedOptions || OPT_SFM_CHANNELS_NAME in changedOptions) {
-        updateSfmState(SfmState.UNDETERMINED);
-
-        setSfmOptionsToNotConfigured();
+    if (OPT_SFM_ENABLED_GLOBAL_NAME in changedOptions || OPT_SFM_ENABLED_PLATFORMS_NAME in changedOptions || OPT_SFM_ENABLED_CHANNELS_NAME in changedOptions) {
+        GLOBAL_sfmState = SfmState.UNDETERMINED;
+        determineSfmState();
     }
+
     // All changed options need redetermination
     for (let optionName in GLOBAL_configuredFlags) {
         if (optionName in changedOptions) {
@@ -263,9 +274,6 @@ function formatPageConfigurationState() {
  */
 /**
  * Channel link above the video player in a directory or watching a VOD (twitch.tv/<channel>/... twitch.tv/videos/<video-id>):
- *
- * OLD:
- * @deprecated: Not up to date:
  *
  * <a data-target="channel-header__channel-link" data-a-target="user-channel-header-item" class="channel-header__user align-items-center flex flex-shrink-0 flex-nowrap pd-r-2 pd-y-05" href="/silkthread">
  *  <div class="align-items-center flex flex-shrink-0 flex-nowrap">
@@ -524,9 +532,10 @@ function configurePlayerJumpDistanceInputAndButtons() {
         jumpDistanceElem.value = GLOBAL_options[OPT_SFM_PLAYER_JUMP_DISTANCE_NAME];
         log("Updated Player Time Jump Distance value to [%s]", GLOBAL_options[OPT_SFM_PLAYER_JUMP_DISTANCE_NAME]);
         setConfigured(OPT_SFM_PLAYER_JUMP_DISTANCE_NAME, true);
-    }
 
-    updateJumpButtonsAfterJumpDistanceChange();
+        // Trigger the change event manually because programmatic changes do not trigger an input event
+        updateJumpButtonsAfterJumpDistanceChange();
+    }
 }
 
 function isPlayerJumpDistanceConfigured() {
@@ -631,7 +640,7 @@ function configureVideoListItems() {
 
         removeVideoListItemToolbars();
     }
-    // If SFM = undetermined (maybe because sfmEnabled=CUSTOM and not on a channel page),
+    // If SFM = undetermined (maybe because sfmEnabledGlobal=CUSTOM and not on a channel page),
     // only hide information of videos of channels for which SFM is enabled.
     else {
         for (let i = 0; i < videoCardDivs.length; i++) {
@@ -893,20 +902,14 @@ function buildPlayerToolbar() {
     jumpDistanceInput.id = OPND_PLAYER_JUMP_DISTANCE_INPUT_ID;
     jumpDistanceInput.pattern = DURATION_PATTERN;
     jumpDistanceInput.title = chrome.i18n.getMessage("player_jump_help");
+    jumpDistanceInput.oninput = updateJumpButtonsAfterJumpDistanceChange;
+    jumpDistanceInput.onkeyup = handleJumpDistanceInputKeyUpEvent;
+    jumpDistanceInput.onmousewheel = handleJumpDistanceInputMouseWheelEvent;
     toolbar.appendChild(jumpDistanceInput);
 
     // Build "Jump Forward" button
     const jumpForwardBtn = buildPlayerToolbarButton(OPND_PLAYER_JUMP_FORWARD_BTN_ID, handlePlayerJumpForwardAction, OPND_PLAYER_JUMP_FORWARD_TOOLTIP_SPAN_ID, "player_jumpForward", null, "img/jump_forward_white.svg");
     toolbar.appendChild(jumpForwardBtn);
-
-    // Pressing Enter in the "Jump Distance" text input should trigger the "Jump Forward" button
-    jumpDistanceInput.addEventListener("keyup", function (event) {
-        event.preventDefault();
-        updateJumpButtonsAfterJumpDistanceChange();
-        if (event.keyCode === 13) { // 13 = ENTER
-            jumpForwardBtn.click();
-        }
-    });
 
     return toolbar;
 }
@@ -1059,6 +1062,76 @@ function handlePlayerShowHideDurationAction() {
     updatePayerDurationVisibleAndShowHideButton(false, null);
 }
 
+/**
+ *
+ * @param wheelEvent {!WheelEvent}
+ */
+function handleJumpDistanceInputMouseWheelEvent(wheelEvent) {
+    wheelEvent.preventDefault();
+
+    let step = 0;
+    if (wheelEvent.wheelDelta > 0) {
+        step = PLAYER_JUMP_DISTANCE_SPIN_UP_STEP_DEFAULT;
+    }
+    else if (wheelEvent.wheelDelta < 0) {
+        step = PLAYER_JUMP_DISTANCE_SPIN_DOWN_STEP_DEFAULT;
+    }
+    spinPlayerJumpDistance(step);
+}
+
+/**
+ *
+ * @param keyboardEvent {!KeyboardEvent}
+ */
+function handleJumpDistanceInputKeyUpEvent(keyboardEvent) {
+    keyboardEvent.preventDefault();
+
+    //
+    /*
+     * - ENTER: Forward jump
+     * - SHIFT+ENTER: Backwards jump
+     * - ARROW UP: Spin up
+     * - ARROW DOWN: Spin down
+     *
+     * Key Codes:
+     * ENTER = 13
+     * Arrow Left = 37
+     * Arrow Up = 38
+     * Arrow Right = 39
+     * Arrow Down = 40
+     */
+    if (keyboardEvent.keyCode === 13) {
+        if (keyboardEvent.shiftKey) {
+            playerJump(false);
+        } else {
+            playerJump(true);
+        }
+    } else if (keyboardEvent.keyCode === 38) {
+        spinPlayerJumpDistance(PLAYER_JUMP_DISTANCE_SPIN_UP_STEP_DEFAULT)
+    } else if (keyboardEvent.keyCode === 40) {
+        spinPlayerJumpDistance(PLAYER_JUMP_DISTANCE_SPIN_DOWN_STEP_DEFAULT)
+    }
+}
+
+/**
+ *
+ * @param step {!number}
+ */
+function spinPlayerJumpDistance(step) {
+    if (step === 0) {
+        return;
+    }
+    const jumpDistanceInput = document.getElementById(OPND_PLAYER_JUMP_DISTANCE_INPUT_ID);
+    const jumpDistance = parseDuration(jumpDistanceInput.value);
+    // Math.max(...) to prevent going below 0
+    const newJumpDistance = Math.max(jumpDistance + step, 0);
+    const newJumpDistanceInputValue = formatDuration(newJumpDistance, false);
+    jumpDistanceInput.value = newJumpDistanceInputValue;
+
+    // Trigger the change event manually because programmatic changes do not trigger an input event
+    updateJumpButtonsAfterJumpDistanceChange();
+}
+
 function handlePlayerJumpBackwardAction() {
     log("Handling action [Player: Jump Backward]");
     playerJump(false);
@@ -1142,12 +1215,12 @@ function handleMessage(request, sender, sendResponse) {
  * OPTIONS
  * ====================================================================================================
  */
-function listenForOptionsChanges() {
-    chrome.storage.onChanged.addListener(handleOptionsChanged);
+function listenForStorageChanges() {
+    chrome.storage.onChanged.addListener(handleStorageChange);
 }
 
-function handleOptionsChanged(changes, namespace) {
-    log("[%s storage] Option changes: %o", namespace, changes);
+function handleStorageChange(changes, namespace) {
+    log("[%s storage] Storage changes: %o", namespace, changes);
     for (const key in changes) {
         GLOBAL_options[key] = changes[key].newValue;
     }
@@ -1179,8 +1252,9 @@ function init() {
         }
         GLOBAL_options = items;
         log("Loaded options: %o", GLOBAL_options);
+        reconfigurePageAfterOptionsUpdate(GLOBAL_options);
 
-        listenForOptionsChanges();
+        listenForStorageChanges();
         listenForMessages();
         startCheckPageTask();
     });

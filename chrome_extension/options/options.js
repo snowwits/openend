@@ -66,8 +66,8 @@ function restoreDefaultOptions() {
 
 function getOptionsFromInputValues() {
     return {
-        [OPT_SFM_ENABLED_NAME]: getRadioValue("sfm_enabled"),
-        [OPT_SFM_CHANNELS_NAME]: getSelectChannelsSerialized("sfm_channels"),
+        [OPT_SFM_ENABLED_GLOBAL_NAME]: getRadioValue("sfm_enabled"),
+        [OPT_SFM_ENABLED_CHANNELS_NAME]: getSelectChannelsSerialized("sfm_channels"),
         [OPT_SFM_PLAYER_HIDE_DURATION_NAME]: getCheckboxValue("sfm_player_hideDuration"),
         [OPT_SFM_PLAYER_JUMP_DISTANCE_NAME]: getTextInputValue("sfm_player_jumpDistance"),
         [OPT_SFM_VIDEO_LIST_HIDE_TITLE_NAME]: getCheckboxValue("sfm_videoList_hideTitle"),
@@ -83,12 +83,12 @@ function getOptionsFromInputValues() {
  */
 function updateInputsWithOptions(options) {
     // Set option values to elements
-    if (OPT_SFM_ENABLED_NAME in options) {
-        setRadioValues("sfm_enabled", options[OPT_SFM_ENABLED_NAME]);
+    if (OPT_SFM_ENABLED_GLOBAL_NAME in options) {
+        setRadioValues("sfm_enabled", options[OPT_SFM_ENABLED_GLOBAL_NAME]);
     }
-    if (OPT_SFM_CHANNELS_NAME in options) {
+    if (OPT_SFM_ENABLED_CHANNELS_NAME in options) {
         const channelsSelect = document.getElementById("sfm_channels");
-        const channels = options[OPT_SFM_CHANNELS_NAME].map(chSerialized => Channel.deserialize(chSerialized));
+        const channels = options[OPT_SFM_ENABLED_CHANNELS_NAME].map(chSerialized => Channel.deserialize(chSerialized));
         setChannelsToSortedSetSelect(channelsSelect, channels);
     }
     if (OPT_SFM_PLAYER_HIDE_DURATION_NAME in options) {

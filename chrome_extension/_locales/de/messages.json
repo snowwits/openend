@@ -48,8 +48,65 @@
     "videoListItem_showHideDuration_hidden": {
         "message": "Dauer anzeigen"
     },
-    "menu_openOptions": {
-        "message": "Optionen..."
+    "popup_sfmState_ENABLED": {
+        "message": "Spoilerfreier Modus aktiviert",
+        "description": ""
+    },
+    "popup_sfmState_DISABLED": {
+        "message": "Spoilerfreier Modus deaktiviert",
+        "description": ""
+    },
+    "popup_sfmState_UNDETERMINED": {
+        "message": "Status des Spoilerfreien Modus noch unbestimmt",
+        "description": ""
+    },
+    "popup_sfmEnabled": {
+        "message": "Spoilerfreien Modus aktivieren",
+        "description": ""
+    },
+    "popup_sfmEnabled_global": {
+        "message": "Global",
+        "description": ""
+    },
+    "popup_sfmEnabled_global_NEVER": {
+        "message": "Nie",
+        "description": ""
+    },
+    "popup_sfmEnabled_global_ALWAYS": {
+        "message": "Immer",
+        "description": ""
+    },
+    "popup_sfmEnabled_global_CUSTOM": {
+        "message": "Plattform-abhängig",
+        "description": ""
+    },
+    "popup_sfmEnabled_onPlatform": {
+        "message": "Auf dieser Plattform",
+        "description": ""
+    },
+    "popup_sfmEnabled_onPlatform_NEVER": {
+        "message": "Nie",
+        "description": ""
+    },
+    "popup_sfmEnabled_onPlatform_ALWAYS": {
+        "message": "Immer",
+        "description": ""
+    },
+    "popup_sfmEnabled_onPlatform_CUSTOM": {
+        "message": "Kanal-abhängig",
+        "description": ""
+    },
+    "popup_sfmEnabled_onChannel": {
+        "message": "Auf diesem Kanal",
+        "description": ""
+    },
+    "popup_sfmEnabled_onChannel_enable": {
+        "message": "Aktivieren",
+        "description": ""
+    },
+    "popup_openOptions": {
+        "message": "Optionen...",
+        "description": "Label of the Options... button on the browser_action popup menu."
     },
     "options_sfm_enabled": {
         "message": "Spoilerfreien Modus aktivieren"

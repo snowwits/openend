@@ -45,7 +45,6 @@ const CHECK_PAGE_TASK_INTERVAL = 200; // 200ms
 const PAGE_CONFIGURATION_TIMEOUT = 45000; // 45s
 
 
-
 /*
  * ====================================================================================================
  * CHANNEL AND PLATFORM
@@ -152,6 +151,13 @@ class Platform {
 
     get verboseName() {
         return this.displayName + " (" + this.name + ")";
+    }
+
+    /**
+     * @return {!boolean} whether this platform supports distinct channels
+     */
+    get supportsChannels() {
+        throw new Error("Not implemented");
     }
 
     /**
@@ -431,6 +437,13 @@ class TwitchPlatform extends Platform {
     /**
      * @override
      */
+    get supportsChannels() {
+        return true;
+    }
+
+    /**
+     * @override
+     */
     buildChannel(name, displayName = null) {
         if (TWITCH_USERNAME_REGEX.test(name)) {
             const channelNameLowerCase = name.toLowerCase();
@@ -576,6 +589,13 @@ class MlgPlatform extends Platform {
     /**
      * @override
      */
+    get supportsChannels() {
+        return false;
+    }
+
+    /**
+     * @override
+     */
     parseChannelFromQualifiedName(qualifiedChannelName) {
         return null;
     }
@@ -636,12 +656,12 @@ const SfmEnabled = Object.freeze({
     CUSTOM: "CUSTOM"
 });
 
-const OPT_SFM_ENABLED_NAME = "sfmEnabled";
-const OPT_SFM_ENABLED_DEFAULT = SfmEnabled.NEVER;
-const OPT_SFM_PLATFORMS_NAME = "sfmPlatforms";
-const OPT_SFM_PLATFORMS_DEFAULT = getOptSfmPlatformsDefaultValue();
-const OPT_SFM_CHANNELS_NAME = "sfmChannels";
-const OPT_SFM_CHANNELS_DEFAULT = Object.freeze([]);
+const OPT_SFM_ENABLED_GLOBAL_NAME = "sfmEnabledGlobal";
+const OPT_SFM_ENABLED_GLOBAL_DEFAULT = SfmEnabled.NEVER;
+const OPT_SFM_ENABLED_PLATFORMS_NAME = "sfmEnabledPlatforms";
+const OPT_SFM_ENABLED_PLATFORMS_DEFAULT = getOptSfmEnabledPlatformsDefaultValue();
+const OPT_SFM_ENABLED_CHANNELS_NAME = "sfmEnabledChannels";
+const OPT_SFM_ENABLED_CHANNELS_DEFAULT = Object.freeze([]);
 const OPT_SFM_PLAYER_HIDE_DURATION_NAME = "sfmPlayerHideDuration";
 const OPT_SFM_PLAYER_HIDE_DURATION_DEFAULT = true;
 const OPT_SFM_PLAYER_JUMP_DISTANCE_NAME = "sfmPlayerJumpDistance";
@@ -657,9 +677,9 @@ const OPT_GENERAL_THEATRE_MODE_DEFAULT = false;
 
 function getDefaultOptionsCopy() {
     return {
-        [OPT_SFM_ENABLED_NAME]: OPT_SFM_ENABLED_DEFAULT,
-        [OPT_SFM_CHANNELS_NAME]: OPT_SFM_CHANNELS_DEFAULT,
-        [OPT_SFM_PLATFORMS_NAME]: OPT_SFM_PLATFORMS_DEFAULT,
+        [OPT_SFM_ENABLED_GLOBAL_NAME]: OPT_SFM_ENABLED_GLOBAL_DEFAULT,
+        [OPT_SFM_ENABLED_CHANNELS_NAME]: OPT_SFM_ENABLED_CHANNELS_DEFAULT,
+        [OPT_SFM_ENABLED_PLATFORMS_NAME]: OPT_SFM_ENABLED_PLATFORMS_DEFAULT,
         [OPT_SFM_PLAYER_HIDE_DURATION_NAME]: OPT_SFM_PLAYER_HIDE_DURATION_DEFAULT,
         [OPT_SFM_PLAYER_JUMP_DISTANCE_NAME]: OPT_SFM_PLAYER_JUMP_DISTANCE_DEFAULT,
         [OPT_SFM_VIDEO_LIST_HIDE_TITLE_NAME]: OPT_SFM_VIDEO_LIST_HIDE_TITLE_DEFAULT,
@@ -699,7 +719,7 @@ const SfmState = Object.freeze({
  * @return {!string} {@link SfmState}
  */
 function checkSfmState(options, platform, channel) {
-    const sfmEnabledGlobally = options[OPT_SFM_ENABLED_NAME];
+    const sfmEnabledGlobally = options[OPT_SFM_ENABLED_GLOBAL_NAME];
     if (SfmEnabled.ALWAYS === sfmEnabledGlobally) {
         return SfmState.ENABLED;
     } else if (SfmEnabled.NEVER === sfmEnabledGlobally) {
@@ -708,7 +728,7 @@ function checkSfmState(options, platform, channel) {
         if (platform === null) {
             return SfmState.UNDETERMINED;
         }
-        const sfmEnabledOnPlatform = checkSfmEnabledOnPlatform(options, platform);
+        const sfmEnabledOnPlatform = checkSfmStateOnPlatform(options, platform);
         if (SfmEnabled.ALWAYS === sfmEnabledOnPlatform) {
             return SfmState.ENABLED;
         }
@@ -734,18 +754,25 @@ function checkSfmState(options, platform, channel) {
  * @param options {!object<!string, !object>} the options
  * @return {!object<!string, !string>} a copy of the map: {@link Platform}'s name -> {@link SfmEnabled} value
  */
-function getOptSfmPlatforms(options) {
-    return JSON.parse(JSON.stringify(options[OPT_SFM_PLATFORMS_NAME]));
+function getOptSfmEnabledPlatforms(options) {
+    return JSON.parse(JSON.stringify(options[OPT_SFM_ENABLED_PLATFORMS_NAME]));
 }
 
-function getOptSfmPlatformsDefaultValue() {
-    const sfmPlatforms = {};
+function getOptSfmEnabledPlatformsDefaultValue() {
+    const sfmEnabledPlatforms = {};
     for (let i = 0; i < ALL_PLATFORMS.length; i++) {
         const platformName = ALL_PLATFORMS[i].name;
-        sfmPlatforms[platformName] = SfmEnabled.NEVER;
+        sfmEnabledPlatforms[platformName] = SfmEnabled.NEVER;
     }
-    console.log("SFMPLATFORMS DEFAULT: %o", sfmPlatforms);
-    return Object.freeze(sfmPlatforms);
+    return Object.freeze(sfmEnabledPlatforms);
+}
+
+/**
+ * @param options {!object<!string, !object>} the options
+ * @return {!array.<!ChannelSerialized>} the unmodifiable array of sfm channels
+ */
+function getOptSfmEnabledChannels(options) {
+    return options[OPT_SFM_ENABLED_CHANNELS_NAME];
 }
 
 /**
@@ -754,14 +781,14 @@ function getOptSfmPlatformsDefaultValue() {
  * @param platform {!Platform} the Platform
  * @return {!string} the {@SfmEnabled} value
  */
-function checkSfmEnabledOnPlatform(options, platform) {
-    const sfmPlatforms = getOptSfmPlatforms(options);
-    for (const platformName in sfmPlatforms) {
+function checkSfmStateOnPlatform(options, platform) {
+    const sfmEnabledPlatforms = getOptSfmEnabledPlatforms(options);
+    for (const platformName in sfmEnabledPlatforms) {
         if (platform.name === platformName) {
-            return sfmPlatforms[platformName];
+            return sfmEnabledPlatforms[platformName];
         }
     }
-    throw new Error("Could not find the SfmEnabled value for platform " + platform + " in all platform options " + sfmPlatforms);
+    throw new Error("Could not find the SfmEnabled value for platform " + platform + " in option ["+ OPT_SFM_ENABLED_PLATFORMS_NAME +"] value: " + sfmEnabledPlatforms);
 }
 
 /**
@@ -770,11 +797,7 @@ function checkSfmEnabledOnPlatform(options, platform) {
  * @param channel {!Channel} the channel
  */
 function checkSfmEnabledOnChannel(options, channel) {
-    /**
-     * @type {!array.<!ChannelSerialized>}
-     */
-    const sfmChannels = options[OPT_SFM_CHANNELS_NAME];
-    return sfmChannels.some(ch => Channel.equal(ch, channel));
+    return getOptSfmEnabledChannels(options).some(ch => Channel.equal(ch, channel));
 }
 
 /*
@@ -1002,19 +1025,20 @@ function parseDurationPart(groups, index) {
  * 3723 = 1 * 60 * 60 + 2 * 60 + 3 -> "01h02m03s"
  *
  * @param duration {!number} the duration in seconds
+ * @param padWithZeros {?boolean} whether the parts should be padded with leading zeros ("01" instead of "1")
  * @return {!string}
  */
-function formatDuration(duration) {
+function formatDuration(duration, padWithZeros = true) {
     const parts = extractDurationParts(duration);
     let formatted = "";
     if (parts[0] > 0) {
-        formatted += padLeft(parts[0]) + "h";
+        formatted += (padWithZeros ? padLeft(parts[0]): parts[0]) + "h";
     }
     if (parts[1] > 0) {
-        formatted += padLeft(parts[1]) + "m";
+        formatted += (padWithZeros ? padLeft(parts[1]): parts[1]) + "m";
     }
     if (parts[2] > 0) {
-        formatted += padLeft(parts[2]) + "s";
+        formatted += (padWithZeros ? padLeft(parts[2]): parts[2]) + "s";
     }
     return formatted;
 }
@@ -1022,11 +1046,13 @@ function formatDuration(duration) {
 /**
  * 3723 = 1h, 2m, 3s -> [1, 2, 3]
  *
+ * negative numbers are interpreted as positive numbers
+ *
  * @param duration {!number}
  * @return {[!number,!number,!number]}
  */
 function extractDurationParts(duration) {
-    let amount = duration;
+    let amount = Math.abs(duration);
     // Calculate (and subtract) whole hours
     const hours = Math.floor(amount / 3600);
     amount -= hours * 3600;
@@ -1298,11 +1324,17 @@ function setTextInputValue(textInputId, value) {
  * @param selectElem {!HTMLSelectElement}
  * @param valueToMsgKeyMap {Map<!string, !string>} option value -> message key
  */
-function setSelectLabels(selectElem, valueToMsgKeyMap) {
-    for (let i = 0; i < selectElem.length; i++) {
-        const option = selectElem[i];
-        option.textContent = chrome.i18n.getMessage(valueToMsgKeyMap.get(option.value));
-    }
+function setSelectOptions(selectElem, valueToMsgKeyMap) {
+    // Clear old options
+    selectElem.length = 0;
+
+    // Add new options
+    valueToMsgKeyMap.forEach((value, key, map) => {
+        const optionElem = document.createElement("option");
+        optionElem.value = key;
+        optionElem.textContent = chrome.i18n.getMessage(value);
+        selectElem.appendChild(optionElem);
+    });
 }
 
 /**

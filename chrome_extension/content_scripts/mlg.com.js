@@ -113,9 +113,11 @@ function resetGlobalPageFlags() {
 
 function resetGlobalPageStateFlags(changedOptions) {
     // If something about SFM enabled changed, sfmEnabledForPage needs re-determination.
-    if (OPT_SFM_ENABLED_NAME in changedOptions) {
-        updateSfmState(SfmState.UNDETERMINED);
+    if (OPT_SFM_ENABLED_GLOBAL_NAME in changedOptions || OPT_SFM_ENABLED_PLATFORMS_NAME in changedOptions) {
+        GLOBAL_sfmState = SfmState.UNDETERMINED;
+        determineSfmState();
     }
+
     // All changed options need redetermination
     for (let optionName in GLOBAL_configuredFlags) {
         if (optionName in changedOptions) {
@@ -396,11 +398,11 @@ function handleMessage(request, sender, sendResponse) {
  * OPTIONS
  * ====================================================================================================
  */
-function listenForOptionsChanges() {
-    chrome.storage.onChanged.addListener(handleOptionUpdate);
+function listenForStorageChanges() {
+    chrome.storage.onChanged.addListener(handleStorageChange);
 }
 
-function handleOptionUpdate(changes, namespace) {
+function handleStorageChange(changes, namespace) {
     log("[%s storage] Option changes: %o", namespace, changes);
     for (const key in changes) {
         GLOBAL_options[key] = changes[key].newValue;
@@ -433,8 +435,9 @@ function init() {
         }
         GLOBAL_options = items;
         log("Loaded options: %o", GLOBAL_options);
+        reconfigurePageAfterOptionsUpdate(GLOBAL_options);
 
-        listenForOptionsChanges();
+        listenForStorageChanges();
         // Only the top frame should answer messages
         if (isTopFrame()) {
             listenForMessages();
