@@ -49,117 +49,117 @@
         "message": "Dauer anzeigen"
     },
     "popup_sfmState_ENABLED": {
-        "message": "Spoilerfreier Modus aktiviert",
-        "description": ""
+        "message": "Spoilerfreier Modus aktiviert"
     },
     "popup_sfmState_DISABLED": {
-        "message": "Spoilerfreier Modus deaktiviert",
-        "description": ""
+        "message": "Spoilerfreier Modus deaktiviert"
     },
     "popup_sfmState_UNDETERMINED": {
-        "message": "Status des Spoilerfreien Modus noch unbestimmt",
-        "description": ""
+        "message": "Spoilerfreier Modus noch unbestimmt"
     },
     "popup_sfmEnabled": {
-        "message": "Spoilerfreien Modus aktivieren",
-        "description": ""
-    },
-    "popup_sfmEnabled_global": {
-        "message": "Global",
-        "description": ""
-    },
-    "popup_sfmEnabled_global_NEVER": {
-        "message": "Nie",
-        "description": ""
-    },
-    "popup_sfmEnabled_global_ALWAYS": {
-        "message": "Immer",
-        "description": ""
-    },
-    "popup_sfmEnabled_global_CUSTOM": {
-        "message": "Plattform-abhängig",
-        "description": ""
-    },
-    "popup_sfmEnabled_onPlatform": {
-        "message": "Auf dieser Plattform",
-        "description": ""
-    },
-    "popup_sfmEnabled_onPlatform_NEVER": {
-        "message": "Nie",
-        "description": ""
-    },
-    "popup_sfmEnabled_onPlatform_ALWAYS": {
-        "message": "Immer",
-        "description": ""
-    },
-    "popup_sfmEnabled_onPlatform_CUSTOM": {
-        "message": "Kanal-abhängig",
-        "description": ""
-    },
-    "popup_sfmEnabled_onChannel": {
-        "message": "Auf diesem Kanal",
-        "description": ""
-    },
-    "popup_sfmEnabled_onChannel_enable": {
-        "message": "Aktivieren",
-        "description": ""
-    },
-    "popup_openOptions": {
-        "message": "Optionen...",
-        "description": "Label of the Options... button on the browser_action popup menu."
-    },
-    "options_sfm_enabled": {
         "message": "Spoilerfreien Modus aktivieren"
     },
-    "options_sfm_enabled_never": {
+    "popup_sfmEnabled_global": {
+        "message": "Global"
+    },
+    "popup_sfmEnabled_global_NEVER": {
         "message": "Nie"
     },
-    "options_sfm_enabled_always": {
+    "popup_sfmEnabled_global_ALWAYS": {
         "message": "Immer"
     },
-    "options_sfm_enabled_custom": {
-        "message": "Benutzerdefiniert"
+    "popup_sfmEnabled_global_CUSTOM": {
+        "message": "Plattform-abhängig"
     },
-    "options_sfm_custom": {
-        "message": "Benutzerdefinierter Spoilerfreier Modus"
+    "popup_sfmEnabled_onPlatform": {
+        "message": "Auf dieser Plattform"
     },
-    "options_sfm_channelToAdd": {
+    "popup_sfmEnabled_onPlatform_NEVER": {
+        "message": "Nie"
+    },
+    "popup_sfmEnabled_onPlatform_ALWAYS": {
+        "message": "Immer"
+    },
+    "popup_sfmEnabled_onPlatform_CUSTOM": {
+        "message": "Kanal-abhängig"
+    },
+    "popup_sfmEnabled_onChannel": {
+        "message": "Auf diesem Kanal"
+    },
+    "popup_sfmEnabled_onChannel_enable": {
+        "message": "Aktivieren"
+    },
+    "popup_openOptions": {
+        "message": "Optionen..."
+    },
+    "options_title": {
+        "message": "Open End Optionen"
+    },
+    "options_sfmEnabled": {
+        "message": "Spoilerfreien Modus aktivieren"
+    },
+    "options_sfmEnabled_global": {
+        "message": "Global"
+    },
+    "options_sfmEnabled_global_NEVER": {
+        "message": "Nie"
+    },
+    "options_sfmEnabled_global_ALWAYS": {
+        "message": "Immer"
+    },
+    "options_sfmEnabled_global_CUSTOM": {
+        "message": "Platfform-abhängig"
+    },
+    "options_sfmEnabled_platforms": {
+        "message": "Je Plattform"
+    },
+    "options_sfmEnabled_onPlatform_NEVER": {
+        "message": "Nie"
+    },
+    "options_sfmEnabled_onPlatform_ALWAYS": {
+        "message": "Immer"
+    },
+    "options_sfmEnabled_onPlatform_CUSTOM": {
+        "message": "Kanal-abhängig"
+    },
+    "options_sfmEnabled_channels": {
+        "message": "Auf den folgenden Kanälen aktivieren"
+    },
+    "options_sfmEnabled_channelToAdd": {
         "message": "Qualifizierter Name oder URL:"
     },
-    "options_channelToAddDisplayName": {
+    "options_sfmEnabled_channelToAddDisplayName": {
         "message": "Anzeigename:"
     },
-    "options_sfm_addChannel": {
+    "options_sfmEnabled_addChannel": {
         "message": "Kanal hinzufügen"
     },
-    "options_sfm_channels": {
-        "message": "Kanäle im spoilerfreien Modus"
+    "options_sfmEnabled_removeChannels": {
+        "message": "Markierte Kanäle entfernen"
     },
-    "options_sfm_removeChannels": {
-        "message": "Ausgewählte Kanäle entfernen"
-    },
-    "options_sfm_configure": {
+    "options_sfmCfg": {
         "message": "Spoilerfreien Modus einrichten"
     },
-    "options_sfm_player": {
+    "options_sfmCfg_player": {
         "message": "Video-Player"
     },
-    "options_sfm_player_hideDuration": {
+    "options_sfmCfg_player_hideDuration": {
         "message": "Videodauer verbergen"
     },
-    "options_sfm_player_jumpDistance": {
+    "options_sfmCfg_player_jumpDistance": {
         "message": "Länge der Zeitsprünge"
     },
-    "options_sfm_videoList": {
+    "options_sfmCfg_videoList": {
         "message": "Einträge in Videolisten"
     },
-    "options_sfm_videoList_hideTitle": {
+    "options_sfmCfg_videoList_hideTitle": {
         "message": "Videotitel verbergen"
     },
-    "options_sfm_videoList_hidePreview": {
+    "options_sfmCfg_videoList_hidePreview": {
         "message": "Videovorschau verbergen"
     },
-    "options_sfm_videoList_hideDuration": {
+    "options_sfmCfg_videoList_hideDuration": {
         "message": "Videodauer verbergen"
     },
     "options_general": {
@@ -167,9 +167,6 @@
     },
     "options_general_theatreMode": {
         "message": "Videos im Theater-Modus starten"
-    },
-    "options_twitch": {
-        "message": "Twitch"
     },
     "options_save": {
         "message": "Speichern"
@@ -185,11 +182,5 @@
     },
     "options_restoreDefaults_successMsg": {
         "message": "Standardwerte wiederhergestellt."
-    },
-    "browserAction_sfmCustom_platformHeader": {
-        "message": "Auf dieser Plattform aktivieren"
-    },
-    "browserAction_sfmCustom_channelHeader": {
-        "message": "Auf diesem Channel aktivieren"
     }
 }

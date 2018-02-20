@@ -7,30 +7,47 @@ body {
     height: 450px; /* height so that the div is not too larger than the Chrome options box and Chrome won't display their own scroll pane */
     overflow-y: auto;
 }
+#options hr {
+    margin-top: 35px;
+}
 
-#sfm_channels {
+ul {
+    list-style-type: none;
+    padding-left: 0px;
+}
+
+li {
+    margin: 0 0 3px 0;
+}
+
+.sfmEnabledPlatform {
+    float: left;
+    width: 100px;
+}
+
+#sfmEnabledChannels {
     width: 95%;
 }
 
-#sfm_channelToAdd_container {
+#sfmEnabledChannelToAddContainer {
     width: 40%;
     display: inline-block;
 }
 
-#sfm_channelToAdd {
+#sfmEnabledChannelToAdd {
     width: 100%;
 }
 
-#sfm_channelToAddDisplayName_container {
+#sfmEnabledChannelToAddDisplayNameContainer {
     width: 30%;
     display: inline-block;
 }
 
-#sfm_channelToAddDisplayName {
+#sfmEnabledChannelToAddDisplayName {
     width: 100%;
 }
 
-#sfm_addChannel_container {
+#sfmEnabledAddChannelContainer {
     display: inline-block;
 }
 

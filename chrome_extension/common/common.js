@@ -719,10 +719,10 @@ const SfmState = Object.freeze({
  * @return {!string} {@link SfmState}
  */
 function checkSfmState(options, platform, channel) {
-    const sfmEnabledGlobally = options[OPT_SFM_ENABLED_GLOBAL_NAME];
-    if (SfmEnabled.ALWAYS === sfmEnabledGlobally) {
+    const sfmEnabledGlobal = options[OPT_SFM_ENABLED_GLOBAL_NAME];
+    if (SfmEnabled.ALWAYS === sfmEnabledGlobal) {
         return SfmState.ENABLED;
-    } else if (SfmEnabled.NEVER === sfmEnabledGlobally) {
+    } else if (SfmEnabled.NEVER === sfmEnabledGlobal) {
         return SfmState.DISABLED;
     } else if (SfmEnabled.CUSTOM) {
         if (platform === null) {
@@ -1335,24 +1335,6 @@ function setSelectOptions(selectElem, valueToMsgKeyMap) {
         optionElem.textContent = chrome.i18n.getMessage(value);
         selectElem.appendChild(optionElem);
     });
-}
-
-/**
- *
- * @param selectElem {!HTMLSelectElement}
- * @param optionValue {!string}
- * @return {!boolean} if the option value was found and successfully selected
- */
-function setSelectedOption(selectElem, optionValue) {
-    for (let i = 0; i < selectElem.length; i++) {
-        const option = selectElem[i];
-        if (optionValue === option.value) {
-            selectElem.selectedIndex = i;
-            return true;
-        }
-    }
-    selectElem.selectedIndex = -1;
-    return false;
 }
 
 /**

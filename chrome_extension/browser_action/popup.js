@@ -24,7 +24,7 @@ function error(msg, ...substitutions) {
 const SFM_STATE_ICON_ID = "sfmStateIcon";
 const SFM_STATE_LABEL_ID = "sfmStateLabel";
 
-const SFM_ENABLED_GLOBALLY_ID = "sfmEnabledGlobally";
+const SFM_ENABLED_GLOBAL_ID = "sfmEnabledGlobal";
 
 const PLATFORM_ID = "platform";
 const SFM_ENABLED_ON_PLATFORM_ID = "sfmEnabledOnPlatform";
@@ -76,8 +76,8 @@ function updateUiAfterOptionsUpdate(options) {
     }
 
     if (OPT_SFM_ENABLED_GLOBAL_NAME in options) {
-        const sfmEnabledGloballySelect = document.getElementById(SFM_ENABLED_GLOBALLY_ID);
-        setSelectedOption(sfmEnabledGloballySelect, options[OPT_SFM_ENABLED_GLOBAL_NAME]);
+        const sfmEnabledGlobalSelect = document.getElementById(SFM_ENABLED_GLOBAL_ID);
+        sfmEnabledGlobalSelect.value = options[OPT_SFM_ENABLED_GLOBAL_NAME];
     }
 }
 
@@ -174,7 +174,7 @@ function updateUiAfterTabInfoUpdate(tabInfo) {
  * @param platform {!Platform} the platform
  */
 function updateSfmEnabledOnPlatformSelect(sfmEnabledOnPlatformSelect, options, platform) {
-    setSelectedOption(sfmEnabledOnPlatformSelect, checkSfmStateOnPlatform(options, platform));
+    sfmEnabledOnPlatformSelect.value = checkSfmStateOnPlatform(options, platform);
 }
 
 /**
@@ -187,15 +187,15 @@ function updateSfmEnabledOnChannelCheckbox(channelSfmEnabledCheckbox, options, c
     channelSfmEnabledCheckbox.checked = checkSfmEnabledOnChannel(options, channel);
 }
 
-function handleSfmEnabledGloballyChange() {
-    // this: <select id="sfmEnabledGlobally">
-    const sfmEnabledGloballyValue = this.value;
-    chrome.storage.sync.set({[OPT_SFM_ENABLED_GLOBAL_NAME]: sfmEnabledGloballyValue}, function () {
+function handleSfmEnabledGlobalChange() {
+    // this: <select id="sfmEnabledGlobal">
+    const sfmEnabledGlobalValue = this.value;
+    chrome.storage.sync.set({[OPT_SFM_ENABLED_GLOBAL_NAME]: sfmEnabledGlobalValue}, function () {
         if (chrome.runtime.lastError) {
-            error("[sync storage] Failed to set option [%s] to [%o]: %o", OPT_SFM_ENABLED_GLOBAL_NAME, sfmEnabledGloballyValue, chrome.runtime.lastError);
+            error("[sync storage] Failed to set option [%s] to [%o]: %o", OPT_SFM_ENABLED_GLOBAL_NAME, sfmEnabledGlobalValue, chrome.runtime.lastError);
             return;
         }
-        log("[sync storage] Set option [%s] to [%o]", OPT_SFM_ENABLED_GLOBAL_NAME, sfmEnabledGloballyValue);
+        log("[sync storage] Set option [%s] to [%o]", OPT_SFM_ENABLED_GLOBAL_NAME, sfmEnabledGlobalValue);
     });
 }
 
@@ -365,10 +365,10 @@ function init() {
     setMsgToTextContent("sfmEnabledLabel", "popup_sfmEnabled");
 
     // SFM enabled globally
-    setMsgToTextContent("sfmEnabledGloballyLabel", "popup_sfmEnabled_global");
-    const sfmEnabledGloballySelect = document.getElementById(SFM_ENABLED_GLOBALLY_ID);
-    setSelectOptions(sfmEnabledGloballySelect, buildEnumValueToMsgKeyMap(SfmEnabled, "popup_sfmEnabled_global_"));
-    sfmEnabledGloballySelect.onchange = handleSfmEnabledGloballyChange;
+    setMsgToTextContent("sfmEnabledGlobalLabel", "popup_sfmEnabled_global");
+    const sfmEnabledGlobalSelect = document.getElementById(SFM_ENABLED_GLOBAL_ID);
+    setSelectOptions(sfmEnabledGlobalSelect, buildEnumValueToMsgKeyMap(SfmEnabled, "popup_sfmEnabled_global_"));
+    sfmEnabledGlobalSelect.onchange = handleSfmEnabledGlobalChange;
 
     // SFM enabled on platform
     setMsgToTextContent("sfmEnabledOnPlatformLabel", "popup_sfmEnabled_onPlatform");

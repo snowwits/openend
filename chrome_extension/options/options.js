@@ -23,6 +23,15 @@ function error(msg, ...substitutions) {
  */
 const MESSAGE_DISPLAY_DURATION = 1000; // 1s
 
+const SFM_ENABLED_GLOBAL_ID = "sfmEnabledGlobal";
+const SFM_ENABLED_PLATFORMS_ID = "sfmEnabledPlatforms";
+const SFM_ENABLED_CHANNELS_ID = "sfmEnabledChannels";
+const SFM_CFG_PLAYER_HIDE_DURATION_ID = "sfmCfgPlayerHideDuration";
+const SFM_CFG_PLAYER_JUMP_DISTANCE_ID = "sfmCfgPlayerJumpDistance";
+const SFM_CFG_VIDEO_LIST_HIDE_TITLE_ID = "sfmCfgVideoListHideTitle";
+const SFM_CFG_VIDEO_LIST_HIDE_PREVIEW_ID = "sfmCfgVideoListHidePreview";
+const SFM_CFG_VIDEO_LIST_HIDE_DURATION_ID = "sfmCfgVideoListHideDuration";
+const GENERAL_THEATRE_MODE_ID = "generalTheatreMode";
 
 /*
  * ====================================================================================================
@@ -66,15 +75,29 @@ function restoreDefaultOptions() {
 
 function getOptionsFromInputValues() {
     return {
-        [OPT_SFM_ENABLED_GLOBAL_NAME]: getRadioValue("sfm_enabled"),
-        [OPT_SFM_ENABLED_CHANNELS_NAME]: getSelectChannelsSerialized("sfm_channels"),
-        [OPT_SFM_PLAYER_HIDE_DURATION_NAME]: getCheckboxValue("sfm_player_hideDuration"),
-        [OPT_SFM_PLAYER_JUMP_DISTANCE_NAME]: getTextInputValue("sfm_player_jumpDistance"),
-        [OPT_SFM_VIDEO_LIST_HIDE_TITLE_NAME]: getCheckboxValue("sfm_videoList_hideTitle"),
-        [OPT_SFM_VIDEO_LIST_HIDE_PREVIEW_NAME]: getCheckboxValue("sfm_videoList_hidePreview"),
-        [OPT_SFM_VIDEO_LIST_HIDE_DURATION_NAME]: getCheckboxValue("sfm_videoList_hideDuration"),
-        [OPT_GENERAL_THEATRE_MODE_NAME]: getCheckboxValue("general_theatreMode"),
+        [OPT_SFM_ENABLED_GLOBAL_NAME]: document.getElementById(SFM_ENABLED_GLOBAL_ID).value,
+        [OPT_SFM_ENABLED_PLATFORMS_NAME]: getSfmEnabledPlatformsFromInputValues(),
+        [OPT_SFM_ENABLED_CHANNELS_NAME]: getSelectChannelsSerialized(SFM_ENABLED_CHANNELS_ID),
+        [OPT_SFM_PLAYER_HIDE_DURATION_NAME]: getCheckboxValue(SFM_CFG_PLAYER_HIDE_DURATION_ID),
+        [OPT_SFM_PLAYER_JUMP_DISTANCE_NAME]: getTextInputValue(SFM_CFG_PLAYER_JUMP_DISTANCE_ID),
+        [OPT_SFM_VIDEO_LIST_HIDE_TITLE_NAME]: getCheckboxValue(SFM_CFG_VIDEO_LIST_HIDE_TITLE_ID),
+        [OPT_SFM_VIDEO_LIST_HIDE_PREVIEW_NAME]: getCheckboxValue(SFM_CFG_VIDEO_LIST_HIDE_PREVIEW_ID),
+        [OPT_SFM_VIDEO_LIST_HIDE_DURATION_NAME]: getCheckboxValue(SFM_CFG_VIDEO_LIST_HIDE_DURATION_ID),
+        [OPT_GENERAL_THEATRE_MODE_NAME]: getCheckboxValue(GENERAL_THEATRE_MODE_ID),
     };
+}
+
+function getSfmEnabledPlatformsFromInputValues() {
+    const sfmEnabledPlatforms = {};
+    const sfmEnabledPlatformsUl = document.getElementById(SFM_ENABLED_PLATFORMS_ID);
+    const items = sfmEnabledPlatformsUl.getElementsByTagName("li");
+    for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        const platformName = getData(item.querySelector(".sfmEnabledPlatform"), "platformName");
+        const sfmEnabled = item.querySelector(".sfmEnabledOnPlatform").value;
+        sfmEnabledPlatforms[platformName] = sfmEnabled;
+    }
+    return sfmEnabledPlatforms;
 }
 
 /**
@@ -84,30 +107,66 @@ function getOptionsFromInputValues() {
 function updateInputsWithOptions(options) {
     // Set option values to elements
     if (OPT_SFM_ENABLED_GLOBAL_NAME in options) {
-        setRadioValues("sfm_enabled", options[OPT_SFM_ENABLED_GLOBAL_NAME]);
+        const sfmEnabledGlobalSelect = document.getElementById(SFM_ENABLED_GLOBAL_ID);
+        sfmEnabledGlobalSelect.value = options[OPT_SFM_ENABLED_GLOBAL_NAME];
+    }
+    if (OPT_SFM_ENABLED_PLATFORMS_NAME in options) {
+        const optSfmEnabledPlatforms = getOptSfmEnabledPlatforms(options);
+        const sfmEnabledPlatformsUl = document.getElementById(SFM_ENABLED_PLATFORMS_ID);
+
+        /**
+         *
+         * <li>
+         *     <span class="sfmEnabledPlatform" data-platform-name="twitch.tv">Twitch.tv</span>
+         *     <select class="sfmEnabledOnPlatform">...</select>
+         * </li>
+         */
+        for (let i=0; i<ALL_PLATFORMS.length; i++) {
+            const platform = ALL_PLATFORMS[i];
+            const platformSpan = sfmEnabledPlatformsUl.querySelector(".sfmEnabledPlatform[data-platform-name='" + platform.name + "']");
+            console.log("%o", platformSpan);
+            if (platformSpan) {
+                const enabledSelect = platformSpan.parentElement.querySelector(".sfmEnabledOnPlatform");
+                enabledSelect.value = optSfmEnabledPlatforms[platform.name];
+            }
+            else {
+                const newItem = document.createElement("li");
+                const newPlatformSpan = document.createElement("span");
+                newPlatformSpan.classList.add("sfmEnabledPlatform");
+                setData(newPlatformSpan, "platformName", platform.name);
+                newPlatformSpan.textContent = platform.verboseName;
+                newItem.appendChild(newPlatformSpan);
+                const newEnabledSelect = document.createElement("select");
+                newEnabledSelect.classList.add("sfmEnabledOnPlatform");
+                setSelectOptions(newEnabledSelect, buildEnumValueToMsgKeyMap(SfmEnabled, "options_sfmEnabled_onPlatform_"));
+                newEnabledSelect.value = optSfmEnabledPlatforms[platform.name];
+                newItem.appendChild((newEnabledSelect));
+                sfmEnabledPlatformsUl.appendChild(newItem);
+            }
+        }
     }
     if (OPT_SFM_ENABLED_CHANNELS_NAME in options) {
-        const channelsSelect = document.getElementById("sfm_channels");
-        const channels = options[OPT_SFM_ENABLED_CHANNELS_NAME].map(chSerialized => Channel.deserialize(chSerialized));
-        setChannelsToSortedSetSelect(channelsSelect, channels);
+        const sfmEnabledChannelsSelect = document.getElementById(SFM_ENABLED_CHANNELS_ID);
+        const channels = getOptSfmEnabledChannels(options).map(chSerialized => Channel.deserialize(chSerialized));
+        setChannelsToSortedSetSelect(sfmEnabledChannelsSelect, channels);
     }
     if (OPT_SFM_PLAYER_HIDE_DURATION_NAME in options) {
-        setCheckboxValue("sfm_player_hideDuration", options[OPT_SFM_PLAYER_HIDE_DURATION_NAME]);
+        setCheckboxValue(SFM_CFG_PLAYER_HIDE_DURATION_ID, options[OPT_SFM_PLAYER_HIDE_DURATION_NAME]);
     }
     if (OPT_SFM_PLAYER_JUMP_DISTANCE_NAME in options) {
-        setTextInputValue("sfm_player_jumpDistance", options[OPT_SFM_PLAYER_JUMP_DISTANCE_NAME]);
+        setTextInputValue(SFM_CFG_PLAYER_JUMP_DISTANCE_ID, options[OPT_SFM_PLAYER_JUMP_DISTANCE_NAME]);
     }
     if (OPT_SFM_VIDEO_LIST_HIDE_TITLE_NAME in options) {
-        setCheckboxValue("sfm_videoList_hideTitle", options[OPT_SFM_VIDEO_LIST_HIDE_TITLE_NAME]);
+        setCheckboxValue(SFM_CFG_VIDEO_LIST_HIDE_TITLE_ID, options[OPT_SFM_VIDEO_LIST_HIDE_TITLE_NAME]);
     }
     if (OPT_SFM_VIDEO_LIST_HIDE_PREVIEW_NAME in options) {
-        setCheckboxValue("sfm_videoList_hidePreview", options[OPT_SFM_VIDEO_LIST_HIDE_PREVIEW_NAME]);
+        setCheckboxValue(SFM_CFG_VIDEO_LIST_HIDE_PREVIEW_ID, options[OPT_SFM_VIDEO_LIST_HIDE_PREVIEW_NAME]);
     }
     if (OPT_SFM_VIDEO_LIST_HIDE_DURATION_NAME in options) {
-        setCheckboxValue("sfm_videoList_hideDuration", options[OPT_SFM_VIDEO_LIST_HIDE_DURATION_NAME]);
+        setCheckboxValue(SFM_CFG_VIDEO_LIST_HIDE_DURATION_ID, options[OPT_SFM_VIDEO_LIST_HIDE_DURATION_NAME]);
     }
     if (OPT_GENERAL_THEATRE_MODE_NAME in options) {
-        setCheckboxValue("general_theatreMode", options[OPT_GENERAL_THEATRE_MODE_NAME]);
+        setCheckboxValue(GENERAL_THEATRE_MODE_ID, options[OPT_GENERAL_THEATRE_MODE_NAME]);
     }
 }
 
@@ -156,60 +215,72 @@ function handleStorageChange(changes, namespace) {
  */
 function init() {
     // Init elements
-    // Activate Spoiler-Free Mode
-    setMsgToTextContent("sfm_enabled-label", "options_sfm_enabled");
-    setMsgToTextContent("sfm_enabled_always-label", "options_sfm_enabled_always");
-    setMsgToTextContent("sfm_enabled_never-label", "options_sfm_enabled_never");
-    setMsgToTextContent("sfm_enabled_custom-label", "options_sfm_enabled_custom");
 
-    // SFM channels select
-    setMsgToTitle("sfm_channels", "options_sfm_channels");
-    const channelsSelect = document.getElementById("sfm_channels");
+    // title
+    const allTitles = document.getElementsByTagName("title");
+    for (let i = 0; i < allTitles.length; i++) {
+        allTitles[i].textContent = chrome.i18n.getMessage("options_title");
+    }
+
+    // sfmEnabled
+    setMsgToTextContent("sfmEnabledLabel", "options_sfmEnabled");
+
+    // sfmEnabled_global
+    setMsgToTextContent("sfmEnabledGlobalLabel", "options_sfmEnabled_global");
+    const sfmEnabledGlobalSelect = document.getElementById(SFM_ENABLED_GLOBAL_ID);
+    setSelectOptions(sfmEnabledGlobalSelect, buildEnumValueToMsgKeyMap(SfmEnabled, "options_sfmEnabled_global_"));
+
+    // sfmEnabled_onPlatforms
+    setMsgToTextContent("sfmEnabledPlatformsLabel", "options_sfmEnabled_platforms");
+
+    // sfmEnabled_onChannels
+    setMsgToTextContent("sfmEnabledChannelsLabel", "options_sfmEnabled_channels");
+    const sfmEnabledOnChannelsSelect = document.getElementById(SFM_ENABLED_CHANNELS_ID);
 
     // Channel to add text input
-    setMsgToTextContent("sfm_channelToAdd_label", "options_sfm_channelToAdd");
-    const channelToAddInput = document.getElementById("sfm_channelToAdd");
-    setMsgToTitle("sfm_channelToAdd", "options_sfm_channelToAdd");
+    setMsgToTextContent("sfmEnabledChannelToAddLabel", "options_sfmEnabled_channelToAdd");
+    const sfmEnabledChannelToAddInput = document.getElementById("sfmEnabledChannelToAdd");
+    setMsgToTitle("sfmEnabledChannelToAdd", "options_sfm_channelToAdd");
 
-    setMsgToTextContent("sfm_channelToAddDisplayName_label", "options_channelToAddDisplayName");
-    const channelToAddDisplayNameInput = document.getElementById("sfm_channelToAddDisplayName");
+    setMsgToTextContent("sfmEnabledChannelToAddDisplayNameLabel", "options_sfmEnabled_channelToAddDisplayName");
+    const sfmEnabledChannelToAddDisplayNameInput = document.getElementById("sfmEnabledChannelToAddDisplayName");
 
     // Add channel button
-    setMsgToTextContent("sfm_addChannel", "options_sfm_addChannel");
-    const addChannelBtn = document.getElementById("sfm_addChannel");
+    setMsgToTextContent("sfmEnabledAddChannel", "options_sfmEnabled_addChannel");
+    const sfmEnabledAddChannelBtn = document.getElementById("sfmEnabledAddChannel");
 
     // Set add channel action
-    addChannelBtn.onclick = function handleAddChannelAction() {
-        const channel = parseChannel(channelToAddInput.value, getAttr(channelToAddDisplayNameInput, "value"));
+    sfmEnabledAddChannelBtn.onclick = function handleAddChannelAction() {
+        const channel = parseChannel(sfmEnabledChannelToAddInput.value, getAttr(sfmEnabledChannelToAddDisplayNameInput, "value"));
         if (channel) {
-            insertChannelInSortedSetSelect(channelsSelect, channel);
+            insertChannelInSortedSetSelect(sfmEnabledOnChannelsSelect, channel);
         } else {
-            error("Failed to add channel: %s, %s", channelToAddInput.value, channelToAddDisplayNameInput.value);
+            error("Failed to add channel: %s, %s", sfmEnabledChannelToAddInput.value, sfmEnabledChannelToAddDisplayNameInput.value);
         }
     };
 
     // Activate/Deactivate add channel btn based on channel input
     const handleChannelToAddChanged = () => {
-        const channel = parseChannel(channelToAddInput.value);
-        addChannelBtn.disabled = channel === null;
+        const channel = parseChannel(sfmEnabledChannelToAddInput.value);
+        sfmEnabledAddChannelBtn.disabled = channel === null;
     };
-    channelToAddInput.addEventListener("keyup", handleChannelToAddChanged);
+    sfmEnabledChannelToAddInput.addEventListener("keyup", handleChannelToAddChanged);
     handleChannelToAddChanged();
 
     // Remove channels btn
-    setMsgToTextContent("sfm_removeChannel", "options_sfm_removeChannels");
-    const removeChannelsBtn = document.getElementById("sfm_removeChannel");
+    setMsgToTextContent("sfmEnabledRemoveChannel", "options_sfmEnabled_removeChannels");
+    const removeChannelsBtn = document.getElementById("sfmEnabledRemoveChannel");
 
     // Set remove channels action
     removeChannelsBtn.onclick = function handleRemoveChannelsAction() {
-        removeSelectedOptions(channelsSelect);
+        removeSelectedOptions(sfmEnabledOnChannelsSelect);
     };
 
     // Active/Deactivate remove channels btn based on channels selection
     const handleSelectedChannelsChange = () => {
-        removeChannelsBtn.disabled = channelsSelect.selectedOptions.length === 0;
+        removeChannelsBtn.disabled = sfmEnabledOnChannelsSelect.selectedOptions.length === 0;
     };
-    channelsSelect.onchange = handleSelectedChannelsChange;
+    sfmEnabledOnChannelsSelect.onchange = handleSelectedChannelsChange;
 
     // TODO: refactor into method observeMutations(target: Node, options: MutationObserverInit, callback: MutationCallback)
     const observer = new MutationObserver(function (mutations) {
@@ -221,25 +292,25 @@ function init() {
     // Konfiguration des Observers
     const config = {childList: true};
     // eigentliche Observierung starten und Zielnode und Konfiguration übergeben
-    observer.observe(channelsSelect, config);
+    observer.observe(sfmEnabledOnChannelsSelect, config);
 
     handleSelectedChannelsChange();
 
     // Configure Spoiler-Free Mode
-    setMsgToTextContent("sfm_configure-label", "options_sfm_configure");
+    setMsgToTextContent("sfmCfgLabel", "options_sfmCfg");
     // Player
-    setMsgToTextContent("sfm_player-label", "options_sfm_player");
-    setMsgToTextContent("sfm_player_hideDuration-label", "options_sfm_player_hideDuration");
-    setMsgToTextContent("sfm_player_jumpDistance-label", "options_sfm_player_jumpDistance");
+    setMsgToTextContent("sfmCfgPlayerLabel", "options_sfmCfg_player");
+    setMsgToTextContent("sfmCfgPlayerHideDurationLabel", "options_sfmCfg_player_hideDuration");
+    setMsgToTextContent("sfmCfgPlayerJumpDistanceLabel", "options_sfmCfg_player_jumpDistance");
     // Video List
-    setMsgToTextContent("sfm_videoList-label", "options_sfm_videoList");
-    setMsgToTextContent("sfm_videoList_hideTitle-label", "options_sfm_videoList_hideTitle");
-    setMsgToTextContent("sfm_videoList_hidePreview-label", "options_sfm_videoList_hidePreview");
-    setMsgToTextContent("sfm_videoList_hideDuration-label", "options_sfm_videoList_hideDuration");
+    setMsgToTextContent("sfmCfgVideoListLabel", "options_sfmCfg_videoList");
+    setMsgToTextContent("sfmCfgVideoListHideTitleLabel", "options_sfmCfg_videoList_hideTitle");
+    setMsgToTextContent("sfmCfgVideoListHidePreviewLabel", "options_sfmCfg_videoList_hidePreview");
+    setMsgToTextContent("sfmCfgVideoListHideDurationLabel", "options_sfmCfg_videoList_hideDuration");
 
     // Twitch
-    setMsgToTextContent("general-label", "options_general");
-    setMsgToTextContent("general_theatreMode-label", "options_general_theatreMode");
+    setMsgToTextContent("generalLabel", "options_general");
+    setMsgToTextContent("generalTheatreModeLabel", "options_general_theatreMode");
 
     // Controls
     const saveBtn = document.getElementById("save");

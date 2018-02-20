@@ -123,6 +123,10 @@
         "message": "Options...",
         "description": "Label of the Options... button on the browser_action popup menu."
     },
+    "options_title": {
+        "message": "Open End Options",
+        "description": ""
+    },
     "options_sfmEnabled": {
         "message": "Enable Spoiler-Free Mode",
         "description": ""
@@ -143,6 +147,10 @@
         "message": "Platform-dependent",
         "description": ""
     },
+    "options_sfmEnabled_platforms": {
+        "message": "Per platform",
+        "description": ""
+    },
     "options_sfmEnabled_onPlatform_NEVER": {
         "message": "Never",
         "description": ""
@@ -155,12 +163,8 @@
         "message": "Channel-dependent",
         "description": ""
     },
-    "options_sfmEnabled_platforms": {
-        "message": "Spoiler-Free Mode platforms",
-        "description": ""
-    },
     "options_sfmEnabled_channels": {
-        "message": "Spoiler-Free Mode channels",
+        "message": "Enable on the following channels",
         "description": "Label of the Channels text area tooltip."
     },
     "options_sfmEnabled_channelToAdd": {
