@@ -14,48 +14,44 @@
 </head>
 <body>
 
-<h2>Open End</h2>
+<h2 class="header"><img class="appIcon" /> Open End</h2>
 
-<div id="sfmStateContainer" class="topLevelContainer">
+<hr/>
+	
+<div id="sfmStateContainer">
     <img id="sfmStateIcon" src="" class="opnd-hidden"/>
     <span id="sfmStateLabel"></span>
 </div>
 
 <hr/>
 
-<div id="sfmEnabledContainer" class="topLevelContainer">
+<div id="sfmEnabledContainer">
 
     <div class="secondLevelContainer">
-        <span id="sfmEnabledLabel"></span>
+        <h3 id="sfmEnabledLabel"></h3>
     </div>
 
-    <div id="sfmEnabledGlobalContainer" class="secondLevelContainer">
-        <div>
-            <label id="sfmEnabledGlobalLabel" for="sfmEnabledGlobal" class="sectionLabel"></label>
-        </div>
-        <div>
-            <select id="sfmEnabledGlobal"></select>
-        </div>
+    <div id="sfmEnabledGlobalContainer">
+        <h4 id="sfmEnabledGlobalLabel"></h4>
+		<div>
+			<select id="sfmEnabledGlobal"></select>
+		</div>
     </div>
 
-    <div id="sfmEnabledOnPlatformContainer" class="secondLevelContainer opnd-hidden">
-        <div>
-            <label id="sfmEnabledOnPlatformLabel" for="sfmEnabledOnPlatform" class="sectionLabel"></label>
-        </div>
-        <div>
-            <span id="platform" data-platformName=""></span>
-        </div>
-        <div>
-            <select id="sfmEnabledOnPlatform"></select>
-        </div>
+    <div id="sfmEnabledOnPlatformContainer" class="opnd-hidden">
+		<h4 id="sfmEnabledOnPlatformLabel"></h4>
+		<div>
+			<span id="platform" data-platformName="" class="platformOrChannel"></span>
+		</div>
+		<div>
+			<select id="sfmEnabledOnPlatform"></select>
+		</div>
     </div>
 
-    <div id="sfmEnabledOnChannelContainer" class="secondLevelContainer opnd-hidden">
+    <div id="sfmEnabledOnChannelContainer" class="opnd-hidden">
+        <h4 id="sfmEnabledOnChannelLabel"></h4>
         <div>
-            <label id="sfmEnabledOnChannelLabel" for="sfmEnabledOnChannel" class="sectionLabel"></label>
-        </div>
-        <div>
-            <span id="channel" data-channelQualifiedName="" data-channelDisplayName=""></span>
+            <span id="channel" data-channelQualifiedName="" data-channelDisplayName="" class="platformOrChannel"></span>
         </div>
         <div>
             <input type="checkbox" id="sfmEnabledOnChannel"><span id="sfmEnabledOnChannelCheckboxLabel"></span>
@@ -66,7 +62,7 @@
 
 <hr/>
 
-<div id="buttonBar" class="topLevelContainer">
+<div id="buttonBar">
     <button id="openOptions"></button>
 </div>
 

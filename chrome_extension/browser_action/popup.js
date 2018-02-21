@@ -358,6 +358,12 @@ function handleStorageChange(changes, namespace) {
  * ====================================================================================================
  */
 function init() {
+	// Header
+	const appIconImgs = document.getElementsByClassName("appIcon");
+	for(let i=0; i<appIconImgs.length; i++) {
+		appIconImgs[i].src = chrome.runtime.getURL("img/icon_twitch-purple_32.png");
+	}
+	
     // SFM state
     setMsgToTextContent(SFM_STATE_LABEL_ID, getEnumValueMsgKey(SfmState.UNDETERMINED, "popup_sfmState_"));
 

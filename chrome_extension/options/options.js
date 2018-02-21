@@ -24,13 +24,19 @@ function error(msg, ...substitutions) {
 const MESSAGE_DISPLAY_DURATION = 1000; // 1s
 
 const SFM_ENABLED_GLOBAL_ID = "sfmEnabledGlobal";
+
 const SFM_ENABLED_PLATFORMS_ID = "sfmEnabledPlatforms";
+const SFM_ENABLED_PLATFORM_CLS = "sfmEnabledPlatform";
+const SFM_ENABLED_ON_PLATFORM_CLS = "sfmEnabledOnPlatform";
+
 const SFM_ENABLED_CHANNELS_ID = "sfmEnabledChannels";
+
 const SFM_CFG_PLAYER_HIDE_DURATION_ID = "sfmCfgPlayerHideDuration";
 const SFM_CFG_PLAYER_JUMP_DISTANCE_ID = "sfmCfgPlayerJumpDistance";
 const SFM_CFG_VIDEO_LIST_HIDE_TITLE_ID = "sfmCfgVideoListHideTitle";
 const SFM_CFG_VIDEO_LIST_HIDE_PREVIEW_ID = "sfmCfgVideoListHidePreview";
 const SFM_CFG_VIDEO_LIST_HIDE_DURATION_ID = "sfmCfgVideoListHideDuration";
+
 const GENERAL_THEATRE_MODE_ID = "generalTheatreMode";
 
 /*
@@ -89,12 +95,12 @@ function getOptionsFromInputValues() {
 
 function getSfmEnabledPlatformsFromInputValues() {
     const sfmEnabledPlatforms = {};
-    const sfmEnabledPlatformsUl = document.getElementById(SFM_ENABLED_PLATFORMS_ID);
-    const items = sfmEnabledPlatformsUl.getElementsByTagName("li");
-    for (let i = 0; i < items.length; i++) {
-        const item = items[i];
-        const platformName = getData(item.querySelector(".sfmEnabledPlatform"), "platformName");
-        const sfmEnabled = item.querySelector(".sfmEnabledOnPlatform").value;
+    const sfmEnabledPlatformsContainerDiv = document.getElementById(SFM_ENABLED_PLATFORMS_ID);
+    const enabledDivs = sfmEnabledPlatformsContainerDiv.getElementsByClassName(SFM_ENABLED_ON_PLATFORM_CLS);
+    for (let i = 0; i < enabledDivs.length; i++) {
+        const enabledDiv = enabledDivs[i];
+        const platformName = getData(enabledDiv, "platformName");
+        const sfmEnabled = enabledDiv.querySelector("select").value;
         sfmEnabledPlatforms[platformName] = sfmEnabled;
     }
     return sfmEnabledPlatforms;
@@ -112,36 +118,40 @@ function updateInputsWithOptions(options) {
     }
     if (OPT_SFM_ENABLED_PLATFORMS_NAME in options) {
         const optSfmEnabledPlatforms = getOptSfmEnabledPlatforms(options);
-        const sfmEnabledPlatformsUl = document.getElementById(SFM_ENABLED_PLATFORMS_ID);
+        const sfmEnabledPlatformsContainerDiv = document.getElementById(SFM_ENABLED_PLATFORMS_ID);
 
         /**
-         *
-         * <li>
-         *     <span class="sfmEnabledPlatform" data-platform-name="twitch.tv">Twitch.tv</span>
-         *     <select class="sfmEnabledOnPlatform">...</select>
-         * </li>
+         * <div id="sfmEnabledPlatformsContainer">
+		 *     <div class="sfmEnabledPlatform" data-platform-name="twitch.tv">Twitch (twitch.tv)</div>
+		 *     <div class="sfmEnabledOnPlatform" data-platform-name="twitch.tv"><select>...</select></div>
+		 *     <div class="sfmEnabledPlatform" data-platform-name="mlg.com">MLG (mlg.com)</div>
+		 *     <div class="sfmEnabledOnPlatform" data-platform-name="mlg.com"><select>...</select></div>
+         * </div>
          */
         for (let i=0; i<ALL_PLATFORMS.length; i++) {
             const platform = ALL_PLATFORMS[i];
-            const platformSpan = sfmEnabledPlatformsUl.querySelector(".sfmEnabledPlatform[data-platform-name='" + platform.name + "']");
-            console.log("%o", platformSpan);
-            if (platformSpan) {
-                const enabledSelect = platformSpan.parentElement.querySelector(".sfmEnabledOnPlatform");
+            const enabledDiv = sfmEnabledPlatformsContainerDiv.querySelector(".sfmEnabledOnPlatform[data-platform-name='" + platform.name + "']");
+            console.log("%o", enabledDiv);
+            if (enabledDiv) {
+                const enabledSelect = enabledDiv.querySelector("select");
                 enabledSelect.value = optSfmEnabledPlatforms[platform.name];
             }
             else {
-                const newItem = document.createElement("li");
-                const newPlatformSpan = document.createElement("span");
-                newPlatformSpan.classList.add("sfmEnabledPlatform");
-                setData(newPlatformSpan, "platformName", platform.name);
-                newPlatformSpan.textContent = platform.verboseName;
-                newItem.appendChild(newPlatformSpan);
+                const newPlatformDiv = document.createElement("div");
+                newPlatformDiv.classList.add(SFM_ENABLED_PLATFORM_CLS);
+                setData(newPlatformDiv, "platformName", platform.name);
+				const newPlatformLabel = document.createElement("label");
+                newPlatformLabel.textContent = platform.verboseName;
+				newPlatformDiv.appendChild(newPlatformLabel);
+                sfmEnabledPlatformsContainerDiv.appendChild(newPlatformDiv);
+				const newEnabledDiv = document.createElement("div");
+				newEnabledDiv.classList.add(SFM_ENABLED_ON_PLATFORM_CLS);
+				setData(newEnabledDiv, "platformName", platform.name);
                 const newEnabledSelect = document.createElement("select");
-                newEnabledSelect.classList.add("sfmEnabledOnPlatform");
                 setSelectOptions(newEnabledSelect, buildEnumValueToMsgKeyMap(SfmEnabled, "options_sfmEnabled_onPlatform_"));
                 newEnabledSelect.value = optSfmEnabledPlatforms[platform.name];
-                newItem.appendChild((newEnabledSelect));
-                sfmEnabledPlatformsUl.appendChild(newItem);
+				newEnabledDiv.appendChild(newEnabledSelect);
+                sfmEnabledPlatformsContainerDiv.appendChild((newEnabledDiv));
             }
         }
     }

@@ -2,44 +2,35 @@ body {
     white-space: nowrap;
 }
 
-h2 {
-    /* Set analog to CSS on chrome:://xtensions page */
-    font-size: 14px;
-    font-weight: 500;
+/* Set analog to CSS on chrome:://xtensions page */
+/*h1, h2, h3, h4 {
+	font-weight: normal;
+    line-height: 1;
+	font-size: 14px;
+} */
+
+.header {
+    line-height: 1;
 }
 
-.topLevelContainer:not(:first-child) {
-    margin-top: 1em;
+.header img {
+	/* TODO: get the img as SVG and control its size via these instructions
+    width: 2em;
+    height: 2em; */
+    vertical-align: middle;
 }
 
-.secondLevelContainer:not(:last-child) {
-    margin-bottom: 1em;
-}
-
-.secondLevelContainer > div:not(:last-child) {
-    margin-bottom: 0.20em;
-}
-
-.sectionLabel {
-    font-weight: bold;
+.platformOrChannel {
+	font-weight: bold;
 }
 
 #sfmStateLabel {
   font-size: 14px;
+  margin-bottom: 5px;
 }
 
 #sfmStateContainer img {
     width: 2em;
     height: 2em;
     vertical-align: middle;
-}
-
-#sfmEnabledLabel {
-    font-size: 14px;
-    font-weight: bold;
-}
-
-#platform, #channel {
-    font-weight: bold;
-    font-style: italic;
 }

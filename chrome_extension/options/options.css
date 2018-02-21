@@ -4,53 +4,69 @@ body {
 
 #options {
     width: 500px;
-    height: 450px; /* height so that the div is not too larger than the Chrome options box and Chrome won't display their own scroll pane */
+    height: 450px; /* height so that the div is not higher than the Chrome options box and Chrome won't display their own scroll pane */
     overflow-y: auto;
 }
+
 #options hr {
     margin-top: 35px;
 }
 
-ul {
-    list-style-type: none;
-    padding-left: 0px;
+label {
+	 /* to vertically align the text in the div */
+	 margin-top: auto;
+	 margin-bottom: auto;
 }
 
-li {
-    margin: 0 0 3px 0;
+.formGrid {
+    display: grid;
+    grid-template-columns: max-content auto; /* first row as big as it needs to be, second row auto */
+    grid-row-gap: 5px;
+    grid-column-gap: 10px;
 }
 
-.sfmEnabledPlatform {
-    float: left;
-    width: 100px;
+/* Platforms */
+
+
+/* Channels Grid */
+#sfmEnabledChannelsGrid {
+	display: grid;
+	grid-template-columns: 5fr 4fr 3fr;
+    grid-row-gap: 5px;
+    grid-column-gap: 10px;
 }
 
+#sfmEnabledChannels {
+	grid-column: 1 / 4;
+}
+
+#sfmEnabledChannelToAdd {
+	grid-row: 3;
+}
+
+#sfmEnabledChannelToAddDisplayName {
+	grid-row: 3;
+}
+
+#sfmEnabledAddChannelCell {
+	grid-row: 3;
+}
+
+#sfmEnabledRemoveChannelCell {
+	grid-row: 4;
+}
+
+/* Channels */
 #sfmEnabledChannels {
     width: 95%;
 }
 
-#sfmEnabledChannelToAddContainer {
-    width: 40%;
-    display: inline-block;
+/* Config Player */
+#sfmCfgPlayerJumpDistance {
+	 width: 8em;
 }
 
-#sfmEnabledChannelToAdd {
-    width: 100%;
-}
-
-#sfmEnabledChannelToAddDisplayNameContainer {
-    width: 30%;
-    display: inline-block;
-}
-
-#sfmEnabledChannelToAddDisplayName {
-    width: 100%;
-}
-
-#sfmEnabledAddChannelContainer {
-    display: inline-block;
-}
-
+/* Status */
 #statusContainer {
     height: 1em;
 }
