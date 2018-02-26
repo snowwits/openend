@@ -55,7 +55,7 @@
         "message": "Spoilerfreier Modus deaktiviert"
     },
     "popup_sfmState_UNDETERMINED": {
-        "message": "Spoilerfreier Modus noch unbestimmt"
+        "message": "Spoilerfreier Modus unbestimmt"
     },
     "popup_sfmEnabled": {
         "message": "Spoilerfreien Modus aktivieren"

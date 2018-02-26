@@ -32,6 +32,8 @@ const SFM_ENABLED_ON_PLATFORM_ID = "sfmEnabledOnPlatform";
 const CHANNEL_ID = "channel";
 const SFM_ENABLED_ON_CHANNEL_ID = "sfmEnabledOnChannel";
 
+const HAS_NO_EFFECT_CLASS = "hasNoEffect";
+
 const OPEN_OPTIONS_ID = "openOptions";
 
 const DATA_PLATFORM_NAME = "platformName";
@@ -60,24 +62,70 @@ function readNecessaryOptions() {
  * @param options {!object} the options object
  */
 function updateUiAfterOptionsUpdate(options) {
+    if (OPT_SFM_ENABLED_GLOBAL_NAME in options) {
+        const sfmEnabledGlobalSelect = document.getElementById(SFM_ENABLED_GLOBAL_ID);
+        updateSfmEnabledGlobalSelect(sfmEnabledGlobalSelect, options);
+    }
+
     // If the platforms changed, may need to change the button mode and label
     if (OPT_SFM_ENABLED_PLATFORMS_NAME in options) {
         const platformElem = document.getElementById(PLATFORM_ID);
         const platform = Platform.parseFromName(platformElem.dataset[DATA_PLATFORM_NAME]);
         const sfmEnabledOnPlatformSelect = document.getElementById(SFM_ENABLED_ON_PLATFORM_ID);
         updateSfmEnabledOnPlatformSelect(sfmEnabledOnPlatformSelect, options, platform);
+
     }
     // If the channels changed, may need to change the button mode and label
     if (OPT_SFM_ENABLED_CHANNELS_NAME in options) {
         const channelElem = document.getElementById(CHANNEL_ID);
         const channel = Channel.parseFromQualifiedName(channelElem.dataset[DATA_CHANNEL_QUALIFIED_NAME], channelElem.dataset[DATA_CHANNEL_DISPLAY_NAME]);
-        const channelSfmEnabledCheckbox = document.getElementById(SFM_ENABLED_ON_CHANNEL_ID);
-        updateSfmEnabledOnChannelCheckbox(channelSfmEnabledCheckbox, options, channel);
+        const sfmEnabledOnChannelCheckbox = document.getElementById(SFM_ENABLED_ON_CHANNEL_ID);
+        updateSfmEnabledOnChannelCheckbox(sfmEnabledOnChannelCheckbox, options, channel);
     }
 
-    if (OPT_SFM_ENABLED_GLOBAL_NAME in options) {
+    // TODO: Only declare elements once
+    // TODO: When first opened, there is no title displayed if global=custom, platform!=custom
+    if (OPT_SFM_ENABLED_GLOBAL_NAME in options || OPT_SFM_ENABLED_PLATFORMS_NAME in options) {
+        // Visualize which setting has an effect
+
         const sfmEnabledGlobalSelect = document.getElementById(SFM_ENABLED_GLOBAL_ID);
-        sfmEnabledGlobalSelect.value = options[OPT_SFM_ENABLED_GLOBAL_NAME];
+        const sfmEnabledGlobal = sfmEnabledGlobalSelect.value;
+        const platformElem = document.getElementById(PLATFORM_ID);
+        const platform = Platform.parseFromName(platformElem.dataset[DATA_PLATFORM_NAME]);
+        const sfmEnabledOnPlatformSelect = document.getElementById(SFM_ENABLED_ON_PLATFORM_ID);
+        const sfmEnabledOnPlatform = sfmEnabledOnPlatformSelect.value;
+
+        const sfmEnabledOnPlatformContainerDiv = document.getElementById("sfmEnabledOnPlatformContainer");
+        const sfmEnabledOnChannelContainerDiv = document.getElementById("sfmEnabledOnChannelContainer");
+
+        if (sfmEnabledGlobal !== SfmEnabled.CUSTOM) {
+            sfmEnabledOnPlatformContainerDiv.classList.add(HAS_NO_EFFECT_CLASS);
+            sfmEnabledOnChannelContainerDiv.classList.add(HAS_NO_EFFECT_CLASS);
+
+            if (sfmEnabledGlobal === SfmEnabled.NEVER) {
+                sfmEnabledOnPlatformContainerDiv.title = chrome.i18n.getMessage("popup_sfmEnabled_onPlatform_hasNoEffect_alwaysDisabledGlobally");
+                sfmEnabledOnChannelContainerDiv.title = chrome.i18n.getMessage("popup_sfmEnabled_onChannel_hasNoEffect_alwaysDisabledGlobally");
+            }
+            else if (sfmEnabledGlobal === SfmEnabled.ALWAYS) {
+                sfmEnabledOnPlatformContainerDiv.title = chrome.i18n.getMessage("popup_sfmEnabled_onPlatform_hasNoEffect_alwaysEnabledGlobally");
+                sfmEnabledOnChannelContainerDiv.title = chrome.i18n.getMessage("popup_sfmEnabled_onChannel_hasNoEffect_alwaysEnabledGlobally");
+            }
+        } else {
+            sfmEnabledOnPlatformContainerDiv.classList.remove(HAS_NO_EFFECT_CLASS);
+            sfmEnabledOnPlatformContainerDiv.title = "";
+
+            if (sfmEnabledOnPlatform !== SfmEnabled.CUSTOM) {
+                sfmEnabledOnChannelContainerDiv.classList.add(HAS_NO_EFFECT_CLASS);
+                if (sfmEnabledOnPlatform === SfmEnabled.NEVER) {
+                    sfmEnabledOnChannelContainerDiv.title = chrome.i18n.getMessage("popup_sfmEnabled_onChannel_hasNoEffect_alwaysDisabledOnPlatform", platform.displayName);
+                } else if (sfmEnabledOnPlatform === SfmEnabled.ALWAYS) {
+                    sfmEnabledOnChannelContainerDiv.title = chrome.i18n.getMessage("popup_sfmEnabled_onChannel_hasNoEffect_alwaysEnabledOnPlatform", platform.displayName);
+                }
+            } else {
+                sfmEnabledOnChannelContainerDiv.classList.remove(HAS_NO_EFFECT_CLASS);
+                sfmEnabledOnChannelContainerDiv.title = "";
+            }
+        }
     }
 }
 
@@ -99,13 +147,6 @@ function updateUiAfterTabInfoUpdate(tabInfo) {
     const channelQualifiedName = channel ? channel.qualifiedName : "";
     const channelDisplayName = channel ? channel.displayName : "";
     const channelVerboseName = channel ? channel.verboseName : "";
-
-    // TODO remove
-    console.log("platformSerialized: %o", platformSerialized);
-    console.log("platform: %o", platform);
-    console.log("channelSerialized: %o", channelSerialized);
-    console.log("channel: %o", channel);
-    console.log("sfmState: %o", sfmState);
 
     // Get relevant elements
     const sfmStateIconImg = document.getElementById(SFM_STATE_ICON_ID);
@@ -165,6 +206,15 @@ function updateUiAfterTabInfoUpdate(tabInfo) {
             setVisible(sfmEnabledOnChannelContainerDiv, true);
         });
     }
+}
+
+/**
+ *
+ * @param sfmEnabledGlobalSelect {!HTMLSelectElement} the select element
+ * @param options {!object} the options
+ */
+function updateSfmEnabledGlobalSelect(sfmEnabledGlobalSelect, options) {
+    sfmEnabledGlobalSelect.value = options[OPT_SFM_ENABLED_GLOBAL_NAME];
 }
 
 /**
@@ -358,12 +408,12 @@ function handleStorageChange(changes, namespace) {
  * ====================================================================================================
  */
 function init() {
-	// Header
-	const appIconImgs = document.getElementsByClassName("appIcon");
-	for(let i=0; i<appIconImgs.length; i++) {
-		appIconImgs[i].src = chrome.runtime.getURL("img/icon_twitch-purple_32.png");
-	}
-	
+    // Header
+    const appIconImgs = document.getElementsByClassName("appIcon");
+    for (let i = 0; i < appIconImgs.length; i++) {
+        appIconImgs[i].src = chrome.runtime.getURL("img/icon_twitch-purple_32.png");
+    }
+
     // SFM state
     setMsgToTextContent(SFM_STATE_LABEL_ID, getEnumValueMsgKey(SfmState.UNDETERMINED, "popup_sfmState_"));
 

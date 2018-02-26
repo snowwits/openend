@@ -768,7 +768,7 @@ function getOptSfmEnabledPlatformsDefaultValue() {
 }
 
 /**
- * @param options {!object<!string, !object>} the options
+ * @param options {!Object<!string, !Object>} the options
  * @return {!array.<!ChannelSerialized>} the unmodifiable array of sfm channels
  */
 function getOptSfmEnabledChannels(options) {
@@ -777,7 +777,7 @@ function getOptSfmEnabledChannels(options) {
 
 /**
  *
- * @param options the options
+ * @param options {!Object<!string, !Object>} the options
  * @param platform {!Platform} the Platform
  * @return {!string} the {@SfmEnabled} value
  */
@@ -793,8 +793,9 @@ function checkSfmStateOnPlatform(options, platform) {
 
 /**
  *
- * @param options the options
+ * @param options {!Object<!string, !Object>} the options
  * @param channel {!Channel} the channel
+ * @return {!boolean} whether sfm is enabled on the given channel
  */
 function checkSfmEnabledOnChannel(options, channel) {
     return getOptSfmEnabledChannels(options).some(ch => Channel.equal(ch, channel));

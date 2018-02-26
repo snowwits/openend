@@ -2,35 +2,46 @@ body {
     white-space: nowrap;
 }
 
-/* Set analog to CSS on chrome:://xtensions page */
-/*h1, h2, h3, h4 {
-	font-weight: normal;
-    line-height: 1;
-	font-size: 14px;
-} */
+h1 {
+    font-size: 1.6em;
+}
+
+h2 {
+    font-size: 1.4em;
+}
+
+h3 {
+    font-size: 1.2em;
+    margin-bottom: 0.2em;
+}
 
 .header {
     line-height: 1;
 }
 
 .header img {
-	/* TODO: get the img as SVG and control its size via these instructions
+    /* TODO: get the img as SVG and control its size via these instructions
     width: 2em;
     height: 2em; */
     vertical-align: middle;
 }
 
 .platformOrChannel {
-	font-weight: bold;
+    font-weight: bold;
+    margin-bottom: 0.2em;
 }
 
 #sfmStateLabel {
-  font-size: 14px;
-  margin-bottom: 5px;
+    font-size: 1.2em;
+    margin-bottom: 0.5em;
 }
 
 #sfmStateContainer img {
     width: 2em;
     height: 2em;
     vertical-align: middle;
+}
+
+.hasNoEffect {
+    color: gray;
 }
