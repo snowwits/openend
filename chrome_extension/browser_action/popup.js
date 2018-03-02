@@ -42,16 +42,29 @@ const DATA_CHANNEL_DISPLAY_NAME = "channelDisplayName";
 
 /*
  * ====================================================================================================
+ * GLOBAL VARIABLES
+ * ====================================================================================================
+ */
+let GLOBAL_options = getDefaultOptionsCopy();
+
+/*
+ * ====================================================================================================
  * FUNCTIONS
  * ====================================================================================================
  */
 function readNecessaryOptions() {
-    chrome.storage.sync.get({[OPT_SFM_ENABLED_GLOBAL_NAME]: OPT_SFM_ENABLED_GLOBAL_DEFAULT}, function (items) {
+	const necessaryOptions = {
+		[OPT_SFM_ENABLED_GLOBAL_NAME]: OPT_SFM_ENABLED_GLOBAL_DEFAULT,
+		[OPT_SFM_ENABLED_PLATFORMS_NAME]: OPT_SFM_ENABLED_PLATFORMS_DEFAULT,
+		[OPT_SFM_ENABLED_CHANNELS_NAME]: OPT_SFM_ENABLED_CHANNELS_NAME
+	};
+    chrome.storage.sync.get(necessaryOptions, function (items) {
         if (chrome.runtime.lastError) {
-            error("[sync storage] Failed to get [%o]: %o", OPT_SFM_ENABLED_GLOBAL_NAME, chrome.runtime.lastError);
+            error("[sync storage] Failed to get [%o]: %o", necessaryOptions, chrome.runtime.lastError);
             return;
         }
         log("[sync storage] Gotten options [%o]", items);
+		GLOBAL_options = items;
 
         updateUiAfterOptionsUpdate(items);
     });
@@ -70,7 +83,7 @@ function updateUiAfterOptionsUpdate(options) {
     // If the platforms changed, may need to change the button mode and label
     if (OPT_SFM_ENABLED_PLATFORMS_NAME in options) {
         const platformElem = document.getElementById(PLATFORM_ID);
-        const platform = Platform.parseFromName(platformElem.dataset[DATA_PLATFORM_NAME]);
+        const platform = Platform.parseFromName(getData(platformElem, DATA_PLATFORM_NAME));
         const sfmEnabledOnPlatformSelect = document.getElementById(SFM_ENABLED_ON_PLATFORM_ID);
         updateSfmEnabledOnPlatformSelect(sfmEnabledOnPlatformSelect, options, platform);
 
@@ -78,49 +91,59 @@ function updateUiAfterOptionsUpdate(options) {
     // If the channels changed, may need to change the button mode and label
     if (OPT_SFM_ENABLED_CHANNELS_NAME in options) {
         const channelElem = document.getElementById(CHANNEL_ID);
-        const channel = Channel.parseFromQualifiedName(channelElem.dataset[DATA_CHANNEL_QUALIFIED_NAME], channelElem.dataset[DATA_CHANNEL_DISPLAY_NAME]);
+        const channel = Channel.parseFromQualifiedName(getData(channelElem, DATA_CHANNEL_QUALIFIED_NAME), getData(channelElem, DATA_CHANNEL_DISPLAY_NAME));
         const sfmEnabledOnChannelCheckbox = document.getElementById(SFM_ENABLED_ON_CHANNEL_ID);
         updateSfmEnabledOnChannelCheckbox(sfmEnabledOnChannelCheckbox, options, channel);
     }
 
-    // TODO: Only declare elements once
-    // TODO: When first opened, there is no title displayed if global=custom, platform!=custom
-    if (OPT_SFM_ENABLED_GLOBAL_NAME in options || OPT_SFM_ENABLED_PLATFORMS_NAME in options) {
-        // Visualize which setting has an effect
+	updateHasNoEffect(options);
+}
 
+/**
+ * Visualize which setting has an effect.
+ */
+function updateHasNoEffect(options) {
+    if (OPT_SFM_ENABLED_GLOBAL_NAME in options || OPT_SFM_ENABLED_PLATFORMS_NAME in options) {
         const sfmEnabledGlobalSelect = document.getElementById(SFM_ENABLED_GLOBAL_ID);
         const sfmEnabledGlobal = sfmEnabledGlobalSelect.value;
         const platformElem = document.getElementById(PLATFORM_ID);
-        const platform = Platform.parseFromName(platformElem.dataset[DATA_PLATFORM_NAME]);
+        const platform = Platform.parseFromName(getData(platformElem, DATA_PLATFORM_NAME));
         const sfmEnabledOnPlatformSelect = document.getElementById(SFM_ENABLED_ON_PLATFORM_ID);
         const sfmEnabledOnPlatform = sfmEnabledOnPlatformSelect.value;
 
         const sfmEnabledOnPlatformContainerDiv = document.getElementById("sfmEnabledOnPlatformContainer");
         const sfmEnabledOnChannelContainerDiv = document.getElementById("sfmEnabledOnChannelContainer");
 
+		
+		console.log("setting hasNoEffect [sfmEnabledGlobal=" + sfmEnabledGlobal + ", platform=" + platform + ", sfmEnabledOnPlatform=" + sfmEnabledOnPlatform);
+		
         if (sfmEnabledGlobal !== SfmEnabled.CUSTOM) {
             sfmEnabledOnPlatformContainerDiv.classList.add(HAS_NO_EFFECT_CLASS);
             sfmEnabledOnChannelContainerDiv.classList.add(HAS_NO_EFFECT_CLASS);
 
+			let title = "";
             if (sfmEnabledGlobal === SfmEnabled.NEVER) {
-                sfmEnabledOnPlatformContainerDiv.title = chrome.i18n.getMessage("popup_sfmEnabled_onPlatform_hasNoEffect_alwaysDisabledGlobally");
-                sfmEnabledOnChannelContainerDiv.title = chrome.i18n.getMessage("popup_sfmEnabled_onChannel_hasNoEffect_alwaysDisabledGlobally");
+				title = chrome.i18n.getMessage("popup_sfmEnabled_hasNoEffect_disabledGlobally");
             }
             else if (sfmEnabledGlobal === SfmEnabled.ALWAYS) {
-                sfmEnabledOnPlatformContainerDiv.title = chrome.i18n.getMessage("popup_sfmEnabled_onPlatform_hasNoEffect_alwaysEnabledGlobally");
-                sfmEnabledOnChannelContainerDiv.title = chrome.i18n.getMessage("popup_sfmEnabled_onChannel_hasNoEffect_alwaysEnabledGlobally");
+				title = chrome.i18n.getMessage("popup_sfmEnabled_hasNoEffect_enabledGlobally");
             }
+			sfmEnabledOnPlatformContainerDiv.title = title;
+            sfmEnabledOnChannelContainerDiv.title = title
         } else {
             sfmEnabledOnPlatformContainerDiv.classList.remove(HAS_NO_EFFECT_CLASS);
             sfmEnabledOnPlatformContainerDiv.title = "";
 
             if (sfmEnabledOnPlatform !== SfmEnabled.CUSTOM) {
                 sfmEnabledOnChannelContainerDiv.classList.add(HAS_NO_EFFECT_CLASS);
+				
+				let title = "";
                 if (sfmEnabledOnPlatform === SfmEnabled.NEVER) {
-                    sfmEnabledOnChannelContainerDiv.title = chrome.i18n.getMessage("popup_sfmEnabled_onChannel_hasNoEffect_alwaysDisabledOnPlatform", platform.displayName);
+                    title = chrome.i18n.getMessage("popup_sfmEnabled_hasNoEffect_disabledOnPlatform");
                 } else if (sfmEnabledOnPlatform === SfmEnabled.ALWAYS) {
-                    sfmEnabledOnChannelContainerDiv.title = chrome.i18n.getMessage("popup_sfmEnabled_onChannel_hasNoEffect_alwaysEnabledOnPlatform", platform.displayName);
+                    title = chrome.i18n.getMessage("popup_sfmEnabled_hasNoEffect_enabledOnPlatform");
                 }
+				sfmEnabledOnChannelContainerDiv.title = title;
             } else {
                 sfmEnabledOnChannelContainerDiv.classList.remove(HAS_NO_EFFECT_CLASS);
                 sfmEnabledOnChannelContainerDiv.title = "";
@@ -171,7 +194,7 @@ function updateUiAfterTabInfoUpdate(tabInfo) {
     sfmStateLabelSpan.textContent = chrome.i18n.getMessage(sfmStateLabelMsgKey);
 
     // Platform
-    platformSpan.dataset[DATA_PLATFORM_NAME] = platformName;
+    setData(platformSpan, DATA_PLATFORM_NAME, platformName);
     platformSpan.textContent = platformVerboseName;
     if (platform === null) {
         setVisible(sfmEnabledOnPlatformContainerDiv, false);
@@ -185,6 +208,8 @@ function updateUiAfterTabInfoUpdate(tabInfo) {
 
             updateSfmEnabledOnPlatformSelect(sfmEnabledOnPlatformSelect, items, platform);
             setVisible(sfmEnabledOnPlatformContainerDiv, true);
+			
+			updateHasNoEffect(items);
         });
     }
 
@@ -221,20 +246,24 @@ function updateSfmEnabledGlobalSelect(sfmEnabledGlobalSelect, options) {
  *
  * @param sfmEnabledOnPlatformSelect {!HTMLSelectElement} the select element
  * @param options {!object} the options
- * @param platform {!Platform} the platform
+ * @param platform {?Platform} the platform (if on platform page and already loaded)
  */
 function updateSfmEnabledOnPlatformSelect(sfmEnabledOnPlatformSelect, options, platform) {
-    sfmEnabledOnPlatformSelect.value = checkSfmStateOnPlatform(options, platform);
+	if (platform) {
+        sfmEnabledOnPlatformSelect.value = checkSfmStateOnPlatform(options, platform);
+	}
 }
 
 /**
  *
  * @param channelSfmEnabledCheckbox {!HTMLInputElement} the checkbox
  * @param options the options
- * @param channel {!Channel} the channel
+ * @param channel {?Channel} the channel (if on channel page and already loaded)
  */
 function updateSfmEnabledOnChannelCheckbox(channelSfmEnabledCheckbox, options, channel) {
-    channelSfmEnabledCheckbox.checked = checkSfmEnabledOnChannel(options, channel);
+    if (channel) {
+        channelSfmEnabledCheckbox.checked = checkSfmEnabledOnChannel(options, channel);
+	}
 }
 
 function handleSfmEnabledGlobalChange() {
@@ -443,12 +472,13 @@ function init() {
     openOptionsBtn.innerHTML = chrome.i18n.getMessage("popup_openOptions");
     openOptionsBtn.onclick = handleOpenOptionsAction;
 
-    // Get tab
-    getCurrentTab(handleCurrentTabAvailable);
-
+	
     // Add listeners
     chrome.runtime.onMessage.addListener(handleMessage);
     chrome.storage.onChanged.addListener(handleStorageChange);
+	
+    // Get tab
+    getCurrentTab(handleCurrentTabAvailable);
 
     // Initially read options
     readNecessaryOptions();

@@ -90,6 +90,18 @@
     "popup_sfmEnabled_onChannel_enable": {
         "message": "Aktivieren"
     },
+    "popup_sfmEnabled_hasNoEffect_disabledGlobally": {
+        "message": "Spoilerfreier Modus ist auf globaler Ebene deaktiviert."
+    },
+    "popup_sfmEnabled_hasNoEffect_enabledGlobally": {
+        "message": "Spoilerfreier Modus ist auf globaler Ebene aktiviert."
+    },
+    "popup_sfmEnabled_hasNoEffect_disabledOnPlatform": {
+        "message": "Spoilerfreier Modus ist auf Platform-Ebene deaktiviert."
+    },
+    "popup_sfmEnabled_hasNoEffect_enabledOnPlatform": {
+        "message": "Spoilerfreier Modus ist auf Platform-Ebene aktiviert."
+    },
     "popup_openOptions": {
         "message": "Optionen..."
     },

@@ -14,10 +14,12 @@
 </head>
 <body>
 
-<h1 class="header"><img class="appIcon" /> Open End</h1>
+<div class="header">
+    <h1><img class="appIcon"/> Open End</h1>
+</div>
 
 <hr/>
-	
+
 <div id="sfmStateContainer">
     <img id="sfmStateIcon" src="" class="opnd-hidden"/>
     <span id="sfmStateLabel"></span>
@@ -27,28 +29,26 @@
 
 <div id="sfmEnabledContainer">
 
-    <div class="secondLevelContainer">
-        <h2 id="sfmEnabledLabel"></h2>
-    </div>
+    <h2 id="sfmEnabledLabel"></h2>
 
-    <div id="sfmEnabledGlobalContainer">
+    <div id="sfmEnabledGlobalContainer" class="sfmEnabledSubContainer">
         <h3 id="sfmEnabledGlobalLabel"></h3>
-		<div>
-			<select id="sfmEnabledGlobal"></select>
-		</div>
+        <div>
+            <select id="sfmEnabledGlobal"></select>
+        </div>
     </div>
 
-    <div id="sfmEnabledOnPlatformContainer" class="opnd-hidden">
-		<h3 id="sfmEnabledOnPlatformLabel"></h3>
-		<div class="platformOrChannel">
-			<span id="platform" data-platformName=""></span>
-		</div>
-		<div>
-			<select id="sfmEnabledOnPlatform"></select>
-		</div>
+    <div id="sfmEnabledOnPlatformContainer" class="sfmEnabledSubContainer opnd-hidden">
+        <h3 id="sfmEnabledOnPlatformLabel"></h3>
+        <div class="platformOrChannel">
+            <span id="platform" data-platformName=""></span>
+        </div>
+        <div>
+            <select id="sfmEnabledOnPlatform"></select>
+        </div>
     </div>
 
-    <div id="sfmEnabledOnChannelContainer" class="opnd-hidden">
+    <div id="sfmEnabledOnChannelContainer" class="sfmEnabledSubContainer opnd-hidden">
         <h3 id="sfmEnabledOnChannelLabel"></h3>
         <div class="platformOrChannel">
             <span id="channel" data-channelQualifiedName="" data-channelDisplayName=""></span>

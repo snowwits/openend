@@ -182,7 +182,7 @@ class Platform {
 
     /**
      *
-     * @param qualifiedChannelName {!string}
+     * @param qualifiedChannelName {?string}
      * @return {?Channel} the parsed channel or null if the qualified name is invalid for this platform
      */
     parseChannelFromQualifiedName(qualifiedChannelName) {
@@ -466,6 +466,9 @@ class TwitchPlatform extends Platform {
      * @override
      */
     parseChannelFromQualifiedName(qualifiedChannelName) {
+		if (!qualifiedChannelName) {
+			return null;
+		}
         const platformPrefix = this.name + "/";
         const isTwitchChannel = qualifiedChannelName.startsWith(platformPrefix);
         if (isTwitchChannel) {

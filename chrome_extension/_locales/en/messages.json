@@ -99,14 +99,6 @@
         "message": "On this platform",
         "description": ""
     },
-    "popup_sfmEnabled_onPlatform_hasNoEffect_alwaysEnabledGlobally": {
-        "message": "Spoiler-Free Mode is always enabled globally.",
-        "description": ""
-    },
-    "popup_sfmEnabled_onPlatform_hasNoEffect_alwaysDisabledGlobally": {
-        "message": "Spoiler-Free Mode is always disabled globally.",
-        "description": ""
-    },
     "popup_sfmEnabled_onPlatform_NEVER": {
         "message": "Never",
         "description": ""
@@ -123,37 +115,24 @@
         "message": "On this channel",
         "description": ""
     },
-
-    "popup_sfmEnabled_onChannel_hasNoEffect_alwaysDisabledGlobally": {
-        "message": "Spoiler-Free Mode is always disabled globally.",
-        "description": ""
-    },
-    "popup_sfmEnabled_onChannel_hasNoEffect_alwaysEnabledGlobally": {
-        "message": "Spoiler-Free Mode is always enabled globally.",
-        "description": ""
-    },
-    "popup_sfmEnabled_onChannel_hasNoEffect_alwaysDisabledOnPlatform": {
-        "message": "Spoiler-Free Mode is always disabled on $PLATFORM$.",
-        "description": "",
-        "placeholders": {
-            "platform": {
-                "content": "$1",
-                "example": "Twitch"
-            }
-        }
-    },
-    "popup_sfmEnabled_onChannel_hasNoEffect_alwaysEnabledOnPlatform": {
-        "message": "Spoiler-Free Mode is always enabled on $PLATFORM$.",
-        "description": "",
-        "placeholders": {
-            "platform": {
-                "content": "$1",
-                "example": "Twitch"
-            }
-        }
-    },
     "popup_sfmEnabled_onChannel_enable": {
         "message": "Enable",
+        "description": ""
+    },
+	"popup_sfmEnabled_hasNoEffect_disabledGlobally": {
+        "message": "Spoiler-Free Mode is disabled on the global level.",
+        "description": ""
+    },
+	"popup_sfmEnabled_hasNoEffect_enabledGlobally": {
+        "message": "Spoiler-Free Mode is enabled on the global level.",
+        "description": ""
+    },
+	"popup_sfmEnabled_hasNoEffect_disabledOnPlatform": {
+        "message": "Spoiler-Free Mode is disabled on the platform level.",
+        "description": ""
+    },
+    "popup_sfmEnabled_hasNoEffect_enabledOnPlatform": {
+        "message": "Spoiler-Free Mode is enabled on the platform level.",
         "description": ""
     },
     "popup_openOptions": {

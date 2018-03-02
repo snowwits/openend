@@ -3,30 +3,43 @@ body {
 }
 
 h1 {
-    font-size: 1.6em;
+    font-size: 1.7em;
 }
 
 h2 {
-    font-size: 1.4em;
+    font-size: 1.3em;
 }
 
 h3 {
     font-size: 1.2em;
-    margin-bottom: 0.2em;
+}
+
+h1, h2, h3 {
+    margin: 0;
 }
 
 .header {
-    line-height: 1;
+    margin-bottom: 1.8em;
 }
 
 .header img {
     /* TODO: get the img as SVG and control its size via these instructions
     width: 2em;
     height: 2em; */
-    vertical-align: middle;
+    vertical-align: text-top; /* align the image with the text */
 }
 
-.platformOrChannel {
+#sfmEnabledContainer {
+    margin-top: 1.8em;
+    margin-bottom: 2em;
+}
+
+.sfmEnabledSubContainer {
+    margin-top: 1em;
+    margin-bottom: 1.2em;
+}
+
+h3, .platformOrChannel {
     font-weight: bold;
     margin-bottom: 0.2em;
 }
@@ -44,4 +57,9 @@ h3 {
 
 .hasNoEffect {
     color: gray;
+}
+
+#buttonBar {
+    margin-top: 0.9em;
+    margin-bottom: 0.9em;
 }
