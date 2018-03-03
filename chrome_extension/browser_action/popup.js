@@ -440,7 +440,7 @@ function init() {
     // Header
     const appIconImgs = document.getElementsByClassName("appIcon");
     for (let i = 0; i < appIconImgs.length; i++) {
-        appIconImgs[i].src = chrome.runtime.getURL("img/icon_twitch-purple_32.png");
+        appIconImgs[i].src = chrome.runtime.getURL("img/icon_twitch-purple.svg");
     }
 
     // SFM state
@@ -451,18 +451,24 @@ function init() {
 
     // SFM enabled globally
     setMsgToTextContent("sfmEnabledGlobalLabel", "popup_sfmEnabled_global");
+    const sfmEnabledGlobalIconImg = document.getElementById("sfmEnabledGlobalIcon");
+    sfmEnabledGlobalIconImg.src = chrome.runtime.getURL("img/global_black.svg");
     const sfmEnabledGlobalSelect = document.getElementById(SFM_ENABLED_GLOBAL_ID);
     setSelectOptions(sfmEnabledGlobalSelect, buildEnumValueToMsgKeyMap(SfmEnabled, "popup_sfmEnabled_global_"));
     sfmEnabledGlobalSelect.onchange = handleSfmEnabledGlobalChange;
 
     // SFM enabled on platform
     setMsgToTextContent("sfmEnabledOnPlatformLabel", "popup_sfmEnabled_onPlatform");
+    const sfmEnabledOnPlatformIconImg = document.getElementById("sfmEnabledOnPlatformIcon");
+    sfmEnabledOnPlatformIconImg.src = chrome.runtime.getURL("img/platform_black.svg");
     const sfmEnabledOnPlatformSelect = document.getElementById(SFM_ENABLED_ON_PLATFORM_ID);
     setSelectOptions(sfmEnabledOnPlatformSelect, buildEnumValueToMsgKeyMap(SfmEnabled, "popup_sfmEnabled_onPlatform_"));
     sfmEnabledOnPlatformSelect.onchange = handleSfmEnabledOnPlatformChange;
 
     // SFM enabled on channel
     setMsgToTextContent("sfmEnabledOnChannelLabel", "popup_sfmEnabled_onChannel");
+    const sfmEnabledOnChannelIconImg = document.getElementById("sfmEnabledOnChannelIcon");
+    sfmEnabledOnChannelIconImg.src = chrome.runtime.getURL("img/channel_black.svg");
     const sfmEnabledOnChannelCheckbox = document.getElementById(SFM_ENABLED_ON_CHANNEL_ID);
     sfmEnabledOnChannelCheckbox.onchange = handleSfmEnabledOnChannelChange;
     setMsgToTextContent("sfmEnabledOnChannelCheckboxLabel", "popup_sfmEnabled_onChannel_enable");

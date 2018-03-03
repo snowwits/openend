@@ -466,9 +466,9 @@ class TwitchPlatform extends Platform {
      * @override
      */
     parseChannelFromQualifiedName(qualifiedChannelName) {
-		if (!qualifiedChannelName) {
-			return null;
-		}
+        if (!qualifiedChannelName) {
+            return null;
+        }
         const platformPrefix = this.name + "/";
         const isTwitchChannel = qualifiedChannelName.startsWith(platformPrefix);
         if (isTwitchChannel) {
@@ -791,7 +791,7 @@ function checkSfmStateOnPlatform(options, platform) {
             return sfmEnabledPlatforms[platformName];
         }
     }
-    throw new Error("Could not find the SfmEnabled value for platform " + platform + " in option ["+ OPT_SFM_ENABLED_PLATFORMS_NAME +"] value: " + sfmEnabledPlatforms);
+    throw new Error("Could not find the SfmEnabled value for platform " + platform + " in option [" + OPT_SFM_ENABLED_PLATFORMS_NAME + "] value: " + sfmEnabledPlatforms);
 }
 
 /**
@@ -1036,13 +1036,13 @@ function formatDuration(duration, padWithZeros = true) {
     const parts = extractDurationParts(duration);
     let formatted = "";
     if (parts[0] > 0) {
-        formatted += (padWithZeros ? padLeft(parts[0]): parts[0]) + "h";
+        formatted += (padWithZeros ? padLeft(parts[0]) : parts[0]) + "h";
     }
     if (parts[1] > 0) {
-        formatted += (padWithZeros ? padLeft(parts[1]): parts[1]) + "m";
+        formatted += (padWithZeros ? padLeft(parts[1]) : parts[1]) + "m";
     }
     if (parts[2] > 0) {
-        formatted += (padWithZeros ? padLeft(parts[2]): parts[2]) + "s";
+        formatted += (padWithZeros ? padLeft(parts[2]) : parts[2]) + "s";
     }
     return formatted;
 }
@@ -1120,7 +1120,10 @@ function setAttr(elem, attrName, attrValue) {
  */
 function getData(elem, dataName) {
     const dataValue = elem.dataset[dataName];
-    return dataValue.length > 0 ? dataValue : null;
+    if (dataValue) {
+        return dataValue.length > 0 ? dataValue : null;
+    }
+    return null;
 }
 
 /**

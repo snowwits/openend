@@ -4,6 +4,7 @@ body {
 
 h1 {
     font-size: 1.7em;
+    line-height: 1.7em;
 }
 
 h2 {
@@ -12,6 +13,8 @@ h2 {
 
 h3 {
     font-size: 1.2em;
+    line-height: 1.2em;
+    margin-bottom: 0.2em;
 }
 
 h1, h2, h3 {
@@ -23,10 +26,10 @@ h1, h2, h3 {
 }
 
 .header img {
-    /* TODO: get the img as SVG and control its size via these instructions
-    width: 2em;
-    height: 2em; */
-    vertical-align: text-top; /* align the image with the text */
+    width: 1.7em;
+    height: 1.7em;
+    vertical-align: middle; /* align the image with the text */
+    margin-right: 0.5em;
 }
 
 #sfmEnabledContainer {
@@ -39,9 +42,20 @@ h1, h2, h3 {
     margin-bottom: 1.2em;
 }
 
-h3, .platformOrChannel {
+.sfmEnabledSubContainer img {
+    width: 1.2em;
+    height: 1.2em;
+    vertical-align: bottom; /* align the image with the text */
+    margin-right: 0.5em;
+}
+
+.platformOrChannel {
     font-weight: bold;
     margin-bottom: 0.2em;
+}
+
+#sfmEnabledGlobal {
+    margin-top: 0.3em;
 }
 
 #sfmStateLabel {
@@ -52,7 +66,7 @@ h3, .platformOrChannel {
 #sfmStateContainer img {
     width: 2em;
     height: 2em;
-    vertical-align: middle;
+    vertical-align: text-top;
 }
 
 .hasNoEffect {
