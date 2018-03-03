@@ -4,7 +4,7 @@ body {
 
 #options {
     width: 500px;
-    height: 450px; /* height so that the div is not higher than the Chrome options box and Chrome won't display their own scroll pane */
+    height: 400px; /* height so that the div is not higher than the Chrome options box and Chrome won't display their own scroll pane */
     overflow-y: auto;
 }
 
