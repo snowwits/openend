@@ -1075,7 +1075,6 @@ function handleJumpDistanceInputMouseWheelEvent(wheelEvent) {
 function handleJumpDistanceInputKeyUpEvent(keyboardEvent) {
     keyboardEvent.preventDefault();
 
-    //
     /*
      * - Enter: Forward jump
      * - Shift+Enter: Backwards jump
@@ -1089,9 +1088,9 @@ function handleJumpDistanceInputKeyUpEvent(keyboardEvent) {
             playerJump(1);
         }
     } else if (keyboardEvent.key === "ArrowUp") {
-        spinPlayerJumpDistance(1)
+        spinPlayerJumpDistance(1);
     } else if (keyboardEvent.key === "ArrowDown") {
-        spinPlayerJumpDistance(-1)
+        spinPlayerJumpDistance(-1);
     }
 }
 
