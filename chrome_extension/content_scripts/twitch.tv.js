@@ -22,6 +22,7 @@ function error(msg, ...substitutions) {
  * ====================================================================================================
  */
 /* Constants element IDs and classes */
+const TWITCH_PLAYER_CLASS = "player";
 const TWITCH_PROGRESS_TOTAL_TIME_DIV_CLASS = "player-seek__time--total";
 const TWITCH_PROGRESS_SLIDER_DIV_CLASS = "js-player-slider";
 const TWITCH_THEATRE_MODE_BTN_CLASS = "qa-theatre-mode-button";
@@ -38,18 +39,6 @@ const TWITCH_PLAYER_TOOLTIP_SPAN_CLASS = "player-tip";
 const TWITCH_PLAYER_TOOLTIP_SPAN_TEXT_ATTR = "data-tip";
 
 const TWITCH_VIDEO_LIST_ITEM_CARD_CLASS = "tw-card";
-
-/**
- *  60 seconds (1 minute)
- * @type {number}
- */
-const PLAYER_JUMP_DISTANCE_SPIN_UP_STEP_DEFAULT = 60;
-
-/**
- *  60 seconds (1 minute)
- * @type {number}
- */
-const PLAYER_JUMP_DISTANCE_SPIN_DOWN_STEP_DEFAULT = -60;
 
 /*
  * ====================================================================================================
@@ -1069,14 +1058,14 @@ function handlePlayerShowHideDurationAction() {
 function handleJumpDistanceInputMouseWheelEvent(wheelEvent) {
     wheelEvent.preventDefault();
 
-    let step = 0;
+    let direction = 0;
     if (wheelEvent.wheelDelta > 0) {
-        step = PLAYER_JUMP_DISTANCE_SPIN_UP_STEP_DEFAULT;
+        direction = 1;
     }
     else if (wheelEvent.wheelDelta < 0) {
-        step = PLAYER_JUMP_DISTANCE_SPIN_DOWN_STEP_DEFAULT;
+        direction = -1;
     }
-    spinPlayerJumpDistance(step);
+    spinPlayerJumpDistance(direction);
 }
 
 /**
@@ -1088,43 +1077,63 @@ function handleJumpDistanceInputKeyUpEvent(keyboardEvent) {
 
     //
     /*
-     * - ENTER: Forward jump
-     * - SHIFT+ENTER: Backwards jump
-     * - ARROW UP: Spin up
-     * - ARROW DOWN: Spin down
-     *
-     * Key Codes:
-     * ENTER = 13
-     * Arrow Left = 37
-     * Arrow Up = 38
-     * Arrow Right = 39
-     * Arrow Down = 40
+     * - Enter: Forward jump
+     * - Shift+Enter: Backwards jump
+     * - ArrowUp Spin up
+     * - ArrowDown: Spin down
      */
-    if (keyboardEvent.keyCode === 13) {
+    if (keyboardEvent.key === "Enter") {
         if (keyboardEvent.shiftKey) {
-            playerJump(false);
+            playerJump(-1);
         } else {
-            playerJump(true);
+            playerJump(1);
         }
-    } else if (keyboardEvent.keyCode === 38) {
-        spinPlayerJumpDistance(PLAYER_JUMP_DISTANCE_SPIN_UP_STEP_DEFAULT)
-    } else if (keyboardEvent.keyCode === 40) {
-        spinPlayerJumpDistance(PLAYER_JUMP_DISTANCE_SPIN_DOWN_STEP_DEFAULT)
+    } else if (keyboardEvent.key === "ArrowUp") {
+        spinPlayerJumpDistance(1)
+    } else if (keyboardEvent.key === "ArrowDown") {
+        spinPlayerJumpDistance(-1)
     }
 }
 
 /**
  *
- * @param step {!number}
+ * @param direction {!number} 1 for forward or -1 for backward
  */
-function spinPlayerJumpDistance(step) {
-    if (step === 0) {
+function spinPlayerJumpDistance(direction) {
+    if (direction === 0) {
         return;
     }
     const jumpDistanceInput = document.getElementById(OPND_PLAYER_JUMP_DISTANCE_INPUT_ID);
     const jumpDistance = parseDuration(jumpDistanceInput.value);
-    // Math.max(...) to prevent going below 0
-    const newJumpDistance = Math.max(jumpDistance + step, 0);
+
+    let newJumpDistance;
+    if (direction > 0) { // spin up
+        if (jumpDistance < 5) { // < 5s -> 5s
+            newJumpDistance = 5;
+        } else if (jumpDistance < 30) { // < 30s -> 30s
+            newJumpDistance = 30;
+        } else { // >= 30s -> next full minute
+            newJumpDistance = Math.ceil(jumpDistance / 60) * 60;
+            if (newJumpDistance === jumpDistance) {
+                newJumpDistance += 60;
+            }
+        }
+    } else { // spin down
+        if (jumpDistance <= 5) { // <= 5s -> 0s
+            newJumpDistance = 0;
+        } else if (jumpDistance <= 30) { // <= 30s -> 5s
+            newJumpDistance = 5;
+        } else if (jumpDistance <= 60) { // <= 1m -> 30s
+            newJumpDistance = 30;
+        }
+        else { // > 1m -> previous full minute
+            newJumpDistance = Math.floor(jumpDistance / 60) * 60;
+            if (newJumpDistance === jumpDistance) {
+                newJumpDistance -= 60;
+            }
+        }
+    }
+
     const newJumpDistanceInputValue = formatDuration(newJumpDistance, false);
     jumpDistanceInput.value = newJumpDistanceInputValue;
 
@@ -1134,15 +1143,19 @@ function spinPlayerJumpDistance(step) {
 
 function handlePlayerJumpBackwardAction() {
     log("Handling action [Player: Jump Backward]");
-    playerJump(false);
+    playerJump(-1);
 }
 
 function handlePlayerJumpForwardAction() {
     log("Handling action [Player: Jump Forward]");
-    playerJump(true);
+    playerJump(1);
 }
 
-function playerJump(forward = true) {
+/**
+ *
+ * @param direction {!number} 1 for forward or -1 for backward
+ */
+function playerJump(direction) {
     const sliderDiv = getSingleElementByClassName(TWITCH_PROGRESS_SLIDER_DIV_CLASS);
     if (!sliderDiv) {
         error("Time jump failed: slider not available", TWITCH_PROGRESS_SLIDER_DIV_CLASS);
@@ -1160,20 +1173,50 @@ function playerJump(forward = true) {
     }
 
     // Get the jump distance in seconds
-    const jumpDirection = forward ? 1 : -1;
-    const jumpDistanceInputValue = document.getElementById(OPND_PLAYER_JUMP_DISTANCE_INPUT_ID).value;
-    const jumpDistance = parseDuration(jumpDistanceInputValue);
-    if (jumpDistance === 0) {
-        log("Time jump failed: No valid jump distance given: %s", jumpDistanceInputValue);
+    const distanceInputValue = document.getElementById(OPND_PLAYER_JUMP_DISTANCE_INPUT_ID).value;
+    // distance is an absolute value
+    const distance = parseDuration(distanceInputValue);
+    if (distance === 0) {
+        log("Time jump failed: No valid jump distance given: %s", distanceInputValue);
         return;
     }
 
-    // Add/Subtract the jump distance to/from the current time (but require: minTime < newTime < maxTime)
-    const newTime = Math.min(maxTime, Math.max(minTime, currentTime + jumpDistance * jumpDirection));
+    // Add/Subtract the jump distance to/from the current time (but require: minTime <= newTime <= maxTime)
+    const newTime = Math.min(maxTime, Math.max(minTime, currentTime + distance * direction));
+    const actualDistance = newTime - currentTime;
 
+    // For jumps under 3m, use rapid seeking
+    // For jumps over/equal 3m, use the location changing jump as rapid seeking takes to long
+    if (actualDistance < 180) {
+        playerJumpWithRapidSeeking(actualDistance, currentTime, newTime);
+    } else {
+        playerJumpWithLocationChange(actualDistance, currentTime, newTime);
+    }
+}
+
+function playerJumpWithRapidSeeking(distance, currentTime, newTime) {
+    const playerElem = document.querySelector("." + TWITCH_PLAYER_CLASS);
+    const keyEvent = new KeyboardEvent("keydown", {
+        bubbles: false,
+        cancelable: false,
+        key: distance < 0 ? "ArrowLeft" : "ArrowRight",
+        repeat: true,
+    });
+
+    // One arrow button push equals 5 seconds of seeking
+    const numArrowSeeks = Math.ceil(Math.abs(distance) / 5);
+
+    log("Jumping %is: %is -> %is (using %i arrow seeks)", distance, currentTime, newTime, numArrowSeeks);
+
+    for (let i = 0; i < numArrowSeeks; i++) {
+        playerElem.dispatchEvent(keyEvent);
+    }
+}
+
+function playerJumpWithLocationChange(distance, currentTime, newTime) {
     // Build the new url
     const newTimeUrl = buildCurrentUrlWithTime(newTime);
-    log("Jumping %is: %is -> %is (%s)", jumpDistance, currentTime, newTime, newTimeUrl);
+    log("Jumping %is: %is -> %is (new location: %s)", distance, currentTime, newTime, newTimeUrl);
     window.location.assign(newTimeUrl);
 }
 
