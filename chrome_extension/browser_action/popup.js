@@ -52,23 +52,6 @@ let GLOBAL_options = getDefaultOptionsCopy();
  * FUNCTIONS
  * ====================================================================================================
  */
-function readNecessaryOptions() {
-	const necessaryOptions = {
-		[OPT_SFM_ENABLED_GLOBAL_NAME]: OPT_SFM_ENABLED_GLOBAL_DEFAULT,
-		[OPT_SFM_ENABLED_PLATFORMS_NAME]: OPT_SFM_ENABLED_PLATFORMS_DEFAULT,
-		[OPT_SFM_ENABLED_CHANNELS_NAME]: OPT_SFM_ENABLED_CHANNELS_NAME
-	};
-    chrome.storage.sync.get(necessaryOptions, function (items) {
-        if (chrome.runtime.lastError) {
-            error("[sync storage] Failed to get [%o]: %o", necessaryOptions, chrome.runtime.lastError);
-            return;
-        }
-        log("[sync storage] Gotten options [%o]", items);
-		GLOBAL_options = items;
-
-        updateUiAfterOptionsUpdate(items);
-    });
-}
 
 /**
  *
@@ -96,7 +79,7 @@ function updateUiAfterOptionsUpdate(options) {
         updateSfmEnabledOnChannelCheckbox(sfmEnabledOnChannelCheckbox, options, channel);
     }
 
-	updateHasNoEffect(options);
+    updateHasNoEffect(options);
 }
 
 /**
@@ -114,21 +97,20 @@ function updateHasNoEffect(options) {
         const sfmEnabledOnPlatformContainerDiv = document.getElementById("sfmEnabledOnPlatformContainer");
         const sfmEnabledOnChannelContainerDiv = document.getElementById("sfmEnabledOnChannelContainer");
 
-		
-		console.log("setting hasNoEffect [sfmEnabledGlobal=" + sfmEnabledGlobal + ", platform=" + platform + ", sfmEnabledOnPlatform=" + sfmEnabledOnPlatform);
-		
+        console.log("setting hasNoEffect [sfmEnabledGlobal=" + sfmEnabledGlobal + ", platform=" + platform + ", sfmEnabledOnPlatform=" + sfmEnabledOnPlatform);
+
         if (sfmEnabledGlobal !== SfmEnabled.CUSTOM) {
             sfmEnabledOnPlatformContainerDiv.classList.add(HAS_NO_EFFECT_CLASS);
             sfmEnabledOnChannelContainerDiv.classList.add(HAS_NO_EFFECT_CLASS);
 
-			let title = "";
+            let title = "";
             if (sfmEnabledGlobal === SfmEnabled.NEVER) {
-				title = chrome.i18n.getMessage("popup_sfmEnabled_hasNoEffect_disabledGlobally");
+                title = chrome.i18n.getMessage("popup_sfmEnabled_hasNoEffect_disabledGlobally");
             }
             else if (sfmEnabledGlobal === SfmEnabled.ALWAYS) {
-				title = chrome.i18n.getMessage("popup_sfmEnabled_hasNoEffect_enabledGlobally");
+                title = chrome.i18n.getMessage("popup_sfmEnabled_hasNoEffect_enabledGlobally");
             }
-			sfmEnabledOnPlatformContainerDiv.title = title;
+            sfmEnabledOnPlatformContainerDiv.title = title;
             sfmEnabledOnChannelContainerDiv.title = title
         } else {
             sfmEnabledOnPlatformContainerDiv.classList.remove(HAS_NO_EFFECT_CLASS);
@@ -136,14 +118,14 @@ function updateHasNoEffect(options) {
 
             if (sfmEnabledOnPlatform !== SfmEnabled.CUSTOM) {
                 sfmEnabledOnChannelContainerDiv.classList.add(HAS_NO_EFFECT_CLASS);
-				
-				let title = "";
+
+                let title = "";
                 if (sfmEnabledOnPlatform === SfmEnabled.NEVER) {
                     title = chrome.i18n.getMessage("popup_sfmEnabled_hasNoEffect_disabledOnPlatform");
                 } else if (sfmEnabledOnPlatform === SfmEnabled.ALWAYS) {
                     title = chrome.i18n.getMessage("popup_sfmEnabled_hasNoEffect_enabledOnPlatform");
                 }
-				sfmEnabledOnChannelContainerDiv.title = title;
+                sfmEnabledOnChannelContainerDiv.title = title;
             } else {
                 sfmEnabledOnChannelContainerDiv.classList.remove(HAS_NO_EFFECT_CLASS);
                 sfmEnabledOnChannelContainerDiv.title = "";
@@ -208,8 +190,8 @@ function updateUiAfterTabInfoUpdate(tabInfo) {
 
             updateSfmEnabledOnPlatformSelect(sfmEnabledOnPlatformSelect, items, platform);
             setVisible(sfmEnabledOnPlatformContainerDiv, true);
-			
-			updateHasNoEffect(items);
+
+            updateHasNoEffect(items);
         });
     }
 
@@ -249,9 +231,9 @@ function updateSfmEnabledGlobalSelect(sfmEnabledGlobalSelect, options) {
  * @param platform {?Platform} the platform (if on platform page and already loaded)
  */
 function updateSfmEnabledOnPlatformSelect(sfmEnabledOnPlatformSelect, options, platform) {
-	if (platform) {
+    if (platform) {
         sfmEnabledOnPlatformSelect.value = checkSfmStateOnPlatform(options, platform);
-	}
+    }
 }
 
 /**
@@ -263,7 +245,7 @@ function updateSfmEnabledOnPlatformSelect(sfmEnabledOnPlatformSelect, options, p
 function updateSfmEnabledOnChannelCheckbox(channelSfmEnabledCheckbox, options, channel) {
     if (channel) {
         channelSfmEnabledCheckbox.checked = checkSfmEnabledOnChannel(options, channel);
-	}
+    }
 }
 
 function handleSfmEnabledGlobalChange() {
@@ -365,49 +347,7 @@ function sortedSetMinus(array, minusItem, equalsFunction) {
 }
 
 function handleOpenOptionsAction() {
-    chrome.runtime.openOptionsPage(() => {
-        if (chrome.runtime.lastError) {
-            error("Failed to open the options page: %s", chrome.runtime.lastError);
-        }
-    });
-}
-
-/**
- * Get the current URL.
- *
- * @param {function(Tab)} callback called when current tab is found
- */
-function getCurrentTab(callback) {
-    // Query filter to be passed to chrome.tabs.query - see https://developer.chrome.com/extensions/tabs#method-query
-    const queryInfo = {
-        active: true,
-        currentWindow: true
-    };
-
-    chrome.tabs.query(queryInfo, (tabs) => {
-        // chrome.tabs.query invokes the callback with a list of tabs that match the
-        // query. When the popup is opened, there is certainly a window and at least
-        // one tab, so we can safely assume that |tabs| is a non-empty array.
-        // A window can only have one active tab at a time, so the array consists of
-        // exactly one tab.
-        callback(tabs[0]);
-    });
-}
-
-/**
- *
- * @param tab {Tab} the Chrome tab
- */
-function handleCurrentTabAvailable(tab) {
-    if (!tab.id) {
-        warn("Current tab has no ID: %o", tab);
-        return;
-    }
-    chrome.tabs.sendMessage(tab.id, new TabInfoRequestMessage(), function (response) {
-        log("Received response for [Message:" + MessageType.TAB_INFO_REQUEST + "]: %o", response);
-        const tabInfo = response ? response.body : null;
-        updateUiAfterTabInfoUpdate(tabInfo);
-    });
+    opnd.platform.openOptionsPage();
 }
 
 /**
@@ -430,6 +370,27 @@ function handleStorageChange(changes, namespace) {
     }
 }
 
+/**
+ * @param tab {!Tab}
+ * @return {!Promise<{TabInfo}>}
+ */
+function requestTabInfo(tab) {
+    if (!tab.id) {
+        return Promise.reject(Error("Current tab has no ID: " + tab));
+    }
+    return new Promise((resolve, reject) => {
+        chrome.tabs.sendMessage(tab.id, new TabInfoRequestMessage(), (response) => {
+            if (chrome.runtime.lastError) {
+                warn("[requestTabInfo] Failed to get TabInfo (maybe not on platform page?): %o", chrome.runtime.lastError);
+                reject(Error(chrome.runtime.lastError.message));
+            } else {
+                log("[requestTabInfo] Received response to [%s]: [%o]", MessageType.TAB_INFO_REQUEST, response);
+                const tabInfo = response.body;
+                resolve(tabInfo);
+            }
+        });
+    });
+}
 
 /*
  * ====================================================================================================
@@ -478,16 +439,25 @@ function init() {
     openOptionsBtn.innerHTML = chrome.i18n.getMessage("popup_openOptions");
     openOptionsBtn.onclick = handleOpenOptionsAction;
 
-	
     // Add listeners
     chrome.runtime.onMessage.addListener(handleMessage);
     chrome.storage.onChanged.addListener(handleStorageChange);
-	
-    // Get tab
-    getCurrentTab(handleCurrentTabAvailable);
 
-    // Initially read options
-    readNecessaryOptions();
+    // Read options
+    const necessaryOptions = {
+        [OPT_SFM_ENABLED_GLOBAL_NAME]: OPT_SFM_ENABLED_GLOBAL_DEFAULT,
+        [OPT_SFM_ENABLED_PLATFORMS_NAME]: OPT_SFM_ENABLED_PLATFORMS_DEFAULT,
+        [OPT_SFM_ENABLED_CHANNELS_NAME]: OPT_SFM_ENABLED_CHANNELS_NAME
+    };
+    opnd.platform.readOptions(necessaryOptions).then((options) => {
+        GLOBAL_options = options;
+        updateUiAfterOptionsUpdate(options);
+    });
+
+    // Get TabInfo
+    opnd.platform.getCurrentTab().then(requestTabInfo).then(updateUiAfterTabInfoUpdate).catch(error => {
+        // ignore because probably normal behavior (it is logged anyway)
+    });
 }
 
 document.addEventListener("DOMContentLoaded", init);

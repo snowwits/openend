@@ -1287,13 +1287,8 @@ function init() {
     resetGlobalPageFlags();
     determinePageType();
 
-    chrome.storage.sync.get(getDefaultOptionsCopy(), function (items) {
-        if (chrome.runtime.lastError) {
-            error("[sync storage] Failed to get options: %o", chrome.runtime.lastError);
-            return;
-        }
+    opnd.platform.readOptions(getDefaultOptionsCopy()).then((items) => {
         GLOBAL_options = items;
-        log("Loaded options: %o", GLOBAL_options);
         reconfigurePageAfterOptionsUpdate(GLOBAL_options);
 
         listenForStorageChanges();
