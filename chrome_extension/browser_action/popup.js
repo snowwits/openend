@@ -153,7 +153,7 @@ function updateUiAfterTabInfoUpdate(tabInfo) {
     const channelDisplayName = channel ? channel.displayName : "";
     const channelVerboseName = channel ? channel.verboseName : "";
 
-    // Get relevant elements
+    // Get relevant DOM elements
     const sfmStateIconImg = document.getElementById(SFM_STATE_ICON_ID);
     const sfmStateLabelSpan = document.getElementById(SFM_STATE_LABEL_ID);
     const sfmEnabledOnPlatformContainerDiv = document.getElementById("sfmEnabledOnPlatformContainer");
@@ -181,18 +181,11 @@ function updateUiAfterTabInfoUpdate(tabInfo) {
     if (platform === null) {
         setVisible(sfmEnabledOnPlatformContainerDiv, false);
     } else {
-        chrome.storage.sync.get({[OPT_SFM_ENABLED_PLATFORMS_NAME]: OPT_SFM_ENABLED_PLATFORMS_DEFAULT}, function (items) {
-            if (chrome.runtime.lastError) {
-                error("[sync storage] Failed to get [%o]: %o", OPT_SFM_ENABLED_PLATFORMS_NAME, chrome.runtime.lastError);
-                return;
-            }
-            log("[sync storage] Gotten %o", items);
+        updateSfmEnabledOnPlatformSelect(sfmEnabledOnPlatformSelect, GLOBAL_options, platform);
+        setVisible(sfmEnabledOnPlatformContainerDiv, true);
 
-            updateSfmEnabledOnPlatformSelect(sfmEnabledOnPlatformSelect, items, platform);
-            setVisible(sfmEnabledOnPlatformContainerDiv, true);
-
-            updateHasNoEffect(items);
-        });
+        // With potentially new platform information, hasNoEffect needs an update
+        updateHasNoEffect(GLOBAL_options);
     }
 
     // Channel
@@ -202,16 +195,8 @@ function updateUiAfterTabInfoUpdate(tabInfo) {
     if (channel === null) {
         setVisible(sfmEnabledOnChannelContainerDiv, false);
     } else {
-        chrome.storage.sync.get({[OPT_SFM_ENABLED_CHANNELS_NAME]: OPT_SFM_ENABLED_CHANNELS_DEFAULT}, function (items) {
-            if (chrome.runtime.lastError) {
-                error("[sync storage] Failed to get [%o]: %o", OPT_SFM_ENABLED_CHANNELS_NAME, chrome.runtime.lastError);
-                return;
-            }
-            log("[sync storage] Gotten %o", items);
-
-            updateSfmEnabledOnChannelCheckbox(sfmEnabledOnChannelCheckbox, items, channel);
-            setVisible(sfmEnabledOnChannelContainerDiv, true);
-        });
+        updateSfmEnabledOnChannelCheckbox(sfmEnabledOnChannelCheckbox, GLOBAL_options, channel);
+        setVisible(sfmEnabledOnChannelContainerDiv, true);
     }
 }
 
@@ -251,13 +236,8 @@ function updateSfmEnabledOnChannelCheckbox(channelSfmEnabledCheckbox, options, c
 function handleSfmEnabledGlobalChange() {
     // this: <select id="sfmEnabledGlobal">
     const sfmEnabledGlobalValue = this.value;
-    chrome.storage.sync.set({[OPT_SFM_ENABLED_GLOBAL_NAME]: sfmEnabledGlobalValue}, function () {
-        if (chrome.runtime.lastError) {
-            error("[sync storage] Failed to set option [%s] to [%o]: %o", OPT_SFM_ENABLED_GLOBAL_NAME, sfmEnabledGlobalValue, chrome.runtime.lastError);
-            return;
-        }
-        log("[sync storage] Set option [%s] to [%o]", OPT_SFM_ENABLED_GLOBAL_NAME, sfmEnabledGlobalValue);
-    });
+
+    opnd.platform.writeOptions({[OPT_SFM_ENABLED_GLOBAL_NAME]: sfmEnabledGlobalValue});
 }
 
 function handleSfmEnabledOnPlatformChange() {
@@ -268,21 +248,9 @@ function handleSfmEnabledOnPlatformChange() {
     const sfmEnabledOnPlatformValue = this.value;
 
     if (platformName) {
-        chrome.storage.sync.get({[OPT_SFM_ENABLED_PLATFORMS_NAME]: OPT_SFM_ENABLED_PLATFORMS_DEFAULT}, function (items) {
-            if (chrome.runtime.lastError) {
-                error("[sync storage] Failed to get option [%s]: %o", OPT_SFM_ENABLED_PLATFORMS_NAME, chrome.runtime.lastError);
-                return;
-            }
-            const sfmEnabledPlatforms = getOptSfmEnabledPlatforms(items);
-            sfmEnabledPlatforms[platformName] = sfmEnabledOnPlatformValue;
-            chrome.storage.sync.set({[OPT_SFM_ENABLED_PLATFORMS_NAME]: sfmEnabledPlatforms}, function () {
-                if (chrome.runtime.lastError) {
-                    error("[sync storage] Failed to set option [%s] to [%o]: %o", OPT_SFM_ENABLED_PLATFORMS_NAME, sfmEnabledPlatforms, chrome.runtime.lastError);
-                    return;
-                }
-                log("[sync storage] Set option [%s] to [%o]", OPT_SFM_ENABLED_PLATFORMS_NAME, sfmEnabledPlatforms);
-            });
-        });
+        const sfmEnabledPlatforms = getOptSfmEnabledPlatforms(GLOBAL_options);
+        sfmEnabledPlatforms[platformName] = sfmEnabledOnPlatformValue;
+        opnd.platform.writeOptions({[OPT_SFM_ENABLED_PLATFORMS_NAME]: sfmEnabledPlatforms});
     }
 }
 
@@ -296,29 +264,17 @@ function handleSfmEnabledOnChannelChange() {
     const sfmEnabledOnChannelCheckbox = this;
 
     if (channel) {
-        chrome.storage.sync.get({[OPT_SFM_ENABLED_CHANNELS_NAME]: OPT_SFM_ENABLED_CHANNELS_DEFAULT}, function (items) {
-            if (chrome.runtime.lastError) {
-                error("[sync storage] Failed to get option [%s]: %o", OPT_SFM_ENABLED_CHANNELS_NAME, chrome.runtime.lastError);
-                return;
-            }
-            const channelsSerialized = items[OPT_SFM_ENABLED_CHANNELS_NAME];
-            const channels = Channel.deserializeArray(channelsSerialized);
-            let newChannels;
-            if (sfmEnabledOnChannelCheckbox.checked === true) {
-                newChannels = sortedSetPlus(channels, channel, Channel.equal, Channel.compareByVerboseQualifiedName);
-            }
-            else {
-                newChannels = sortedSetMinus(channels, channel, Channel.equal);
-            }
-            const newChannelsSerialized = Channel.serializeArray(newChannels);
-            chrome.storage.sync.set({[OPT_SFM_ENABLED_CHANNELS_NAME]: newChannelsSerialized}, function () {
-                if (chrome.runtime.lastError) {
-                    error("[sync storage] Failed to set option [%s] to [%o]: %o", OPT_SFM_ENABLED_CHANNELS_NAME, newChannelsSerialized, chrome.runtime.lastError);
-                    return;
-                }
-                log("[sync storage] Set option [%s] to [%o]", OPT_SFM_ENABLED_CHANNELS_NAME, newChannelsSerialized);
-            });
-        });
+        const sfmEnabledChannels = getOptSfmEnabledChannels(GLOBAL_options);
+        const channels = Channel.deserializeArray(sfmEnabledChannels);
+        let newChannels;
+        if (sfmEnabledOnChannelCheckbox.checked === true) {
+            newChannels = sortedSetPlus(channels, channel, Channel.equal, Channel.compareByVerboseQualifiedName);
+        }
+        else {
+            newChannels = sortedSetMinus(channels, channel, Channel.equal);
+        }
+        const newChannelsSerialized = Channel.serializeArray(newChannels);
+        opnd.platform.writeOptions({[OPT_SFM_ENABLED_CHANNELS_NAME]: newChannelsSerialized});
     }
 }
 
@@ -359,13 +315,17 @@ function handleOpenOptionsAction() {
 function handleMessage(request, sender, sendResponse) {
     log("Received message from [%o]: %o", sender, request);
     if (MessageType.TAB_INFO === request.type) {
-        updateUiAfterTabInfoUpdate(request.body);
+        const tabInfo = request.body;
+        updateUiAfterTabInfoUpdate(tabInfo);
     }
 }
 
 function handleStorageChange(changes, namespace) {
     log("[%s storage] Changes: %o", namespace, changes);
     if ("sync" === namespace) {
+        for (const key in changes) {
+            GLOBAL_options[key] = changes[key].newValue;
+        }
         updateUiAfterOptionsUpdate(mapOptionChangesToItems(changes));
     }
 }
@@ -439,10 +399,6 @@ function init() {
     openOptionsBtn.innerHTML = chrome.i18n.getMessage("popup_openOptions");
     openOptionsBtn.onclick = handleOpenOptionsAction;
 
-    // Add listeners
-    chrome.runtime.onMessage.addListener(handleMessage);
-    chrome.storage.onChanged.addListener(handleStorageChange);
-
     // Read options
     const necessaryOptions = {
         [OPT_SFM_ENABLED_GLOBAL_NAME]: OPT_SFM_ENABLED_GLOBAL_DEFAULT,
@@ -451,13 +407,20 @@ function init() {
     };
     opnd.platform.readOptions(necessaryOptions).then((options) => {
         GLOBAL_options = options;
+
+        // Add listeners
+        chrome.runtime.onMessage.addListener(handleMessage);
+        chrome.storage.onChanged.addListener(handleStorageChange);
+
+        // Update UI according to read options
         updateUiAfterOptionsUpdate(options);
+
+        // Get TabInfo and update UI accordingly
+        opnd.platform.getCurrentTab().then(requestTabInfo).then(updateUiAfterTabInfoUpdate).catch(error => {
+            // ignore because probably normal behavior (it is logged anyway)
+        });
     });
 
-    // Get TabInfo
-    opnd.platform.getCurrentTab().then(requestTabInfo).then(updateUiAfterTabInfoUpdate).catch(error => {
-        // ignore because probably normal behavior (it is logged anyway)
-    });
 }
 
 document.addEventListener("DOMContentLoaded", init);
