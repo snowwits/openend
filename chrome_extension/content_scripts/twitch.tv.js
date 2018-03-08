@@ -80,6 +80,10 @@ let GLOBAL_sfmState = SfmState.UNDETERMINED;
  * Flags whether the dependencies of certain options have been configured yet
  */
 let GLOBAL_configuredFlags = getDefaultConfiguredFlagsCopy();
+/**
+ * Whether the TabInfoMessage should be sent on the end of this configurePage() cycle.
+ */
+let GLOBAL_tabInfoChanged = false;
 
 
 /*
@@ -245,6 +249,7 @@ function configurePage() {
     configurePlayer();
     configureVideoListItems();
     configureTheatreMode();
+    sendTabInfoMessage();
 }
 
 function isPageConfigured() {
@@ -379,10 +384,7 @@ function updateChannel(channel) {
         updateSfmState(SfmState.UNDETERMINED);
 
         // Notify about TabInfo change (new channel)
-        const tabInfoMessage = buildTabInfoMessage();
-        chrome.runtime.sendMessage(tabInfoMessage, function (response) {
-            log("Message [%o] was successfully sent", tabInfoMessage);
-        });
+        signalTabInfoChanged("channel");
     }
 }
 
@@ -416,10 +418,7 @@ function updateSfmState(sfmState) {
         setSfmOptionsToNotConfigured();
 
         // Notify about TabInfo change (new sfmState)
-        const tabInfoMessage = buildTabInfoMessage();
-        chrome.runtime.sendMessage(tabInfoMessage, function (response) {
-            log("Message [%o] was successfully sent", tabInfoMessage);
-        });
+        signalTabInfoChanged("sfmState");
     }
 }
 
@@ -1229,11 +1228,30 @@ function listenForMessages() {
     chrome.runtime.onMessage.addListener(handleMessage);
 }
 
+function signalTabInfoChanged(changedProperty) {
+    GLOBAL_tabInfoChanged = true;
+    log("TabInfo update needs to be sent because [%s] changed", GLOBAL_tabInfoChanged, changedProperty);
+}
+
+function resetTabInfoChanged() {
+    GLOBAL_tabInfoChanged = false;
+}
+
 /**
  * @return {!TabInfoMessage} the tab info message
  */
 function buildTabInfoMessage() {
     return new TabInfoMessage(new TabInfo(TWITCH_PLATFORM.serialize(), GLOBAL_channel ? GLOBAL_channel.serialize() : null, GLOBAL_sfmState));
+}
+
+function sendTabInfoMessage() {
+    if(GLOBAL_tabInfoChanged){
+        const tabInfoMsg = buildTabInfoMessage();
+        chrome.runtime.sendMessage(tabInfoMsg, function (response) {
+            log("TabInfo update was successfully sent: [%o]", tabInfoMsg);
+        });
+        resetTabInfoChanged();
+    }
 }
 
 /**
