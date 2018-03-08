@@ -81,7 +81,7 @@ let GLOBAL_sfmState = SfmState.UNDETERMINED;
  */
 let GLOBAL_configuredFlags = getDefaultConfiguredFlagsCopy();
 /**
- * Whether the TabInfoMessage should be sent on the end of this configurePage() cycle.
+ * Whether relevant info for the TabInfo changed and the TabInfo message should be sent out on the end of this configurePage() cycle.
  */
 let GLOBAL_tabInfoChanged = false;
 
@@ -381,6 +381,7 @@ function updateChannel(channel) {
         GLOBAL_channel = channel;
         log("Updated [channel] to [%o]", GLOBAL_channel);
 
+        // sfmState needs to be re-determined after a channel change
         updateSfmState(SfmState.UNDETERMINED);
 
         // Notify about TabInfo change (new channel)
@@ -410,11 +411,11 @@ function isSfmStateDisabled() {
 function updateSfmState(sfmState) {
     const isChange = GLOBAL_sfmState !== sfmState;
 
-    // If the sfmEnabledForPage changed, SFM dependencies need reconfiguration
     if (isChange) {
         GLOBAL_sfmState = sfmState;
         log("Updated [sfmEnabledForPage] to [%o]", GLOBAL_sfmState);
 
+        // If the sfmState changed, SFM dependencies need reconfiguration
         setSfmOptionsToNotConfigured();
 
         // Notify about TabInfo change (new sfmState)
