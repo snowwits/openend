@@ -1118,14 +1118,11 @@ function spinPlayerJumpDistance(direction) {
             }
         }
     } else { // spin down
-        if (jumpDistance <= 5) { // <= 5s -> 0s
-            newJumpDistance = 0;
-        } else if (jumpDistance <= 30) { // <= 30s -> 5s
+        if (jumpDistance <= 30) { // <= 30s -> 5s
             newJumpDistance = 5;
         } else if (jumpDistance <= 60) { // <= 1m -> 30s
             newJumpDistance = 30;
-        }
-        else { // > 1m -> previous full minute
+        } else { // > 1m -> previous full minute
             newJumpDistance = Math.floor(jumpDistance / 60) * 60;
             if (newJumpDistance === jumpDistance) {
                 newJumpDistance -= 60;
@@ -1246,7 +1243,7 @@ function buildTabInfoMessage() {
 }
 
 function sendTabInfoMessage() {
-    if(GLOBAL_tabInfoChanged){
+    if (GLOBAL_tabInfoChanged) {
         const tabInfoMsg = buildTabInfoMessage();
         opnd.browser.sendMessage(tabInfoMsg).finally(resetTabInfoChanged);
     }
