@@ -1179,11 +1179,15 @@ function playerJump(direction) {
 
     // Add/Subtract the jump distance to/from the current time (but require: minTime <= newTime <= maxTime)
     const newTime = Math.min(maxTime, Math.max(minTime, currentTime + distance * direction));
+    /**
+     *     Can be negative (for jumping backwards) or positive (for jumping forward)
+     */
     const actualDistance = newTime - currentTime;
+    const absActualDistance = Math.abs(actualDistance);
 
-    // For jumps under 3m, use rapid seeking
-    // For jumps over/equal 3m, use the location changing jump as rapid seeking takes to long
-    if (actualDistance < 180) {
+    // For jumps <= 2m (120s), use rapid seeking
+    // For jumps over 2m, use the location changing jump as rapid seeking takes to long
+    if (absActualDistance <= 120) {
         playerJumpWithRapidSeeking(actualDistance, currentTime, newTime);
     } else {
         playerJumpWithLocationChange(actualDistance, currentTime, newTime);
