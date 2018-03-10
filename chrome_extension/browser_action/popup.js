@@ -239,7 +239,7 @@ function handleSfmEnabledGlobalChange() {
 }
 
 function handleSfmEnabledOnPlatformChange() {
-    const platformElem = document.getElementById("platform");
+    const platformElem = document.getElementById(PLATFORM_ID);
     const platformName = getData(platformElem, DATA_PLATFORM_NAME);
 
     // this: <select id="sfmEnabledOnPlatform">
@@ -253,7 +253,7 @@ function handleSfmEnabledOnPlatformChange() {
 }
 
 function handleSfmEnabledOnChannelChange() {
-    const channelElem = document.getElementById("channel");
+    const channelElem = document.getElementById(CHANNEL_ID);
     const channelQualifiedName = getData(channelElem, DATA_CHANNEL_QUALIFIED_NAME);
     const channelDisplayName = getData(channelElem, DATA_CHANNEL_DISPLAY_NAME);
     const channel = Channel.parseFromQualifiedName(channelQualifiedName, channelDisplayName);
