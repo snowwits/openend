@@ -306,16 +306,23 @@ function handleOpenOptionsAction() {
 
 /**
  *
- * @param request {!Message} the message
+ * @param message {!Message} the message
  * @param sender {!MessageSender} the sender
  * @param sendResponse {!function} the function to send the response
  */
-function handleMessage(request, sender, sendResponse) {
-    log("Received message from [%o]: %o", sender, request);
-    if (MessageType.TAB_INFO === request.type) {
-        const tabInfo = request.body;
-        updateUiAfterTabInfoUpdate(tabInfo);
+function handleMessage(message, sender, sendResponse) {
+    log("Received message [%o] from [%o]", message, sender);
+
+    if (sender.tab.active !== true) {
+        log("Ignoring message [%o] from [%o] because it did not came from the current tab", message, sender);
+        return;
     }
+    if (message.type === MessageType.TAB_INFO) {
+        const tabInfo = message.body;
+        updateUiAfterTabInfoUpdate(tabInfo);
+        return;
+    }
+    log("Ignoring message [%o] from [%o] because it has an irrelevant message type [%s]", message, sender, message.type);
 }
 
 function handleStorageChange(changes, namespace) {
