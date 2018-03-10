@@ -1485,84 +1485,147 @@ function createAnchor(href) {
  */
 
 const opnd = {
-    platform: {
-        /**
-         * To use from the popup.
-         *
-         * @return {Promise<Tab>}
-         */
-        getCurrentTab: () => {
-            // Query filter to be passed to chrome.tabs.query - see https://developer.chrome.com/extensions/tabs#method-query
-            const queryInfo = {
-                active: true,
-                currentWindow: true
-            };
-            return new Promise((resolve, reject) => {
-                chrome.tabs.query(queryInfo, (tabs) => {
-                    if (chrome.runtime.lastError) {
-                        error("[platform.getCurrentTab] Failed to get current tab: %o", chrome.runtime.lastError);
-                        reject(Error(chrome.runtime.lastError.message));
-                    } else {
+        browser: {
+            /**
+             *
+             * @param [keys] {?object} the option keys and default values (do not supply this parameter to read all options)
+             * @return {!Promise<{string: object}>}
+             */
+            readOptions: (keys) => {
+                let actualKeys;
+                if (keys) {
+                    actualKeys = keys;
+                } else {
+                    actualKeys = getDefaultOptionsCopy();
+                }
+                return new Promise((resolve, reject) => {
+                    chrome.storage.sync.get(actualKeys, function (items) {
+                        if (chrome.runtime.lastError) {
+                            error("[browser.readOptions] Failed to get options [%o]: %o", actualKeys, chrome.runtime.lastError);
+                            reject(Error(chrome.runtime.lastError.message));
+                            return;
+                        }
+                        log("[browser.readOptions] Gotten options [%o]", items);
+                        resolve(items);
+                    });
+                });
+            },
+
+            /**
+             *
+             * @param items {?object} {@link chrome.storage.StorageArea.set}
+             * @return {Promise<void>}
+             */
+            writeOptions: (items) => {
+                return new Promise((resolve, reject) => {
+                    chrome.storage.sync.set(items, function () {
+                        if (chrome.runtime.lastError) {
+                            error("[browser.writeOptions] Failed to set options [%o]: %o", items, chrome.runtime.lastError);
+                            reject(Error(chrome.runtime.lastError.message));
+                            return;
+                        }
+                        log("[browser.writeOptions] Set options [%o]", items);
+                        resolve();
+                    });
+                });
+            },
+
+            /**
+             *
+             * @param message {Message} the message
+             * @return {Promise<Object>} a Promise that will hold the response
+             */
+            sendMessage: (message) => {
+                return new Promise((resolve, reject) => {
+                    chrome.runtime.sendMessage(message, function (response) {
+                        if (chrome.runtime.lastError) {
+                            error("[browser.sendMessage] Failed to send message [%o]: %o", message, chrome.runtime.lastError);
+                            reject(Error(chrome.runtime.lastError.message));
+                            return;
+                        }
+
+                        log("[browser.sendMessage] Gotten response [%o] for message [%o]", response, message);
+                        resolve(response);
+                    });
+                });
+            },
+            /**
+             * To use from the popup.
+             *
+             * @return {Promise<Tab>}
+             */
+            getCurrentTab: () => {
+                // Query filter to be passed to chrome.tabs.query - see https://developer.chrome.com/extensions/tabs#method-query
+                const queryInfo = {
+                    active: true,
+                    currentWindow: true
+                };
+                return new Promise((resolve, reject) => {
+                    chrome.tabs.query(queryInfo, (tabs) => {
+                        if (chrome.runtime.lastError) {
+                            error("[browser.getCurrentTab] Failed to get current Tab: %o", chrome.runtime.lastError);
+                            reject(Error(chrome.runtime.lastError.message));
+                            return;
+                        }
                         /* chrome.tabs.query invokes the callback with a list of tabs that match the query.
                          * When the popup is opened, there is certainly a window and at least one tab,
                          * so we can safely assume that |tabs| is a non-empty array.
                          * A window can only have one active tab at a time, so the array consists of exactly one tab.
                          */
-                        resolve(tabs[0]);
-                    }
+                        const currentTab = tabs[0];
+                        log("[browser.getCurrentTab] Gotten current Tab [%o]", currentTab);
+                        resolve(currentTab);
+                    });
                 });
-            });
-        },
+            },
 
-        /**
-         *
-         * @param keys {?object} {@link chrome.storage.StorageArea.get}
-         * @return {!Promise<{string: object}>}
-         */
-        readOptions: (keys) => {
-            return new Promise((resolve, reject) => {
-                chrome.storage.sync.get(keys, function (items) {
-                    if (chrome.runtime.lastError) {
-                        error("[platform.readOptions] Failed to get options [%o]: %o", keys, chrome.runtime.lastError);
-                        reject(Error(chrome.runtime.lastError.message));
-                    } else {
-                        log("[platform.readOptions] Gotten options [%o]", items);
-                        resolve(items);
+            /**
+             * @param tab {!Tab}
+             * @return {!Promise<{?TabInfo}>} the TabInfo or null if it could not be gotten (normal on non-platform pages)
+             */
+            requestTabInfo: (tab) => {
+                if (!tab.id) {
+                    return Promise.reject(Error("Given Tab has no ID: " + tab));
+                }
+                return new Promise((resolve, reject) => {
+                        chrome.tabs.sendMessage(tab.id, new TabInfoRequestMessage(), (response) => {
+                            if (chrome.runtime.lastError) {
+                                error("[browser.requestTabInfo] Failed to get TabInfo for Tab [%o] (maybe not on platform page?): %o", tab, chrome.runtime.lastError);
+                                // Don't reject because it's a normal case on pages where no content_script was injected (non-platform pages)
+                                return;
+                            }
+                            if (response.type !== MessageType.TAB_INFO) {
+                                error("[browser.requestTabInfo] Failed to get TabInfo for Tab [%o]: Response type was not [%s] but [%s]. Full response [%o])", tab, MessageType.TAB_INFO, response.type, response);
+                                reject(Error("[browser.requestTabInfo] Failed to get TabInfo: Response type was not " + MessageType.TAB_INFO + " but " + response.type));
+                                return;
+                            }
+                            const tabInfo = response.body;
+                            log("[browser.requestTabInfo] Gotten TabInfo [%o] for Tab [%o]", tabInfo, tab);
+                            resolve(tabInfo);
+                        });
                     }
-                });
-            });
-        },
+                );
+            },
 
-        /**
-         *
-         * @param items {?object} {@link chrome.storage.StorageArea.set}
-         * @return {Promise<void>}
-         */
-        writeOptions: (items) => {
-            return new Promise((resolve, reject) => {
-                chrome.storage.sync.set(items, function () {
-                    if (chrome.runtime.lastError) {
-                        error("[platform.writeOptions] Failed to set options [%o]: %o", items, chrome.runtime.lastError);
-                        reject(Error(chrome.runtime.lastError.message));
-                    } else {
-                        log("[platform.writeOptions] Set options [%o]", items);
+            /**
+             * @return {!Promise<{?TabInfo}>}
+             */
+            requestTabInfoFromCurrentTab: () => {
+                return opnd.browser.getCurrentTab().then(opnd.browser.requestTabInfo);
+            },
+
+            openOptionsPage: () => {
+                return new Promise((resolve, reject) => {
+                    chrome.runtime.openOptionsPage(() => {
+                        if (chrome.runtime.lastError) {
+                            error("[browser.openOptionsPage] Failed to open the options page: %o", chrome.runtime.lastError);
+                            reject(Error(chrome.runtime.lastError.message));
+                            return;
+                        }
                         resolve();
-                    }
+                    });
                 });
-            });
-        },
-
-        openOptionsPage: () => {
-            return new Promise((resolve, reject) => {
-                chrome.runtime.openOptionsPage(() => {
-                    if (chrome.runtime.lastError) {
-                        error("[platform.openOptionsPage] Failed to open the options page: %o", chrome.runtime.lastError);
-                        reject(Error(chrome.runtime.lastError.message));
-                    } else {
-                        resolve();
-                    }
-                });
-            });
+            }
         }
     }
-};
+;

@@ -97,8 +97,6 @@ function updateHasNoEffect(options) {
         const sfmEnabledOnPlatformContainerDiv = document.getElementById("sfmEnabledOnPlatformContainer");
         const sfmEnabledOnChannelContainerDiv = document.getElementById("sfmEnabledOnChannelContainer");
 
-        console.log("setting hasNoEffect [sfmEnabledGlobal=" + sfmEnabledGlobal + ", platform=" + platform + ", sfmEnabledOnPlatform=" + sfmEnabledOnPlatform);
-
         if (sfmEnabledGlobal !== SfmEnabled.CUSTOM) {
             sfmEnabledOnPlatformContainerDiv.classList.add(HAS_NO_EFFECT_CLASS);
             sfmEnabledOnChannelContainerDiv.classList.add(HAS_NO_EFFECT_CLASS);
@@ -237,7 +235,7 @@ function handleSfmEnabledGlobalChange() {
     // this: <select id="sfmEnabledGlobal">
     const sfmEnabledGlobalValue = this.value;
 
-    opnd.platform.writeOptions({[OPT_SFM_ENABLED_GLOBAL_NAME]: sfmEnabledGlobalValue});
+    opnd.browser.writeOptions({[OPT_SFM_ENABLED_GLOBAL_NAME]: sfmEnabledGlobalValue});
 }
 
 function handleSfmEnabledOnPlatformChange() {
@@ -250,7 +248,7 @@ function handleSfmEnabledOnPlatformChange() {
     if (platformName) {
         const sfmEnabledPlatforms = getOptSfmEnabledPlatforms(GLOBAL_options);
         sfmEnabledPlatforms[platformName] = sfmEnabledOnPlatformValue;
-        opnd.platform.writeOptions({[OPT_SFM_ENABLED_PLATFORMS_NAME]: sfmEnabledPlatforms});
+        opnd.browser.writeOptions({[OPT_SFM_ENABLED_PLATFORMS_NAME]: sfmEnabledPlatforms});
     }
 }
 
@@ -274,7 +272,7 @@ function handleSfmEnabledOnChannelChange() {
             newChannels = sortedSetMinus(channels, channel, Channel.equal);
         }
         const newChannelsSerialized = Channel.serializeArray(newChannels);
-        opnd.platform.writeOptions({[OPT_SFM_ENABLED_CHANNELS_NAME]: newChannelsSerialized});
+        opnd.browser.writeOptions({[OPT_SFM_ENABLED_CHANNELS_NAME]: newChannelsSerialized});
     }
 }
 
@@ -303,7 +301,7 @@ function sortedSetMinus(array, minusItem, equalsFunction) {
 }
 
 function handleOpenOptionsAction() {
-    opnd.platform.openOptionsPage();
+    opnd.browser.openOptionsPage();
 }
 
 /**
@@ -328,28 +326,6 @@ function handleStorageChange(changes, namespace) {
         }
         updateUiAfterOptionsUpdate(mapOptionChangesToItems(changes));
     }
-}
-
-/**
- * @param tab {!Tab}
- * @return {!Promise<{TabInfo}>}
- */
-function requestTabInfo(tab) {
-    if (!tab.id) {
-        return Promise.reject(Error("Current tab has no ID: " + tab));
-    }
-    return new Promise((resolve, reject) => {
-        chrome.tabs.sendMessage(tab.id, new TabInfoRequestMessage(), (response) => {
-            if (chrome.runtime.lastError) {
-                warn("[requestTabInfo] Failed to get TabInfo (maybe not on platform page?): %o", chrome.runtime.lastError);
-                reject(Error(chrome.runtime.lastError.message));
-            } else {
-                log("[requestTabInfo] Received response to [%s]: [%o]", MessageType.TAB_INFO_REQUEST, response);
-                const tabInfo = response.body;
-                resolve(tabInfo);
-            }
-        });
-    });
 }
 
 /*
@@ -405,7 +381,7 @@ function init() {
         [OPT_SFM_ENABLED_PLATFORMS_NAME]: OPT_SFM_ENABLED_PLATFORMS_DEFAULT,
         [OPT_SFM_ENABLED_CHANNELS_NAME]: OPT_SFM_ENABLED_CHANNELS_NAME
     };
-    opnd.platform.readOptions(necessaryOptions).then((options) => {
+    opnd.browser.readOptions(necessaryOptions).then((options) => {
         GLOBAL_options = options;
 
         // Add listeners
@@ -416,9 +392,7 @@ function init() {
         updateUiAfterOptionsUpdate(options);
 
         // Get TabInfo and update UI accordingly
-        opnd.platform.getCurrentTab().then(requestTabInfo).then(updateUiAfterTabInfoUpdate).catch(error => {
-            // ignore because probably normal behavior (it is logged anyway)
-        });
+        opnd.browser.requestTabInfoFromCurrentTab().then(updateUiAfterTabInfoUpdate);
     });
 
 }

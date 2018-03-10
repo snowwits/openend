@@ -1231,7 +1231,7 @@ function listenForMessages() {
 
 function signalTabInfoChanged(changedProperty) {
     GLOBAL_tabInfoChanged = true;
-    log("TabInfo update needs to be sent because [%s] changed", GLOBAL_tabInfoChanged, changedProperty);
+    log("TabInfo update needs to be sent because [%s] changed", changedProperty);
 }
 
 function resetTabInfoChanged() {
@@ -1248,10 +1248,7 @@ function buildTabInfoMessage() {
 function sendTabInfoMessage() {
     if(GLOBAL_tabInfoChanged){
         const tabInfoMsg = buildTabInfoMessage();
-        chrome.runtime.sendMessage(tabInfoMsg, function (response) {
-            log("TabInfo update was successfully sent: [%o]", tabInfoMsg);
-        });
-        resetTabInfoChanged();
+        opnd.browser.sendMessage(tabInfoMsg).finally(resetTabInfoChanged);
     }
 }
 
@@ -1306,7 +1303,7 @@ function init() {
     resetGlobalPageFlags();
     determinePageType();
 
-    opnd.platform.readOptions(getDefaultOptionsCopy()).then((items) => {
+    opnd.browser.readOptions().then((items) => {
         GLOBAL_options = items;
         reconfigurePageAfterOptionsUpdate(GLOBAL_options);
 

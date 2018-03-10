@@ -49,28 +49,17 @@ const GENERAL_THEATRE_MODE_ID = "generalTheatreMode";
 function saveOptions() {
     // Store option values to storage
     const options = getOptionsFromInputValues();
-    chrome.storage.sync.set(options, function () {
-        if (chrome.runtime.lastError) {
-            error("[sync storage] Failed to set options [%o]: %o", options, chrome.runtime.lastError);
-            showStatusMsg(chrome.i18n.getMessage("options_save_errorMsg"));
-            return;
-        }
-        log("[sync storage] Set options: %o", options);
+    opnd.browser.writeOptions(options).then(() => {
         showStatusMsg(chrome.i18n.getMessage("options_save_successMsg"));
+    }).catch(() => {
+        showStatusMsg(chrome.i18n.getMessage("options_save_errorMsg"));
     });
 }
 
 // Restores option values using the preferences stored in chrome.storage.
 function restoreStoredOptions() {
     // Read option values from storage
-    chrome.storage.sync.get(getDefaultOptionsCopy(), function (items) {
-        if (chrome.runtime.lastError) {
-            error("[sync storage] Failed to get options: %o", chrome.runtime.lastError);
-            return;
-        }
-        log("[sync storage] Gotten options: %o", items);
-        updateInputsWithOptions(items);
-    });
+    opnd.browser.readOptions().then(updateInputsWithOptions);
 }
 
 // Restores option values using the preferences stored in chrome.storage.
@@ -122,13 +111,13 @@ function updateInputsWithOptions(options) {
 
         /**
          * <div id="sfmEnabledPlatformsContainer">
-		 *     <div class="sfmEnabledPlatform" data-platform-name="twitch.tv">Twitch (twitch.tv)</div>
-		 *     <div class="sfmEnabledOnPlatform" data-platform-name="twitch.tv"><select>...</select></div>
-		 *     <div class="sfmEnabledPlatform" data-platform-name="mlg.com">MLG (mlg.com)</div>
-		 *     <div class="sfmEnabledOnPlatform" data-platform-name="mlg.com"><select>...</select></div>
+         *     <div class="sfmEnabledPlatform" data-platform-name="twitch.tv">Twitch (twitch.tv)</div>
+         *     <div class="sfmEnabledOnPlatform" data-platform-name="twitch.tv"><select>...</select></div>
+         *     <div class="sfmEnabledPlatform" data-platform-name="mlg.com">MLG (mlg.com)</div>
+         *     <div class="sfmEnabledOnPlatform" data-platform-name="mlg.com"><select>...</select></div>
          * </div>
          */
-        for (let i=0; i<ALL_PLATFORMS.length; i++) {
+        for (let i = 0; i < ALL_PLATFORMS.length; i++) {
             const platform = ALL_PLATFORMS[i];
             const enabledDiv = sfmEnabledPlatformsContainerDiv.querySelector(".sfmEnabledOnPlatform[data-platform-name='" + platform.name + "']");
             console.log("%o", enabledDiv);
@@ -140,17 +129,17 @@ function updateInputsWithOptions(options) {
                 const newPlatformDiv = document.createElement("div");
                 newPlatformDiv.classList.add(SFM_ENABLED_PLATFORM_CLS);
                 setData(newPlatformDiv, "platformName", platform.name);
-				const newPlatformLabel = document.createElement("label");
+                const newPlatformLabel = document.createElement("label");
                 newPlatformLabel.textContent = platform.verboseName;
-				newPlatformDiv.appendChild(newPlatformLabel);
+                newPlatformDiv.appendChild(newPlatformLabel);
                 sfmEnabledPlatformsContainerDiv.appendChild(newPlatformDiv);
-				const newEnabledDiv = document.createElement("div");
-				newEnabledDiv.classList.add(SFM_ENABLED_ON_PLATFORM_CLS);
-				setData(newEnabledDiv, "platformName", platform.name);
+                const newEnabledDiv = document.createElement("div");
+                newEnabledDiv.classList.add(SFM_ENABLED_ON_PLATFORM_CLS);
+                setData(newEnabledDiv, "platformName", platform.name);
                 const newEnabledSelect = document.createElement("select");
                 setSelectOptions(newEnabledSelect, buildEnumValueToMsgKeyMap(SfmEnabled, "options_sfmEnabled_onPlatform_"));
                 newEnabledSelect.value = optSfmEnabledPlatforms[platform.name];
-				newEnabledDiv.appendChild(newEnabledSelect);
+                newEnabledDiv.appendChild(newEnabledSelect);
                 sfmEnabledPlatformsContainerDiv.appendChild((newEnabledDiv));
             }
         }
