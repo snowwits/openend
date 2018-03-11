@@ -167,10 +167,12 @@ function resetGlobalPageFlags() {
 
 function resetGlobalPageStateFlags(changedOptions) {
     // If something about SFM enabled changed, sfmState needs re-determination.
-    // Also, all SFM dependencies need reconfiguration (they may be independent from sfmEnabledForPage, for example video list items on a directory/game/XXX page can be from several channels).
+    // Also, all SFM dependencies need reconfiguration (they may be independent from sfmState, for example video list items on a directory/game/Overwatch page can be from several channels).
     if (OPT_SFM_ENABLED_GLOBAL_NAME in changedOptions || OPT_SFM_ENABLED_PLATFORMS_NAME in changedOptions || OPT_SFM_ENABLED_CHANNELS_NAME in changedOptions) {
-        GLOBAL_sfmState = SfmState.UNDETERMINED;
+        updateSfmState(SfmState.UNDETERMINED);
         determineSfmState();
+
+        setSfmOptionsToNotConfigured();
     }
 
     // All changed options need redetermination
@@ -257,13 +259,13 @@ function isPageConfigured() {
 }
 
 function formatPageConfigurationState() {
-    return `channelDetermined: ${isChannelDetermined()}, sfmEnabledForPageDetermined: ${isSfmStateDetermined()}, playerConfigured: ${isPlayerConfigured()}, videoListItemsConfigured: ${isVideoListItemsConfigured()}, theatreModeConfigured: ${isTheatreModeConfigured()}`;
+    return `channelDetermined: ${isChannelDetermined()}, sfmStateDetermined: ${isSfmStateDetermined()}, playerConfigured: ${isPlayerConfigured()}, videoListItemsConfigured: ${isVideoListItemsConfigured()}, theatreModeConfigured: ${isTheatreModeConfigured()}`;
 }
 
 
 /*
  * ====================================================================================================
- * CONFIGURATION: Determine Channel & SfmEnabledForPage
+ * CONFIGURATION: Determine Channel
  * ====================================================================================================
  */
 /**
@@ -317,8 +319,6 @@ function determineChannel() {
         return;
     }
 
-    console.log("Trying to determine channel");
-
     /**
      * If on channel directory or video page, we can parse the channel link a element
      */
@@ -331,9 +331,6 @@ function determineChannel() {
                 pageTypResult.channel.displayName = channelHeading.textContent;
             }
             updateChannel(pageTypResult.channel);
-        }
-        else {
-            warn("Failed to parse channel from anchor: %o", channelLinkAnchor);
         }
     }
 
@@ -354,9 +351,6 @@ function determineChannel() {
                 updateChannel(channel);
             }
         }
-        else {
-            warn("Failed to parse channel's display name from div: %o", channelLinkAnchor);
-        }
     }
 }
 
@@ -375,7 +369,7 @@ function isChannelDetermined() {
  */
 function updateChannel(channel) {
     const isChange = GLOBAL_channel !== channel;
-    // If the channel changed, sfmEnabledForPage needs to be redetermined.
+    // If the channel changed, sfmState needs to be redetermined.
     // Also, the TabInfo message needs to be send out
     if (isChange) {
         GLOBAL_channel = channel;
@@ -388,6 +382,12 @@ function updateChannel(channel) {
         signalTabInfoChanged("channel");
     }
 }
+
+/*
+ * ====================================================================================================
+ * CONFIGURATION: SfmState
+ * ====================================================================================================
+ */
 
 function determineSfmState() {
     if (isSfmStateDetermined()) {
@@ -413,7 +413,7 @@ function updateSfmState(sfmState) {
 
     if (isChange) {
         GLOBAL_sfmState = sfmState;
-        log("Updated [sfmEnabledForPage] to [%o]", GLOBAL_sfmState);
+        log("Updated [sfmState] to [%o]", GLOBAL_sfmState);
 
         // If the sfmState changed, SFM dependencies need reconfiguration
         setSfmOptionsToNotConfigured();
@@ -1249,7 +1249,10 @@ function buildTabInfoMessage() {
 function sendTabInfoMessage() {
     if (GLOBAL_tabInfoChanged) {
         const tabInfoMsg = buildTabInfoMessage();
-        opnd.browser.sendMessage(tabInfoMsg).finally(resetTabInfoChanged);
+        opnd.browser.sendMessage(tabInfoMsg).catch((error) =>  {
+            // ignore: is logged anyway
+        });
+        resetTabInfoChanged();
     }
 }
 
