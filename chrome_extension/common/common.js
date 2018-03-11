@@ -1533,13 +1533,13 @@ const opnd = {
             /**
              *
              * @param message {Message} the message
-             * @return {Promise<Object>} a Promise that will hold the response
+             * @return {Promise<Object>} a Promise that will hold the response (rejection can be ignored because it mostly is normal: Both the receiving popup being not available or it not sending response leads to a rejection)
              */
             sendMessage: (message) => {
                 return new Promise((resolve, reject) => {
-                    chrome.runtime.sendMessage(message, function (response) {
+                    chrome.runtime.sendMessage(message, (response) => {
                         if (chrome.runtime.lastError) {
-                            error("[browser.sendMessage] Failed to send message [%o]: %o", message, chrome.runtime.lastError);
+                            log("[browser.sendMessage] Failed to send message [%o] (maybe no popup open or it did not send a response (which it does not)?): %o", message, chrome.runtime.lastError);
                             reject(Error(chrome.runtime.lastError.message));
                             return;
                         }
@@ -1549,6 +1549,7 @@ const opnd = {
                     });
                 });
             },
+
             /**
              * To use from the popup.
              *
@@ -1581,7 +1582,7 @@ const opnd = {
 
             /**
              * @param tab {!Tab}
-             * @return {!Promise<{?TabInfo}>} the TabInfo or null if it could not be gotten (normal on non-platform pages)
+             * @return {!Promise<{TabInfo}>} the TabInfo (rejection can be ignored as it is normal on a non-platform pages)
              */
             requestTabInfo: (tab) => {
                 if (!tab.id) {
@@ -1590,8 +1591,9 @@ const opnd = {
                 return new Promise((resolve, reject) => {
                         chrome.tabs.sendMessage(tab.id, new TabInfoRequestMessage(), (response) => {
                             if (chrome.runtime.lastError) {
-                                error("[browser.requestTabInfo] Failed to get TabInfo for Tab [%o] (maybe not on platform page?): %o", tab, chrome.runtime.lastError);
-                                // Don't reject because it's a normal case on pages where no content_script was injected (non-platform pages)
+                                // It's a normal case on pages where no content_script was injected (non-platform pages)
+                                log("[browser.requestTabInfo] Failed to get TabInfo for Tab [%o] (maybe not on platform page?): %o", tab, chrome.runtime.lastError);
+                                reject(Error(chrome.runtime.lastError.message));
                                 return;
                             }
                             if (response.type !== MessageType.TAB_INFO) {
@@ -1608,7 +1610,7 @@ const opnd = {
             },
 
             /**
-             * @return {!Promise<{?TabInfo}>}
+             * @return {!Promise<{TabInfo}>} the TabInfo (rejection can be ignored as it is normal on a non-platform pages)
              */
             requestTabInfoFromCurrentTab: () => {
                 return opnd.browser.getCurrentTab().then(opnd.browser.requestTabInfo);

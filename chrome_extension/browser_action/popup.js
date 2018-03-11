@@ -399,7 +399,12 @@ function init() {
         updateUiAfterOptionsUpdate(options);
 
         // Get TabInfo and update UI accordingly
-        opnd.browser.requestTabInfoFromCurrentTab().then(updateUiAfterTabInfoUpdate);
+        opnd.browser.requestTabInfoFromCurrentTab()
+            .then(updateUiAfterTabInfoUpdate)
+            .catch((error) => {
+                // ignore: is logged anyway
+                // TODO: is this necessary?: updateUiAfterTabInfoUpdate(null);
+            })
     });
 
 }
