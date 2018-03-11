@@ -168,14 +168,14 @@ function resetGlobalPageFlags() {
 function resetGlobalPageStateFlags(changedOptions) {
     // If something about SFM enabled changed, sfmState needs re-determination.
     // Also, all SFM dependencies need reconfiguration (they may be independent from sfmState, for example video list items on a directory/game/Overwatch page can be from several channels).
-    if (OPT_SFM_ENABLED_GLOBAL_NAME in changedOptions || OPT_SFM_ENABLED_PLATFORMS_NAME in changedOptions || OPT_SFM_ENABLED_CHANNELS_NAME in changedOptions) {
+    if (containsSfmEnabledOption(changedOptions)) {
         updateSfmState(SfmState.UNDETERMINED);
         determineSfmState();
 
         setSfmOptionsToNotConfigured();
     }
 
-    // All changed options need redetermination
+    // All changed options need re-determination
     for (let optionName in GLOBAL_configuredFlags) {
         if (optionName in changedOptions) {
             setConfigured(optionName, false);
@@ -640,8 +640,8 @@ function configureVideoListItems() {
             const videoDurationContainer = getVideoDurationOpndContainers(videoCardDiv);
 
             const channel = getVideoChannel(videoCardDiv);
-            const sfmEnabledForChannel = checkSfmState(GLOBAL_options, TWITCH_PLATFORM, channel);
-            if (SfmState.ENABLED === sfmEnabledForChannel) {
+            const sfmEnabledOnChannel = checkSfmState(GLOBAL_options, TWITCH_PLATFORM, channel);
+            if (SfmState.ENABLED === sfmEnabledOnChannel) {
                 setAllVisible(videoTitleContainer, setTitleVisible);
                 setAllVisible(videoPreviewContainer, setPreviewVisible);
                 setAllVisible(videoDurationContainer, setDurationVisible);

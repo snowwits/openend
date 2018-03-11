@@ -288,7 +288,6 @@ function isPlayerDurationConfigured() {
  * </div>
  */
 function configureVideoListItems() {
-    console.log(formatFrameType() + ": Configuring video list items");
     if (isVideoListItemsConfigured()) {
         return;
     }

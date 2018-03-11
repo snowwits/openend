@@ -678,6 +678,10 @@ const OPT_SFM_VIDEO_LIST_HIDE_DURATION_DEFAULT = true;
 const OPT_GENERAL_THEATRE_MODE_NAME = "generalTheatreMode";
 const OPT_GENERAL_THEATRE_MODE_DEFAULT = false;
 
+/**
+ *
+ * @return {!Object.<string, object>} the default options
+ */
 function getDefaultOptionsCopy() {
     return {
         [OPT_SFM_ENABLED_GLOBAL_NAME]: OPT_SFM_ENABLED_GLOBAL_DEFAULT,
@@ -692,6 +696,10 @@ function getDefaultOptionsCopy() {
     };
 }
 
+/**
+ * @param changes {!Object.<!string, !storage.StorageChange>}
+ * @return {!Object.<string, object>} the changed options
+ */
 function mapOptionChangesToItems(changes) {
     const items = {};
     for (let key in changes) {
@@ -703,10 +711,33 @@ function mapOptionChangesToItems(changes) {
 /**
  *
  * @param optionName {!string} the option's name
- * @returns {!boolean} whether the option is a option to configure the Spoiler-Free mode (SFM)
+ * @returns {!boolean} whether the option is a option to configure the Spoiler-Free Mode (SFM)
  */
 function isSfmOption(optionName) {
-    return optionName.includes("sfm");
+    return optionName.startsWith("sfm");
+}
+
+/**
+ *
+ * @param optionName {!string} the option's name
+ * @returns {!boolean} whether the option is a option to enable/disable the Spoiler-Free Mode (SFM)
+ */
+function isSfmEnabledOption(optionName) {
+    return optionName.startsWith("sfmEnabled");
+}
+
+/**
+ *
+ * @param options {!Object<!string, !Object>} the options
+ * @return {!boolean} whether the options object contains an option to enable/disable the Spoiler-Free Mode (SFM)
+ */
+function containsSfmEnabledOption(options) {
+    for (let optionName in options) {
+        if (isSfmEnabledOption(optionName)) {
+            return true;
+        }
+    }
+    return false;
 }
 
 const SfmState = Object.freeze({
@@ -742,7 +773,7 @@ function checkSfmState(options, platform, channel) {
             if (channel === null) {
                 return SfmState.UNDETERMINED;
             }
-            if (checkSfmEnabledOnChannel(options, channel)) {
+            if (checkSfmStateOnChannel(options, channel)) {
                 return SfmState.ENABLED;
             }
             else {
@@ -754,7 +785,7 @@ function checkSfmState(options, platform, channel) {
 }
 
 /**
- * @param options {!object<!string, !object>} the options
+ * @param options {!Object<!string, !Object>} the options
  * @return {!object<!string, !string>} a copy of the map: {@link Platform}'s name -> {@link SfmEnabled} value
  */
 function getOptSfmEnabledPlatforms(options) {
@@ -800,7 +831,7 @@ function checkSfmStateOnPlatform(options, platform) {
  * @param channel {!Channel} the channel
  * @return {!boolean} whether sfm is enabled on the given channel
  */
-function checkSfmEnabledOnChannel(options, channel) {
+function checkSfmStateOnChannel(options, channel) {
     return getOptSfmEnabledChannels(options).some(ch => Channel.equal(ch, channel));
 }
 

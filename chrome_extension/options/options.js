@@ -120,7 +120,6 @@ function updateInputsWithOptions(options) {
         for (let i = 0; i < ALL_PLATFORMS.length; i++) {
             const platform = ALL_PLATFORMS[i];
             const enabledDiv = sfmEnabledPlatformsContainerDiv.querySelector(".sfmEnabledOnPlatform[data-platform-name='" + platform.name + "']");
-            console.log("%o", enabledDiv);
             if (enabledDiv) {
                 const enabledSelect = enabledDiv.querySelector("select");
                 enabledSelect.value = optSfmEnabledPlatforms[platform.name];
@@ -284,7 +283,6 @@ function init() {
     // TODO: refactor into method observeMutations(target: Node, options: MutationObserverInit, callback: MutationCallback)
     const observer = new MutationObserver(function (mutations) {
         mutations.forEach(function (mutation) {
-            //console.log(mutation.type);
             handleSelectedChannelsChange();
         });
     });

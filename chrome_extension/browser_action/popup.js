@@ -227,7 +227,7 @@ function updateSfmEnabledOnPlatformSelect(sfmEnabledOnPlatformSelect, options, p
  */
 function updateSfmEnabledOnChannelCheckbox(channelSfmEnabledCheckbox, options, channel) {
     if (channel) {
-        channelSfmEnabledCheckbox.checked = checkSfmEnabledOnChannel(options, channel);
+        channelSfmEnabledCheckbox.checked = checkSfmStateOnChannel(options, channel);
     }
 }
 
@@ -325,9 +325,9 @@ function handleMessage(message, sender, sendResponse) {
     log("Ignoring message [%o] from [%o] because it has an irrelevant message type [%s]", message, sender, message.type);
 }
 
-function handleStorageChange(changes, namespace) {
-    log("[%s storage] Changes: %o", namespace, changes);
-    if ("sync" === namespace) {
+function handleStorageChange(changes, areaName) {
+    log("[%s storage] Changes: %o", areaName, changes);
+    if ("sync" === areaName) {
         for (const key in changes) {
             GLOBAL_options[key] = changes[key].newValue;
         }
