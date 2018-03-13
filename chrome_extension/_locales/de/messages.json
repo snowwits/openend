@@ -57,6 +57,10 @@
     "popup_sfmState_UNDETERMINED": {
         "message": "Spoilerfreier Modus unbestimmt"
     },
+    "popup_sfmState_notOnPlatform": {
+        "message": "Keine unterstützte Streaming-Plattform",
+        "description": ""
+    },
     "popup_sfmEnabled": {
         "message": "Spoilerfreien Modus aktivieren"
     },

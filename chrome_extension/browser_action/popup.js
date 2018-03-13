@@ -162,16 +162,23 @@ function updateUiAfterTabInfoUpdate(tabInfo) {
     const sfmEnabledOnChannelCheckbox = document.getElementById(SFM_ENABLED_ON_CHANNEL_ID);
 
     // SfmState
-    if (SfmState.ENABLED === sfmState || SfmState.DISABLED === sfmState) {
-        sfmStateIconImg.src = chrome.runtime.getURL(SfmState.ENABLED === sfmState ? "img/hide_black.svg" : "img/show_black.svg");
-        setVisible(sfmStateIconImg, true);
-    }
-    else {
+    if (platform) {
+        if (SfmState.ENABLED === sfmState || SfmState.DISABLED === sfmState) {
+            sfmStateIconImg.src = chrome.runtime.getURL(SfmState.ENABLED === sfmState ? "img/hide_black.svg" : "img/show_black.svg");
+            setVisible(sfmStateIconImg, true);
+        }
+        else {
+            setVisible(sfmStateIconImg, false);
+            sfmStateIconImg.src = "";
+        }
+        const sfmStateLabelMsgKey = getEnumValueMsgKey(sfmState, "popup_sfmState_");
+        sfmStateLabelSpan.textContent = chrome.i18n.getMessage(sfmStateLabelMsgKey);
+    } else {
         setVisible(sfmStateIconImg, false);
         sfmStateIconImg.src = "";
+        sfmStateLabelSpan.textContent = chrome.i18n.getMessage("popup_sfmState_notOnPlatform");
     }
-    const sfmStateLabelMsgKey = getEnumValueMsgKey(sfmState, "popup_sfmState_");
-    sfmStateLabelSpan.textContent = chrome.i18n.getMessage(sfmStateLabelMsgKey);
+
 
     // Platform
     setData(platformSpan, DATA_PLATFORM_NAME, platformName);
@@ -348,7 +355,7 @@ function init() {
     }
 
     // SFM state
-    setMsgToTextContent(SFM_STATE_LABEL_ID, getEnumValueMsgKey(SfmState.UNDETERMINED, "popup_sfmState_"));
+    setMsgToTextContent(SFM_STATE_LABEL_ID, "popup_sfmState_notOnPlatform");
 
     // SFM enabled
     setMsgToTextContent("sfmEnabledLabel", "popup_sfmEnabled");

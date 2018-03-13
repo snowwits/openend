@@ -83,7 +83,7 @@ let GLOBAL_configuredFlags = getDefaultConfiguredFlagsCopy();
 /**
  * Whether relevant info for the TabInfo changed and the TabInfo message should be sent out on the end of this configurePage() cycle.
  */
-let GLOBAL_tabInfoChanged = false;
+let GLOBAL_tabInfoChanged = true;
 
 
 /*
@@ -1249,7 +1249,7 @@ function buildTabInfoMessage() {
 function sendTabInfoMessage() {
     if (GLOBAL_tabInfoChanged) {
         const tabInfoMsg = buildTabInfoMessage();
-        opnd.browser.sendMessage(tabInfoMsg).catch((error) =>  {
+        opnd.browser.sendMessage(tabInfoMsg).catch((error) => {
             // ignore: is logged anyway
         });
         resetTabInfoChanged();
