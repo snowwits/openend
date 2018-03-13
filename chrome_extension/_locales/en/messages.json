@@ -75,6 +75,10 @@
         "message": "Spoiler-Free Mode state undetermined",
         "description": ""
     },
+    "popup_sfmState_notOnPlatform": {
+        "message": "Not on a supported streaming platform",
+        "description": ""
+    },
     "popup_sfmEnabled": {
         "message": "Enable Spoiler-Free Mode",
         "description": ""
@@ -119,15 +123,15 @@
         "message": "Enable",
         "description": ""
     },
-	"popup_sfmEnabled_hasNoEffect_disabledGlobally": {
+    "popup_sfmEnabled_hasNoEffect_disabledGlobally": {
         "message": "Spoiler-Free Mode is disabled on the global level.",
         "description": ""
     },
-	"popup_sfmEnabled_hasNoEffect_enabledGlobally": {
+    "popup_sfmEnabled_hasNoEffect_enabledGlobally": {
         "message": "Spoiler-Free Mode is enabled on the global level.",
         "description": ""
     },
-	"popup_sfmEnabled_hasNoEffect_disabledOnPlatform": {
+    "popup_sfmEnabled_hasNoEffect_disabledOnPlatform": {
         "message": "Spoiler-Free Mode is disabled on the platform level.",
         "description": ""
     },

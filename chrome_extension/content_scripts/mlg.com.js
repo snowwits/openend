@@ -52,7 +52,10 @@ let GLOBAL_sfmState = SfmState.UNDETERMINED;
  * Flags whether the dependencies of certain options have been configured yet
  */
 let GLOBAL_configuredFlags = getDefaultConfiguredFlagsCopy();
-
+/**
+ * Whether relevant info for the TabInfo changed and the TabInfo message should be sent out on the end of this configurePage() cycle.
+ */
+let GLOBAL_tabInfoChanged = true;
 
 /*
  * ====================================================================================================
@@ -165,6 +168,7 @@ function configurePage() {
     determineSfmState();
     configurePlayer();
     configureVideoListItems();
+    sendTabInfoMessage();
 }
 
 function isPageConfigured() {
@@ -211,9 +215,13 @@ function updateSfmState(sfmState) {
     // If the sfmEnabledForPage changed, SFM dependencies need reconfiguration
     if (isChange) {
         GLOBAL_sfmState = sfmState;
-        log("Updated [sfmEnabledForPage] to [%o]", GLOBAL_sfmState);
+        log("Updated [sfmState] to [%o]", GLOBAL_sfmState);
 
+        // If the sfmState changed, SFM dependencies need reconfiguration
         setSfmOptionsToNotConfigured();
+
+        // Notify about TabInfo change (new sfmState)
+        signalTabInfoChanged("sfmState");
     }
 }
 
@@ -369,11 +377,30 @@ function listenForMessages() {
     chrome.runtime.onMessage.addListener(handleMessage);
 }
 
+function signalTabInfoChanged(changedProperty) {
+    GLOBAL_tabInfoChanged = true;
+    log("TabInfo update needs to be sent because [%s] changed", changedProperty);
+}
+
+function resetTabInfoChanged() {
+    GLOBAL_tabInfoChanged = false;
+}
+
 /**
  * @return {!TabInfoMessage} the tab info message
  */
 function buildTabInfoMessage() {
     return new TabInfoMessage(new TabInfo(MLG_PLATFORM.serialize(), null, GLOBAL_sfmState));
+}
+
+function sendTabInfoMessage() {
+    if (GLOBAL_tabInfoChanged) {
+        const tabInfoMsg = buildTabInfoMessage();
+        opnd.browser.sendMessage(tabInfoMsg).catch((error) => {
+            // ignore: is logged anyway
+        });
+        resetTabInfoChanged();
+    }
 }
 
 /**
