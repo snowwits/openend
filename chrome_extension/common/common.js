@@ -667,7 +667,7 @@ const SfmEnabled = Object.freeze({
 });
 
 const OPT_SFM_ENABLED_GLOBAL_NAME = "sfmEnabledGlobal";
-const OPT_SFM_ENABLED_GLOBAL_DEFAULT = SfmEnabled.NEVER;
+const OPT_SFM_ENABLED_GLOBAL_DEFAULT = SfmEnabled.CUSTOM;
 const OPT_SFM_ENABLED_PLATFORMS_NAME = "sfmEnabledPlatforms";
 const OPT_SFM_ENABLED_PLATFORMS_DEFAULT = getOptSfmEnabledPlatformsDefaultValue();
 const OPT_SFM_ENABLED_CHANNELS_NAME = "sfmEnabledChannels";
@@ -675,7 +675,7 @@ const OPT_SFM_ENABLED_CHANNELS_DEFAULT = Object.freeze([]);
 const OPT_SFM_PLAYER_HIDE_DURATION_NAME = "sfmPlayerHideDuration";
 const OPT_SFM_PLAYER_HIDE_DURATION_DEFAULT = true;
 const OPT_SFM_PLAYER_JUMP_DISTANCE_NAME = "sfmPlayerJumpDistance";
-const OPT_SFM_PLAYER_JUMP_DISTANCE_DEFAULT = "2m";
+const OPT_SFM_PLAYER_JUMP_DISTANCE_DEFAULT = "3m";
 const OPT_SFM_VIDEO_LIST_HIDE_TITLE_NAME = "sfmVideoListHideTitle";
 const OPT_SFM_VIDEO_LIST_HIDE_TITLE_DEFAULT = false;
 const OPT_SFM_VIDEO_LIST_HIDE_PREVIEW_NAME = "sfmVideoListHidePreview";
@@ -803,7 +803,7 @@ function getOptSfmEnabledPlatformsDefaultValue() {
     const sfmEnabledPlatforms = {};
     for (let i = 0; i < ALL_PLATFORMS.length; i++) {
         const platformName = ALL_PLATFORMS[i].name;
-        sfmEnabledPlatforms[platformName] = SfmEnabled.NEVER;
+        sfmEnabledPlatforms[platformName] = SfmEnabled.CUSTOM;
     }
     return Object.freeze(sfmEnabledPlatforms);
 }
