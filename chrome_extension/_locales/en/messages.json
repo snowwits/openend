@@ -145,7 +145,7 @@
     },
     "popup_openOptions": {
         "message": "Options...",
-        "description": "Label of the Options... button on the browser_action popup menu."
+        "description": "Label of the Options... button on the popup menu."
     },
     "options_title": {
         "message": "Open End Options",

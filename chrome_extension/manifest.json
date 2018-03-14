@@ -28,7 +28,7 @@
             "64": "img/icon_grey_64.png",
             "128": "img/icon_grey_128.png"
         },
-        "default_popup": "browser_action/popup.html"
+        "default_popup": "popup/popup.html"
     },
     "content_scripts": [
         {

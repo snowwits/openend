@@ -4,15 +4,15 @@
  * ====================================================================================================
  */
 function log(msg, ...substitutions) {
-    logWithComponent("browser_action", msg, ...substitutions);
+    logWithComponent("popup", msg, ...substitutions);
 }
 
 function warn(msg, ...substitutions) {
-    warnWithComponent("browser_action", msg, ...substitutions);
+    warnWithComponent("popup", msg, ...substitutions);
 }
 
 function error(msg, ...substitutions) {
-    errorWithComponent("browser_action", msg, ...substitutions);
+    errorWithComponent("popup", msg, ...substitutions);
 }
 
 
