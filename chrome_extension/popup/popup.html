@@ -32,16 +32,19 @@
     <h2 id="sfmEnabledLabel"></h2>
 
     <div id="sfmEnabledGlobalContainer" class="sfmEnabledSubContainer">
-        <h3><img id="sfmEnabledGlobalIcon" /><span id="sfmEnabledGlobalLabel"></span></h3>
+        <h3><img id="sfmEnabledGlobalIcon"/><span id="sfmEnabledGlobalLabel"></span></h3>
         <div>
             <select id="sfmEnabledGlobal"></select>
         </div>
     </div>
 
     <div id="sfmEnabledOnPlatformContainer" class="sfmEnabledSubContainer opnd-hidden">
-        <h3><img id="sfmEnabledOnPlatformIcon" /><span id="sfmEnabledOnPlatformLabel"></span></h3>
+        <h3><img id="sfmEnabledOnPlatformIcon"/><span id="sfmEnabledOnPlatformLabel"></span></h3>
         <div class="platformOrChannel">
-            <span id="platform" data-platformName=""></span>
+            <span id="platform" data-platformname="">
+                <span id="platformDisplayName"></span>
+                <span id="platformName"></span>
+            </span>
         </div>
         <div>
             <select id="sfmEnabledOnPlatform"></select>
@@ -49,9 +52,12 @@
     </div>
 
     <div id="sfmEnabledOnChannelContainer" class="sfmEnabledSubContainer opnd-hidden">
-        <h3><img id="sfmEnabledOnChannelIcon" /><span id="sfmEnabledOnChannelLabel"></span></h3>
+        <h3><img id="sfmEnabledOnChannelIcon"/><span id="sfmEnabledOnChannelLabel"></span></h3>
         <div class="platformOrChannel">
-            <span id="channel" data-channelQualifiedName="" data-channelDisplayName=""></span>
+            <span id="channel" data-channelqualifiedname="" data-channeldisplayname="">
+                <span id="channelDisplayName"></span>
+                <span id="channelQualifiedName"></span>
+            </span>
         </div>
         <div>
             <input type="checkbox" id="sfmEnabledOnChannel"><span id="sfmEnabledOnChannelCheckboxLabel"></span>

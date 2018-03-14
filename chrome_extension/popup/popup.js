@@ -27,9 +27,13 @@ const SFM_STATE_LABEL_ID = "sfmStateLabel";
 const SFM_ENABLED_GLOBAL_ID = "sfmEnabledGlobal";
 
 const PLATFORM_ID = "platform";
+const PLATFORM_NAME_ID = "platformName";
+const PLATFORM_DISPLAY_NAME_ID = "platformDisplayName";
 const SFM_ENABLED_ON_PLATFORM_ID = "sfmEnabledOnPlatform";
 
 const CHANNEL_ID = "channel";
+const CHANNEL_QUALIFIED_NAME_ID = "channelQualifiedName";
+const CHANNEL_DISPLAY_NAME_ID = "channelDisplayName";
 const SFM_ENABLED_ON_CHANNEL_ID = "sfmEnabledOnChannel";
 
 const HAS_NO_EFFECT_CLASS = "hasNoEffect";
@@ -141,7 +145,7 @@ function updateUiAfterTabInfoUpdate(tabInfo) {
     const platformSerialized = tabInfo ? tabInfo.platform : null;
     const platform = Platform.deserialize(platformSerialized);
     const platformName = platform ? platform.name : "";
-    const platformVerboseName = platform ? platform.verboseName : "";
+    const platformDisplayName = platform ? platform.displayName : "";
     const channelSerialized = tabInfo ? tabInfo.channel : null;
     const channel = Channel.deserialize(channelSerialized);
     const channelQualifiedName = channel ? channel.qualifiedName : "";
@@ -153,9 +157,13 @@ function updateUiAfterTabInfoUpdate(tabInfo) {
     const sfmStateLabelSpan = document.getElementById(SFM_STATE_LABEL_ID);
     const sfmEnabledOnPlatformContainerDiv = document.getElementById("sfmEnabledOnPlatformContainer");
     const platformSpan = document.getElementById(PLATFORM_ID);
+    const platformNameSpan = document.getElementById(PLATFORM_NAME_ID);
+    const platformDisplayNameSpan = document.getElementById(PLATFORM_DISPLAY_NAME_ID);
     const sfmEnabledOnPlatformSelect = document.getElementById(SFM_ENABLED_ON_PLATFORM_ID);
     const sfmEnabledOnChannelContainerDiv = document.getElementById("sfmEnabledOnChannelContainer");
     const channelSpan = document.getElementById(CHANNEL_ID);
+    const channelQualifiedNameSpan = document.getElementById(CHANNEL_QUALIFIED_NAME_ID);
+    const channelDisplayNameSpan = document.getElementById(CHANNEL_DISPLAY_NAME_ID);
     const sfmEnabledOnChannelCheckbox = document.getElementById(SFM_ENABLED_ON_CHANNEL_ID);
 
     // SfmState
@@ -179,7 +187,8 @@ function updateUiAfterTabInfoUpdate(tabInfo) {
 
     // Platform
     setData(platformSpan, DATA_PLATFORM_NAME, platformName);
-    platformSpan.textContent = platformVerboseName;
+    platformDisplayNameSpan.textContent = platformDisplayName;
+    platformNameSpan.textContent = "(" + platformName + ")";
     if (platform === null) {
         setVisible(sfmEnabledOnPlatformContainerDiv, false);
     } else {
@@ -193,7 +202,8 @@ function updateUiAfterTabInfoUpdate(tabInfo) {
     // Channel
     setData(channelSpan, DATA_CHANNEL_QUALIFIED_NAME, channelQualifiedName);
     setData(channelSpan, DATA_CHANNEL_DISPLAY_NAME, channelDisplayName);
-    channelSpan.textContent = channelVerboseName;
+    channelDisplayNameSpan.textContent = channelDisplayName;
+    channelQualifiedNameSpan.textContent = "(" + channelQualifiedName + ")";
     if (channel === null) {
         setVisible(sfmEnabledOnChannelContainerDiv, false);
     } else {

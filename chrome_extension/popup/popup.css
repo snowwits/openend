@@ -71,7 +71,15 @@ h3 {
 }
 
 .hasNoEffect {
-    color: gray;
+    color: grey;
+}
+
+#platformDisplayName, #channelDisplayName {
+    margin-right: 3px; /* To add space between display name and qualified name*/
+}
+
+#platformName, #channelQualifiedName {
+    color: grey;
 }
 
 #buttonBar {
