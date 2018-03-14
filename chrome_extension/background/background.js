@@ -28,10 +28,12 @@ function handleMessage(request, sender, sendResponse) {
         log("Ignoring message [%o] from [%o] because it did not came from the current tab", request, sender);
         return;
     }
+
     if (request.type === MessageType.TAB_INFO) {
         const tabInfo = request.body;
+        const tabId = sender.tab.id;
+
         const iconColor = (tabInfo.platform !== null ? "twitch-purple" : "grey");
-        log("Setting icon to %s", iconColor);
         chrome.browserAction.setIcon({
             path: {
                 "16": "img/icon_" + iconColor + "_16.png",
@@ -39,8 +41,15 @@ function handleMessage(request, sender, sendResponse) {
                 "64": "img/icon_" + iconColor + "_64.png",
                 "128": "img/icon_" + iconColor + "_128.png"
             },
-            tabId: sender.tab.id
+            tabId: tabId
         });
+
+        const badgeText = (SfmState.ACTIVE === tabInfo.sfmState ? chrome.i18n.getMessage("popup_sfmState_sfmBadge") : "");
+        chrome.browserAction.setBadgeText({
+            text: badgeText,
+            tabId: tabId
+        });
+
         return;
     }
     log("Ignoring message [%o] from [%o] because it has an irrelevant message type [%s]", request, sender, request.type);

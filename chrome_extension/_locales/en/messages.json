@@ -63,16 +63,20 @@
         "message": "Show duration",
         "description": "Label of the Show/Hide Duration button for the visible state."
     },
-    "popup_sfmState_ENABLED": {
-        "message": "Spoiler-Free Mode enabled",
+    "popup_sfmState_sfmBadge": {
+        "message": "SFM",
         "description": ""
     },
-    "popup_sfmState_DISABLED": {
-        "message": "Spoiler-Free Mode disabled",
+    "popup_sfmState_ACTIVE": {
+        "message": "Spoiler-Free Mode active",
+        "description": ""
+    },
+    "popup_sfmState_INACTIVE": {
+        "message": "Spoiler-Free Mode inactive",
         "description": ""
     },
     "popup_sfmState_UNDETERMINED": {
-        "message": "Spoiler-Free Mode state undetermined",
+        "message": "Spoiler-Free Mode undetermined",
         "description": ""
     },
     "popup_sfmState_notOnPlatform": {

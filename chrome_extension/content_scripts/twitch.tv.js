@@ -400,12 +400,12 @@ function isSfmStateDetermined() {
     return SfmState.UNDETERMINED !== GLOBAL_sfmState;
 }
 
-function isSfmStateEnabled() {
-    return SfmState.ENABLED === GLOBAL_sfmState;
+function isSfmStateActive() {
+    return SfmState.ACTIVE === GLOBAL_sfmState;
 }
 
-function isSfmStateDisabled() {
-    return SfmState.DISABLED === GLOBAL_sfmState;
+function isSfmStateInactive() {
+    return SfmState.INACTIVE === GLOBAL_sfmState;
 }
 
 function updateSfmState(sfmState) {
@@ -434,7 +434,7 @@ function configurePlayer() {
         return;
     }
 
-    if (isSfmStateEnabled()) {
+    if (isSfmStateActive()) {
         let toolbarElem = document.getElementById(OPND_PLAYER_TOOLBAR_ID);
         if (!toolbarElem) {
             // Search for injection container for toolbar (the left button panel)
@@ -611,7 +611,7 @@ function configureVideoListItems() {
     const setDurationVisible = !GLOBAL_options[OPT_SFM_VIDEO_LIST_HIDE_DURATION_NAME];
 
     // If SFM = enabled, configure according to the SFM config
-    if (isSfmStateEnabled()) {
+    if (isSfmStateActive()) {
         setAllVisible(allTitleContainers, setTitleVisible);
         setAllVisible(allPreviewContainers, setPreviewVisible);
         setAllVisible(allDurationContainers, setDurationVisible);
@@ -622,7 +622,7 @@ function configureVideoListItems() {
         }
     }
     // If SFM = disabled, show everything and remove toolbars
-    else if (isSfmStateDisabled()) {
+    else if (isSfmStateInactive()) {
         setAllVisible(allTitleContainers, true);
         setAllVisible(allPreviewContainers, true);
         setAllVisible(allDurationContainers, true);
@@ -641,7 +641,7 @@ function configureVideoListItems() {
 
             const channel = getVideoChannel(videoCardDiv);
             const sfmEnabledOnChannel = checkSfmState(GLOBAL_options, TWITCH_PLATFORM, channel);
-            if (SfmState.ENABLED === sfmEnabledOnChannel) {
+            if (SfmState.ACTIVE === sfmEnabledOnChannel) {
                 setAllVisible(videoTitleContainer, setTitleVisible);
                 setAllVisible(videoPreviewContainer, setPreviewVisible);
                 setAllVisible(videoDurationContainer, setDurationVisible);

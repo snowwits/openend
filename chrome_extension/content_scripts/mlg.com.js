@@ -115,10 +115,13 @@ function resetGlobalPageFlags() {
 }
 
 function resetGlobalPageStateFlags(changedOptions) {
-    // If something about SFM enabled changed, sfmEnabledForPage needs re-determination.
-    if (OPT_SFM_ENABLED_GLOBAL_NAME in changedOptions || OPT_SFM_ENABLED_PLATFORMS_NAME in changedOptions) {
-        GLOBAL_sfmState = SfmState.UNDETERMINED;
+    // If something about SFM enabled changed, sfmState needs re-determination.
+    // Also, all SFM dependencies need reconfiguration (they may be independent from sfmState, for example video list items on a directory/game/Overwatch page can be from several channels).
+    if (containsSfmEnabledOption(changedOptions)) {
+        updateSfmState(SfmState.UNDETERMINED);
         determineSfmState();
+
+        setSfmOptionsToNotConfigured();
     }
 
     // All changed options need redetermination
@@ -197,12 +200,12 @@ function isSfmStateDetermined() {
     return SfmState.UNDETERMINED !== GLOBAL_sfmState;
 }
 
-function isSfmStateEnabled() {
-    return SfmState.ENABLED === GLOBAL_sfmState;
+function isSfmStateActive() {
+    return SfmState.ACTIVE === GLOBAL_sfmState;
 }
 
-function isSfmStateDisabled() {
-    return SfmState.DISABLED === GLOBAL_sfmState;
+function isSfmStateInactive() {
+    return SfmState.INACTIVE === GLOBAL_sfmState;
 }
 
 /**
@@ -212,7 +215,6 @@ function isSfmStateDisabled() {
 function updateSfmState(sfmState) {
     const isChange = GLOBAL_sfmState !== sfmState;
 
-    // If the sfmEnabledForPage changed, SFM dependencies need reconfiguration
     if (isChange) {
         GLOBAL_sfmState = sfmState;
         log("Updated [sfmState] to [%o]", GLOBAL_sfmState);
@@ -254,7 +256,7 @@ function configurePlayer() {
     }
     if (durationElements.length > 0) {
         let setDurationVisible;
-        if (isSfmStateEnabled()) {
+        if (isSfmStateActive()) {
             setDurationVisible = !GLOBAL_options[OPT_SFM_PLAYER_HIDE_DURATION_NAME];
         }
         else {
@@ -352,7 +354,7 @@ function configureVideoListItems() {
 
     if (opndContainers.length > 0) {
         let setDurationVisible;
-        if (isSfmStateEnabled()) {
+        if (isSfmStateActive()) {
             setDurationVisible = !GLOBAL_options[OPT_SFM_VIDEO_LIST_HIDE_DURATION_NAME];
         }
         else {

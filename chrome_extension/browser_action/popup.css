@@ -7,8 +7,8 @@ h1, h2, h3 {
 }
 
 h1 {
-    font-size: 1.7em;
-    line-height: 1.7em;
+    font-size: 1.6em;
+    line-height: 1.6em;
 }
 
 h2 {
@@ -67,7 +67,7 @@ h3 {
 #sfmStateContainer img {
     width: 2em;
     height: 2em;
-    vertical-align: text-top;
+    vertical-align: middle;
 }
 
 .hasNoEffect {

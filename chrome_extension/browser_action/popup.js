@@ -36,9 +36,6 @@ const HAS_NO_EFFECT_CLASS = "hasNoEffect";
 
 const OPEN_OPTIONS_ID = "openOptions";
 
-const DATA_PLATFORM_NAME = "platformName";
-const DATA_CHANNEL_QUALIFIED_NAME = "channelQualifiedName";
-const DATA_CHANNEL_DISPLAY_NAME = "channelDisplayName";
 
 /*
  * ====================================================================================================
@@ -163,8 +160,8 @@ function updateUiAfterTabInfoUpdate(tabInfo) {
 
     // SfmState
     if (platform) {
-        if (SfmState.ENABLED === sfmState || SfmState.DISABLED === sfmState) {
-            sfmStateIconImg.src = chrome.runtime.getURL(SfmState.ENABLED === sfmState ? "img/hide_black.svg" : "img/show_black.svg");
+        if (SfmState.ACTIVE === sfmState || SfmState.INACTIVE === sfmState) {
+            sfmStateIconImg.src = chrome.runtime.getURL(SfmState.ACTIVE === sfmState ? "img/hide_black.svg" : "img/show_black.svg");
             setVisible(sfmStateIconImg, true);
         }
         else {
@@ -222,7 +219,7 @@ function updateSfmEnabledGlobalSelect(sfmEnabledGlobalSelect, options) {
  */
 function updateSfmEnabledOnPlatformSelect(sfmEnabledOnPlatformSelect, options, platform) {
     if (platform) {
-        sfmEnabledOnPlatformSelect.value = checkSfmStateOnPlatform(options, platform);
+        sfmEnabledOnPlatformSelect.value = getSfmEnabledOnPlatform(options, platform);
     }
 }
 
@@ -234,7 +231,7 @@ function updateSfmEnabledOnPlatformSelect(sfmEnabledOnPlatformSelect, options, p
  */
 function updateSfmEnabledOnChannelCheckbox(channelSfmEnabledCheckbox, options, channel) {
     if (channel) {
-        channelSfmEnabledCheckbox.checked = checkSfmStateOnChannel(options, channel);
+        channelSfmEnabledCheckbox.checked = getSfmEnabledOnChannel(options, channel);
     }
 }
 

@@ -4,8 +4,9 @@ body {
 
 #options {
     width: 500px;
-   /*  height: 400px; height so that the div is not higher than the Chrome options box and Chrome won't display their own scroll pane
-    PROBLEM is that the options box's height depends on the height of Chrome. So on 720p its smaller than on 1080p*/
+    max-height: 500px;
+    /*  height: 400px; height so that the div is not higher than the Chrome options box and Chrome won't display their own scroll pane
+     PROBLEM is that the options box's height depends on the height of Chrome. So on 720p its smaller than on 1080p*/
     overflow-y: auto;
 }
 
@@ -14,9 +15,9 @@ body {
 }
 
 label {
-	 /* to vertically align the text in the div */
-	 margin-top: auto;
-	 margin-bottom: auto;
+    /* to vertically align the text in the div */
+    margin-top: auto;
+    margin-bottom: auto;
 }
 
 .formGrid {
@@ -28,33 +29,32 @@ label {
 
 /* Platforms */
 
-
 /* Channels Grid */
 #sfmEnabledChannelsGrid {
-	display: grid;
-	grid-template-columns: 5fr 4fr 3fr;
+    display: grid;
+    grid-template-columns: 5fr 4fr 3fr;
     grid-row-gap: 5px;
     grid-column-gap: 10px;
 }
 
 #sfmEnabledChannels {
-	grid-column: 1 / 4;
+    grid-column: 1 / 4;
 }
 
 #sfmEnabledChannelToAdd {
-	grid-row: 3;
+    grid-row: 3;
 }
 
 #sfmEnabledChannelToAddDisplayName {
-	grid-row: 3;
+    grid-row: 3;
 }
 
 #sfmEnabledAddChannelCell {
-	grid-row: 3;
+    grid-row: 3;
 }
 
 #sfmEnabledRemoveChannelCell {
-	grid-row: 4;
+    grid-row: 4;
 }
 
 /* Channels */
@@ -64,7 +64,7 @@ label {
 
 /* Config Player */
 #sfmCfgPlayerJumpDistance {
-	 width: 8em;
+    width: 8em;
 }
 
 /* Status */

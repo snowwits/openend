@@ -52,6 +52,13 @@ const PAGE_CONFIGURATION_TIMEOUT = 45000; // 45s
  */
 
 /*
+ * No camelcase in data-names. CamelCase leads to two keys being
+ */
+const DATA_PLATFORM_NAME = "platformname";
+const DATA_CHANNEL_QUALIFIED_NAME = "channelqualifiedname";
+const DATA_CHANNEL_DISPLAY_NAME = "channeldisplayname";
+
+/*
  * ====================================================================================================
  * CHANNEL AND PLATFORM - API
  * ====================================================================================================
@@ -741,8 +748,8 @@ function containsSfmEnabledOption(options) {
 }
 
 const SfmState = Object.freeze({
-    ENABLED: "ENABLED",
-    DISABLED: "DISABLED",
+    ACTIVE: "ACTIVE",
+    INACTIVE: "INACTIVE",
     UNDETERMINED: "UNDETERMINED"
 });
 
@@ -755,29 +762,29 @@ const SfmState = Object.freeze({
 function checkSfmState(options, platform, channel) {
     const sfmEnabledGlobal = options[OPT_SFM_ENABLED_GLOBAL_NAME];
     if (SfmEnabled.ALWAYS === sfmEnabledGlobal) {
-        return SfmState.ENABLED;
+        return SfmState.ACTIVE;
     } else if (SfmEnabled.NEVER === sfmEnabledGlobal) {
-        return SfmState.DISABLED;
-    } else if (SfmEnabled.CUSTOM) {
+        return SfmState.INACTIVE;
+    } else if (SfmEnabled.CUSTOM === sfmEnabledGlobal) {
         if (platform === null) {
             return SfmState.UNDETERMINED;
         }
-        const sfmEnabledOnPlatform = checkSfmStateOnPlatform(options, platform);
+        const sfmEnabledOnPlatform = getSfmEnabledOnPlatform(options, platform);
         if (SfmEnabled.ALWAYS === sfmEnabledOnPlatform) {
-            return SfmState.ENABLED;
+            return SfmState.ACTIVE;
         }
         else if (SfmEnabled.NEVER === sfmEnabledOnPlatform) {
-            return SfmState.DISABLED;
+            return SfmState.INACTIVE;
         }
         else if (SfmEnabled.CUSTOM === sfmEnabledOnPlatform) {
             if (channel === null) {
                 return SfmState.UNDETERMINED;
             }
-            if (checkSfmStateOnChannel(options, channel)) {
-                return SfmState.ENABLED;
+            if (getSfmEnabledOnChannel(options, channel)) {
+                return SfmState.ACTIVE;
             }
             else {
-                return SfmState.DISABLED;
+                return SfmState.INACTIVE;
             }
         }
     }
@@ -813,9 +820,9 @@ function getOptSfmEnabledChannels(options) {
  *
  * @param options {!Object<!string, !Object>} the options
  * @param platform {!Platform} the Platform
- * @return {!string} the {@SfmEnabled} value
+ * @return {!string} the {@link SfmEnabled} value
  */
-function checkSfmStateOnPlatform(options, platform) {
+function getSfmEnabledOnPlatform(options, platform) {
     const sfmEnabledPlatforms = getOptSfmEnabledPlatforms(options);
     for (const platformName in sfmEnabledPlatforms) {
         if (platform.name === platformName) {
@@ -829,9 +836,9 @@ function checkSfmStateOnPlatform(options, platform) {
  *
  * @param options {!Object<!string, !Object>} the options
  * @param channel {!Channel} the channel
- * @return {!boolean} whether sfm is enabled on the given channel
+ * @return {!boolean} whether SFM is enabled on the given channel
  */
-function checkSfmStateOnChannel(options, channel) {
+function getSfmEnabledOnChannel(options, channel) {
     return getOptSfmEnabledChannels(options).some(ch => Channel.equal(ch, channel));
 }
 
@@ -1381,7 +1388,7 @@ function setSelectOptions(selectElem, valueToMsgKeyMap) {
  * @return {!Channel}
  */
 function optionElemToChannel(optionElem) {
-    return Channel.parseFromQualifiedName(optionElem.value, getData(optionElem, "displayName"));
+    return Channel.parseFromQualifiedName(optionElem.value, getData(optionElem, DATA_CHANNEL_DISPLAY_NAME));
 }
 
 function getSelectChannelsSerialized(selectId) {
@@ -1403,7 +1410,7 @@ function getSelectChannelsSerialized(selectId) {
 function channelToOptionElem(channel) {
     const optionElem = document.createElement("option");
     optionElem.value = channel.qualifiedName;
-    setData(optionElem, "displayName", channel.displayName);
+    setData(optionElem, DATA_CHANNEL_DISPLAY_NAME, channel.displayName);
     optionElem.innerText = channel.verboseQualifiedName;
     return optionElem;
 }

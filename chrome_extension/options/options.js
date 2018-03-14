@@ -88,7 +88,7 @@ function getSfmEnabledPlatformsFromInputValues() {
     const enabledDivs = sfmEnabledPlatformsContainerDiv.getElementsByClassName(SFM_ENABLED_ON_PLATFORM_CLS);
     for (let i = 0; i < enabledDivs.length; i++) {
         const enabledDiv = enabledDivs[i];
-        const platformName = getData(enabledDiv, "platformName");
+        const platformName = getData(enabledDiv, DATA_PLATFORM_NAME);
         const sfmEnabled = enabledDiv.querySelector("select").value;
         sfmEnabledPlatforms[platformName] = sfmEnabled;
     }
@@ -111,10 +111,10 @@ function updateInputsWithOptions(options) {
 
         /**
          * <div id="sfmEnabledPlatformsContainer">
-         *     <div class="sfmEnabledPlatform" data-platform-name="twitch.tv">Twitch (twitch.tv)</div>
-         *     <div class="sfmEnabledOnPlatform" data-platform-name="twitch.tv"><select>...</select></div>
-         *     <div class="sfmEnabledPlatform" data-platform-name="mlg.com">MLG (mlg.com)</div>
-         *     <div class="sfmEnabledOnPlatform" data-platform-name="mlg.com"><select>...</select></div>
+         *     <div class="sfmEnabledPlatform" data-platformname="twitch.tv">Twitch (twitch.tv)</div>
+         *     <div class="sfmEnabledOnPlatform" data-platformname="twitch.tv"><select>...</select></div>
+         *     <div class="sfmEnabledPlatform" data-platformname="mlg.com">MLG (mlg.com)</div>
+         *     <div class="sfmEnabledOnPlatform" data-platformname="mlg.com"><select>...</select></div>
          * </div>
          */
         for (let i = 0; i < ALL_PLATFORMS.length; i++) {
@@ -127,14 +127,14 @@ function updateInputsWithOptions(options) {
             else {
                 const newPlatformDiv = document.createElement("div");
                 newPlatformDiv.classList.add(SFM_ENABLED_PLATFORM_CLS);
-                setData(newPlatformDiv, "platformName", platform.name);
+                setData(newPlatformDiv, DATA_PLATFORM_NAME, platform.name);
                 const newPlatformLabel = document.createElement("label");
                 newPlatformLabel.textContent = platform.verboseName;
                 newPlatformDiv.appendChild(newPlatformLabel);
                 sfmEnabledPlatformsContainerDiv.appendChild(newPlatformDiv);
                 const newEnabledDiv = document.createElement("div");
                 newEnabledDiv.classList.add(SFM_ENABLED_ON_PLATFORM_CLS);
-                setData(newEnabledDiv, "platformName", platform.name);
+                setData(newEnabledDiv, DATA_PLATFORM_NAME, platform.name);
                 const newEnabledSelect = document.createElement("select");
                 setSelectOptions(newEnabledSelect, buildEnumValueToMsgKeyMap(SfmEnabled, "options_sfmEnabled_onPlatform_"));
                 newEnabledSelect.value = optSfmEnabledPlatforms[platform.name];
