@@ -149,8 +149,7 @@ function updateUiAfterTabInfoUpdate(tabInfo) {
     const channelSerialized = tabInfo ? tabInfo.channel : null;
     const channel = Channel.deserialize(channelSerialized);
     const channelQualifiedName = channel ? channel.qualifiedName : "";
-    const channelDisplayName = channel ? channel.displayName : "";
-    const channelVerboseName = channel ? channel.verboseName : "";
+    const channelDisplayName = channel ? channel.displayNameOrName : "";
 
     // Get relevant DOM elements
     const sfmStateIconImg = document.getElementById(SFM_STATE_ICON_ID);
