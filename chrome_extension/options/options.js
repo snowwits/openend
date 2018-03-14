@@ -119,7 +119,7 @@ function updateInputsWithOptions(options) {
          */
         for (let i = 0; i < ALL_PLATFORMS.length; i++) {
             const platform = ALL_PLATFORMS[i];
-            const enabledDiv = sfmEnabledPlatformsContainerDiv.querySelector(".sfmEnabledOnPlatform[data-platform-name='" + platform.name + "']");
+            const enabledDiv = sfmEnabledPlatformsContainerDiv.querySelector(".sfmEnabledOnPlatform[data-" + DATA_PLATFORM_NAME + "='" + platform.name + "']");
             if (enabledDiv) {
                 const enabledSelect = enabledDiv.querySelector("select");
                 enabledSelect.value = optSfmEnabledPlatforms[platform.name];
