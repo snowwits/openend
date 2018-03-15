@@ -236,6 +236,8 @@ function createLocationIdentifier(location) {
 }
 
 function handlePageChange() {
+    cleanPage();
+
     resetGlobalPageFlags();
 
     // Determine page
@@ -450,62 +452,19 @@ function configurePlayer() {
             configurePlayerJumpDistanceInputAndButtons();
 
             // Set initial Show/Hide Duration state
-            updatePayerDurationVisibleAndShowHideButton(true, !GLOBAL_options[OPT_SFM_PLAYER_HIDE_DURATION_NAME]);
+            updatePlayerDurationVisibleAndShowHideButton(true, !GLOBAL_options[OPT_SFM_PLAYER_HIDE_DURATION_NAME]);
         }
     }
     else {
-        // Remove old toolbar
-        const toolbarElem = document.getElementById(OPND_PLAYER_TOOLBAR_ID);
-        if (toolbarElem) {
-            removeElement(toolbarElem);
-            log("Removed Open End Toolbar");
-        }
+        removePlayerToolbarAndShowPlayerDuration();
 
         // Set the configured flag for the jump distance as well because it doesn't need any configuration in this case
         setConfigured(OPT_SFM_PLAYER_JUMP_DISTANCE_NAME, true);
-
-        // Set initial Show/Hide Duration state
-        updatePayerDurationVisibleAndShowHideButton(true, true);
     }
 }
 
 function isPlayerConfigured() {
     return isPlayerDurationConfigured() && isPlayerJumpDistanceConfigured();
-}
-
-/**
- * @param configuring {!boolean} if the method is called during configuration and not because of an UI event
- * @param visible {?boolean} true, false or null (to toggle)
- */
-function updatePayerDurationVisibleAndShowHideButton(configuring, visible) {
-    if (configuring && isPlayerDurationConfigured()) {
-        return;
-    }
-    // Make progress indicators visible / hidden
-    const allDurationElements = getElementsByClassNames([TWITCH_PROGRESS_TOTAL_TIME_DIV_CLASS, TWITCH_PROGRESS_SLIDER_DIV_CLASS]);
-    const opndContainersOfAllDurationElements = getOrWrapAllInOpndContainers(allDurationElements, OPND_CONTAINER_PLAYER_DURATION_CLASS);
-
-    if (opndContainersOfAllDurationElements.length > 0) {
-        const setVisibleResult = setAllVisible(opndContainersOfAllDurationElements, visible);
-        log("Updated Player Duration visible to [%s]", setVisibleResult);
-
-        // Update the Player Progress Visibility img src and alt
-        const tooltip = chrome.i18n.getMessage(setVisibleResult ? "player_showHideDuration_visible" : "player_showHideDuration_hidden");
-        const showHidePlayerDurationImg = document.getElementById(OPND_PLAYER_SHOW_HIDE_DURATION_IMG_ID);
-        if (showHidePlayerDurationImg) {
-            showHidePlayerDurationImg.src = chrome.runtime.getURL(setVisibleResult ? "img/hide_white.svg" : "img/show_white.svg");
-            showHidePlayerDurationImg.alt = tooltip;
-        }
-
-        const showHidePlayerDurationTooltipSpan = document.getElementById(OPND_PLAYER_SHOW_HIDE_DURATION_TOOLTIP_SPAN_ID);
-        if (showHidePlayerDurationTooltipSpan) {
-            showHidePlayerDurationTooltipSpan.setAttribute(TWITCH_PLAYER_TOOLTIP_SPAN_TEXT_ATTR, tooltip);
-        }
-
-        if (configuring) {
-            setConfigured(OPT_SFM_PLAYER_HIDE_DURATION_NAME, true);
-        }
-    }
 }
 
 function isPlayerDurationConfigured() {
@@ -554,6 +513,52 @@ function updateJumpButtonsAfterJumpDistanceChange() {
     }
 }
 
+function removePlayerToolbarAndShowPlayerDuration() {
+    // Remove old toolbar
+    const toolbarElem = document.getElementById(OPND_PLAYER_TOOLBAR_ID);
+    if (toolbarElem) {
+        removeElement(toolbarElem);
+        log("Removed Open End Toolbar");
+    }
+
+    // Set initial Show/Hide Duration state
+    updatePlayerDurationVisibleAndShowHideButton(true, true);
+}
+
+/**
+ * @param configuring {!boolean} if the method is called during configuration and not because of an UI event
+ * @param visible {?boolean} true, false or null (to toggle)
+ */
+function updatePlayerDurationVisibleAndShowHideButton(configuring, visible) {
+    if (configuring && isPlayerDurationConfigured()) {
+        return;
+    }
+    // Make progress indicators visible / hidden
+    const allDurationElements = getElementsByClassNames([TWITCH_PROGRESS_TOTAL_TIME_DIV_CLASS, TWITCH_PROGRESS_SLIDER_DIV_CLASS]);
+    const opndContainersOfAllDurationElements = getOrWrapAllInOpndContainers(allDurationElements, OPND_CONTAINER_PLAYER_DURATION_CLASS);
+
+    if (opndContainersOfAllDurationElements.length > 0) {
+        const setVisibleResult = setAllVisible(opndContainersOfAllDurationElements, visible);
+        log("Updated Player Duration visible to [%s]", setVisibleResult);
+
+        // Update the Player Progress Visibility img src and alt
+        const tooltip = chrome.i18n.getMessage(setVisibleResult ? "player_showHideDuration_visible" : "player_showHideDuration_hidden");
+        const showHidePlayerDurationImg = document.getElementById(OPND_PLAYER_SHOW_HIDE_DURATION_IMG_ID);
+        if (showHidePlayerDurationImg) {
+            showHidePlayerDurationImg.src = chrome.runtime.getURL(setVisibleResult ? "img/hide_white.svg" : "img/show_white.svg");
+            showHidePlayerDurationImg.alt = tooltip;
+        }
+
+        const showHidePlayerDurationTooltipSpan = document.getElementById(OPND_PLAYER_SHOW_HIDE_DURATION_TOOLTIP_SPAN_ID);
+        if (showHidePlayerDurationTooltipSpan) {
+            showHidePlayerDurationTooltipSpan.setAttribute(TWITCH_PLAYER_TOOLTIP_SPAN_TEXT_ATTR, tooltip);
+        }
+
+        if (configuring) {
+            setConfigured(OPT_SFM_PLAYER_HIDE_DURATION_NAME, true);
+        }
+    }
+}
 
 /*
  * ====================================================================================================
@@ -635,24 +640,24 @@ function configureVideoListItems() {
         for (let i = 0; i < videoCardDivs.length; i++) {
             const videoCardDiv = videoCardDivs[i];
 
-            const videoTitleContainer = getVideoTitleOpndContainers(videoCardDiv);
-            const videoPreviewContainer = getVideoPreviewOpndContainers(videoCardDiv);
-            const videoDurationContainer = getVideoDurationOpndContainers(videoCardDiv);
+            const videoTitleContainers = getVideoTitleOpndContainers(videoCardDiv);
+            const videoPreviewContainers = getVideoPreviewOpndContainers(videoCardDiv);
+            const videoDurationContainers = getVideoDurationOpndContainers(videoCardDiv);
 
             const channel = getVideoChannel(videoCardDiv);
             const sfmEnabledOnChannel = checkSfmState(GLOBAL_options, TWITCH_PLATFORM, channel);
             if (SfmState.ACTIVE === sfmEnabledOnChannel) {
-                setAllVisible(videoTitleContainer, setTitleVisible);
-                setAllVisible(videoPreviewContainer, setPreviewVisible);
-                setAllVisible(videoDurationContainer, setDurationVisible);
+                setAllVisible(videoTitleContainers, setTitleVisible);
+                setAllVisible(videoPreviewContainers, setPreviewVisible);
+                setAllVisible(videoDurationContainers, setDurationVisible);
 
                 addVideoListItemToolbar(videoCardDiv);
             }
             // DISABLED or UNDETERMINED
             else {
-                setAllVisible(videoTitleContainer, true);
-                setAllVisible(videoPreviewContainer, true);
-                setAllVisible(videoDurationContainer, true);
+                setAllVisible(videoTitleContainers, true);
+                setAllVisible(videoPreviewContainers, true);
+                setAllVisible(videoDurationContainers, true);
 
                 removeVideoListItemToolbars(videoCardDiv);
             }
@@ -693,40 +698,18 @@ function addVideoListItemToolbar(videoCardDiv) {
     return toolbarElem;
 }
 
-/**
- *
- * @param videoCardDiv {?Element} the video card div if toolbars should only be removed inside this dive or null to remove all
- */
-function removeVideoListItemToolbars(videoCardDiv = null) {
-    const queryRoot = videoCardDiv ? videoCardDiv : document;
-    removeElements(queryRoot.getElementsByClassName(OPND_VIDEO_LIST_ITEM_TOOLBAR_CLASS));
-}
-
 function getVideoTitleOpndContainers(videoCardDiv = null) {
     const queryRoot = videoCardDiv ? videoCardDiv : document;
-    return wrapInOpndContainers(() => queryRoot.querySelectorAll("a[data-a-target='video-preview-card-title-link']"), OPND_CONTAINER_VIDEO_LIST_ITEM_TITLE_CLASS);
+    return getOrWrapSuppliedInOpndContainers(() => queryRoot.querySelectorAll("a[data-a-target='video-preview-card-title-link']"), OPND_CONTAINER_VIDEO_LIST_ITEM_TITLE_CLASS);
 }
 
 function getVideoPreviewOpndContainers(videoCardDiv = null) {
     const queryRoot = videoCardDiv ? videoCardDiv : document;
-    return wrapInOpndContainers(() => queryRoot.querySelectorAll("div[data-test-selector='preview-image-wrapper']"), OPND_CONTAINER_VIDEO_LIST_ITEM_PREVIEW_CLASS);
+    return getOrWrapSuppliedInOpndContainers(() => queryRoot.querySelectorAll("div[data-test-selector='preview-image-wrapper']"), OPND_CONTAINER_VIDEO_LIST_ITEM_PREVIEW_CLASS);
 }
 
 function getVideoDurationOpndContainers(videoCardDiv = null) {
-    return wrapInOpndContainers(() => getVideoLengthStatDivs(videoCardDiv), OPND_CONTAINER_VIDEO_LIST_ITEM_DURATION_CLASS);
-}
-
-/**
- * @callback ElementsGetter
- * @return {!Iterable<Element>}
- */
-/**
- * @param elementsGetter {ElementsGetter}
- * @param containerClass the addition CSS class for the opnd-container
- * @return {!Array.<Element>} the containers
- */
-function wrapInOpndContainers(elementsGetter, containerClass) {
-    return getOrWrapAllInOpndContainers(elementsGetter(), containerClass);
+    return getOrWrapSuppliedInOpndContainers(() => getVideoLengthStatDivs(videoCardDiv), OPND_CONTAINER_VIDEO_LIST_ITEM_DURATION_CLASS);
 }
 
 /**
@@ -765,6 +748,15 @@ function getVideoChannel(videoCardDiv) {
         return channel;
     }
     return null;
+}
+
+/**
+ *
+ * @param videoCardDiv {?Element} the video card div if toolbars should only be removed inside this dive or null to remove all
+ */
+function removeVideoListItemToolbars(videoCardDiv = null) {
+    const queryRoot = videoCardDiv ? videoCardDiv : document;
+    removeElements(queryRoot.getElementsByClassName(OPND_VIDEO_LIST_ITEM_TOOLBAR_CLASS));
 }
 
 /**
@@ -1048,7 +1040,7 @@ function handlePlayerShowHideDurationAction() {
     log("Handling action [Player: Show/Hide Duration]");
 
     // Toggle
-    updatePayerDurationVisibleAndShowHideButton(false, null);
+    updatePlayerDurationVisibleAndShowHideButton(false, null);
 }
 
 /**
@@ -1220,6 +1212,14 @@ function playerJumpWithLocationChange(distance, currentTime, newTime) {
     window.location.assign(newTimeUrl);
 }
 
+
+function cleanPage() {
+    log("Cleaning page after page change");
+    setAllVisible(null, true);
+
+    removePlayerToolbarAndShowPlayerDuration();
+    removeVideoListItemToolbars();
+}
 
 /*
  * ====================================================================================================

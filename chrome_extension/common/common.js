@@ -1212,14 +1212,18 @@ function removeElement(element) {
 
 /**
  *
- * @param elements {!Iterable.<Element>}
+ * @param elements {?Iterable.<Element>} the elements which visibility should be changed or null to change all
  * @param visible {?boolean} true, false or null (to toggle)
  * @return {?boolean} true if the elements were set visible, false if not. null if there were no elements
  */
 function setAllVisible(elements, visible) {
+    let actualElements = elements;
+    if (actualElements === null) {
+        actualElements = document.getElementsByClassName(OPND_HIDDEN_CLASS);
+    }
     let actuallySetVisible = visible;
-    for (let i = 0; i < elements.length; i++) {
-        const elem = elements[i];
+    for (let i = 0; i < actualElements.length; i++) {
+        const elem = actualElements[i];
         if (actuallySetVisible === null) {
             // If the visible param is null,
             // we check the first element's visible state and use that to toggle all elements.
@@ -1257,6 +1261,25 @@ function setVisible(element, visible) {
     }
 }
 
+/**
+ * @callback ElementsSupplier
+ * @return {!Iterable<Element>}
+ */
+/**
+ * @param elementsSupplier {!ElementsSupplier}
+ * @param additionalClass {?string} the addition CSS class for the opnd-container
+ * @return {!Array.<Element>} the elements wrapped in opnd-containers
+ */
+function getOrWrapSuppliedInOpndContainers(elementsSupplier, additionalClass = null) {
+    return getOrWrapAllInOpndContainers(elementsSupplier(), additionalClass);
+}
+
+/**
+ *
+ * @param elements {!Iterable<Element>} the elements
+ * @param additionalClass {?string} the addition CSS class for the opnd-container
+ * @return {!Array.<Element>} the elements wrapped in opnd-containers
+ */
 function getOrWrapAllInOpndContainers(elements, additionalClass = null) {
     const opndContainers = [];
     for (let i = 0; i < elements.length; i++) {
@@ -1265,6 +1288,12 @@ function getOrWrapAllInOpndContainers(elements, additionalClass = null) {
     return opndContainers;
 }
 
+/**
+ *
+ * @param element {!Element} the element
+ * @param additionalClass {?string} the addition CSS class for the opnd-container
+ * @return {!Element} the element wrapped in a opnd-container
+ */
 function getOrWrapInOpndContainer(element, additionalClass = null) {
     const container = getOpndContainer(element);
     if (container) {
