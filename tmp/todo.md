@@ -1,0 +1,4 @@
+- When watching a VOD where SFM is enabled, then switching on-page to a live channel (e.g. overwatchcontenders VOD -> emongg live stream from the left bar), the Open End Toolbar is not removed
+  - So: We need to remove the Toolbar on content_script init
+- For MLG.com only SfmEnabled.ALWAYS/NEVER should be available, because no channels are supported on this platform
+  - So: Add flag supportsChannels: boolean and use it accordingly
