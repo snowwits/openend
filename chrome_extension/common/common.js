@@ -1555,8 +1555,8 @@ const opnd = {
         browser: {
             /**
              *
-             * @param [keys] {?object} the option keys and default values (do not supply this parameter to read all options)
-             * @return {!Promise<{string: object}>}
+             * @param keys {string|Array<string>|Object|null} an option key, an array of option keys or an object of option keys and their default values or null to read all options
+             * @return {!Promise<{string: object}>} only returns existing items (not "nonExistingKey": undefined)
              */
             readOptions: (keys) => {
                 let actualKeys;
@@ -1592,6 +1592,25 @@ const opnd = {
                             return;
                         }
                         log("[browser.writeOptions] Set options [%o]", items);
+                        resolve();
+                    });
+                });
+            },
+
+            /**
+             *
+             * @param keys {string|Array<string>} {@link chrome.storage.StorageArea.remove}
+             * @return {Promise<void>}
+             */
+            removeOptions: (keys) => {
+                return new Promise((resolve, reject) => {
+                    chrome.storage.sync.remove(keys, function () {
+                        if (chrome.runtime.lastError) {
+                            error("[browser.removeOptions] Failed to remove options [%o]: %o", keys, chrome.runtime.lastError);
+                            reject(Error(chrome.runtime.lastError.message));
+                            return;
+                        }
+                        log("[browser.removeOptions] Removed options [%o]", keys);
                         resolve();
                     });
                 });
