@@ -415,6 +415,40 @@ const TwitchPageType = Object.freeze({
     DIRECTORY_UNKNOWN_SUB_DIR: "DIRECTORY_UNKNOWN_SUB_DIR",
 
     /**
+     * https://www.twitch.tv/friends
+     */
+    FRIENDS: "FRIENDS",
+
+    /**
+     * https://www.twitch.tv/inventory
+     */
+    INVENTORY: "INVENTORY",
+
+    /**
+     * https://www.twitch.tv/messages/inbox
+     */
+    MESSAGES: "MESSAGES",
+
+    /**
+     * https://www.twitch.tv/payments
+     */
+    PAYMENTS: "PAYMENTS",
+
+    /**
+     * https://www.twitch.tv/settings
+     * https://www.twitch.tv/settings/profile
+     * https://www.twitch.tv/settings/channel
+     * https://www.twitch.tv/settings/security
+     * ...
+     */
+    SETTINGS: "SETTINGS",
+
+    /**
+     * https://www.twitch.tv/subscriptions
+     */
+    SUBSCRIPTIONS: "SUBSCRIPTIONS",
+
+    /**
      * "https://www.twitch.tv/videos/187486679"
      */
     VIDEO: "VIDEO",
@@ -517,6 +551,30 @@ class TwitchPlatform extends Platform {
                 }
                 if (url.pathname.startsWith("/directory")) {
                     return new PlatformPage(TwitchPageType.DIRECTORY_UNKNOWN_SUB_DIR);
+                }
+                // "/friends" is a special path
+                if (url.pathname.startsWith("/friends")) {
+                    return new PlatformPage(TwitchPageType.FRIENDS);
+                }
+                // "/inventory" is a special path
+                if (url.pathname.startsWith("/inventory")) {
+                    return new PlatformPage(TwitchPageType.INVENTORY);
+                }
+                // "/messages" is a special path
+                if (url.pathname.startsWith("/messages")) {
+                    return new PlatformPage(TwitchPageType.MESSAGES);
+                }
+                // "/payments" is a special path
+                if (url.pathname.startsWith("/payments")) {
+                    return new PlatformPage(TwitchPageType.PAYMENTS);
+                }
+                // "/settings" is a special path
+                if (url.pathname.startsWith("/settings")) {
+                    return new PlatformPage(TwitchPageType.SETTINGS);
+                }
+                // "/subscriptions" is a special path
+                if (url.pathname.startsWith("/subscriptions")) {
+                    return new PlatformPage(TwitchPageType.SUBSCRIPTIONS);
                 }
                 let match = new RegExp("^/videos/(\\d+)(?:/)?$").exec(url.pathname);
                 if (match !== null) {

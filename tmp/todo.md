@@ -1,5 +1,5 @@
 # TODO version 0.3.0
-- recognize settings url: https://www.twitch.tv/settings/profile
+- bug hunt
 
 # TODO version 0.4.0
 
