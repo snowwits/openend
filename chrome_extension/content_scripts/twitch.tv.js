@@ -383,18 +383,24 @@ function updateChannel(channel) {
         // Notify about TabInfo change (new channel)
         signalTabInfoChanged("channel");
 
-        // Check if display name has changed since channel was stored.
-        // If it did, update the stored channel's display name.
-        if (GLOBAL_channel && GLOBAL_channel.displayName !== null) {
-            const storedChannels = getOptSfmEnabledChannels(GLOBAL_options);
-            const storedChannel = storedChannels.find((channel) => {
-                return Channel.equal(channel, GLOBAL_channel);
-            });
-            if (storedChannel && storedChannel.displayName !== null && GLOBAL_channel.displayName !== storedChannel.displayName) {
-                log("Updating stored channel's display name because it changed. Old [%o], new [%o]", storedChannel, GLOBAL_channel);
-                storedChannel.displayName = GLOBAL_channel.displayName;
-                opnd.browser.writeOptions({[OPT_SFM_ENABLED_CHANNELS_NAME]: storedChannels});
-            }
+        mayUpdateChannelDisplayName();
+    }
+}
+
+/**
+ * Check if display name has changed since channel was stored.
+ * If it did, update the stored channel's display name.
+ */
+function mayUpdateChannelDisplayName() {
+    if (GLOBAL_channel && GLOBAL_channel.displayName !== null) {
+        const storedChannels = getOptSfmEnabledChannels(GLOBAL_options);
+        const storedChannel = storedChannels.find((channel) => {
+            return Channel.equal(channel, GLOBAL_channel);
+        });
+        if (storedChannel && storedChannel.displayName !== null && GLOBAL_channel.displayName !== storedChannel.displayName) {
+            log("Updating stored channel's display name because it changed. Old [%o], new [%o]", storedChannel, GLOBAL_channel);
+            storedChannel.displayName = GLOBAL_channel.displayName;
+            opnd.browser.writeOptions({[OPT_SFM_ENABLED_CHANNELS_NAME]: storedChannels});
         }
     }
 }
