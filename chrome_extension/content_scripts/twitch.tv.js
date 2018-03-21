@@ -322,7 +322,7 @@ function determineChannel() {
     }
 
     /**
-     * If on channel directory or video page, we can parse the channel link a element
+     * If on channel directory or video page, we can parse the channel link <a> element
      */
     const channelLinkAnchor = document.querySelector("a[data-target=channel-header__channel-link]");
     if (channelLinkAnchor) {
@@ -337,7 +337,7 @@ function determineChannel() {
     }
 
     /*
-     *  If on channel main page, we need to parse the channel link div element
+     *  If on channel main page, we need to parse the channel link <div> element
      *
      *  Sadly, the channel's qualified name is not present in this div,
      *  so we have to take it from the (hopefully) already parsed channel from the URL (GLOBAL_channel).
