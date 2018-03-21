@@ -3,6 +3,7 @@
  * TYPE DEFINITIONS
  * ====================================================================================================
  */
+
 /*
  * Chrome specific types:
  */
@@ -18,6 +19,7 @@
  * LOGGING
  * ====================================================================================================
  */
+
 // TODO: disable before publishing
 const LOG_ENABLED = true;
 
@@ -41,6 +43,7 @@ function errorWithComponent(component, msg, ...substitutions) {
  * TECHNICAL PARAMETERS (may be exposed as technical options later)
  * ====================================================================================================
  */
+
 const CHECK_PAGE_TASK_INTERVAL = 200; // 200ms
 const PAGE_CONFIGURATION_TIMEOUT = 45000; // 45s
 
@@ -52,17 +55,18 @@ const PAGE_CONFIGURATION_TIMEOUT = 45000; // 45s
  */
 
 /*
+ * ====================================================================================================
+ * CHANNEL AND PLATFORM - API
+ * ====================================================================================================
+ */
+
+/*
  * No camelcase in data-names. CamelCase leads to two keys being
  */
 const DATA_PLATFORM_NAME = "platformname";
 const DATA_CHANNEL_QUALIFIED_NAME = "channelqualifiedname";
 const DATA_CHANNEL_DISPLAY_NAME = "channeldisplayname";
 
-/*
- * ====================================================================================================
- * CHANNEL AND PLATFORM - API
- * ====================================================================================================
- */
 class PlatformPage {
     /**
      *
@@ -372,6 +376,7 @@ class ChannelSerialized {
     }
 }
 
+
 /*
  * ====================================================================================================
  * CHANNEL AND PLATFORM - TWITCH IMPL
@@ -607,6 +612,7 @@ class TwitchPlatform extends Platform {
     }
 }
 
+
 /*
  * ====================================================================================================
  * CHANNEL AND PLATFORM - MLG IMPL
@@ -708,7 +714,7 @@ const MLG_PLATFORM = Object.freeze(new MlgPlatform());
 
 /**
  *
- * @type {ReadonlyArray.<Platform>}
+ * @type {ReadonlyArray<Platform>}
  */
 const ALL_PLATFORMS = Object.freeze([TWITCH_PLATFORM, MLG_PLATFORM]);
 
@@ -718,6 +724,7 @@ const ALL_PLATFORMS = Object.freeze([TWITCH_PLATFORM, MLG_PLATFORM]);
  * OPTIONS (SYNC STORAGE)
  * ====================================================================================================
  */
+
 const SfmEnabled = Object.freeze({
     NEVER: "NEVER",
     ALWAYS: "ALWAYS",
@@ -915,6 +922,7 @@ function getSfmEnabledOnChannel(options, channel) {
     return getOptSfmEnabledChannels(options).some(ch => Channel.equal(ch, channel));
 }
 
+
 /*
  * ====================================================================================================
  * MESSAGE PASSING
@@ -927,8 +935,8 @@ const MessageType = Object.freeze({
 });
 
 /**
- * @property type {!string} the message type {@link MessageType}
- * @property body {?object} the message body
+ * @property {!string} type the message type {@link MessageType}
+ * @property {?object} [body] the message body
  */
 class Message {
     constructor(type, body = null) {
@@ -937,11 +945,10 @@ class Message {
     }
 }
 
-
 /**
- * @property platform {!PlatformSerialized} the serialized platform of the current tab
- * @property channel {?ChannelSerialized} the serialized channel of the current tab
- * @property sfmState {!string} {@link SfmState}
+ * @property {!PlatformSerialized} platform the serialized platform of the current tab
+ * @property {?ChannelSerialized} [channel] the serialized channel of the current tab
+ * @property {?string} [sfmState] {@link SfmState}
  */
 class TabInfo {
     constructor(platform, channel = null, sfmState = SfmState.UNDETERMINED) {
@@ -963,11 +970,13 @@ class TabInfoRequestMessage extends Message {
     }
 }
 
+
 /*
  * ====================================================================================================
  * ELEMENT IDS & CSS CLASSES
  * ====================================================================================================
  */
+
 /**
  * The CSS class of Open End container elements. To not interfere with the page CSS style,
  * we wrap every element we want to hide in a custom container element and then hide that container.
@@ -1081,6 +1090,7 @@ function getEnumValueMsgKey(enumValue, msgKeyPrefix) {
  * DURATION UTILS
  * ====================================================================================================
  */
+
 const DURATION_PATTERN = "^(?:(\\d+)|(?:(\\d+)h)?(?:(\\d+)m)?(?:(\\d+)s)?)$";
 const DURATION_ONLY_NUM_PATTERN = "^\\d+$";
 
@@ -1187,6 +1197,7 @@ function extractDurationParts(duration) {
  * WINDOW UTILS
  * ====================================================================================================
  */
+
 function isTopFrame() {
     return window === window.top;
 }
@@ -1194,6 +1205,7 @@ function isTopFrame() {
 function formatFrameType() {
     return isTopFrame() ? "TOP_FRAME" : "SUB_FRAME";
 }
+
 
 /*
  * ====================================================================================================
@@ -1262,7 +1274,6 @@ function getElementsByClassNames(classNames) {
     }
     return allElements;
 }
-
 
 function getSingleElementByClassName(className) {
     const elements = document.getElementsByClassName(className);
@@ -1540,10 +1551,6 @@ function setChannelsToSortedSetSelect(selectElem, channels) {
     }
 }
 
-function clearSelectOptions(selectElem) {
-    selectElem.options.length = 0;
-}
-
 /**
  *
  * @param selectElem {!HTMLSelectElement}
@@ -1626,6 +1633,7 @@ function createAnchor(href) {
     l.href = href;
     return l;
 }
+
 
 /*
  * ====================================================================================================
