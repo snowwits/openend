@@ -1,7 +1,4 @@
 # TODO version 0.3.0
-
-- For MLG.com only SfmEnabled.ALWAYS/NEVER should be available, because no channels are supported on this platform
-  - Add property Platform.allowedSfmEnabledModes (array of SfmEnabled values)
 - When channel is determined and it is part of sfmEnabledChannels, compare determinedChannel.displayName (if non null) with sfmEnabledChannel.displayName and in case of non equality, update the sfmEnabledChannel.displayName
 
 # TODO version 0.4.0

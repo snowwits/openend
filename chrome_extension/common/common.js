@@ -161,9 +161,9 @@ class Platform {
     }
 
     /**
-     * @return {!boolean} whether this platform supports distinct channels
+     * @return {!ReadonlyArray<string>} the allowed {@link SfmEnabled} values
      */
-    get supportsChannels() {
+    get supportedSfmEnabledValues() {
         throw new Error("Not implemented");
     }
 
@@ -444,8 +444,8 @@ class TwitchPlatform extends Platform {
     /**
      * @override
      */
-    get supportsChannels() {
-        return true;
+    get supportedSfmEnabledValues() {
+        return Object.values(SfmEnabled);
     }
 
     /**
@@ -599,8 +599,8 @@ class MlgPlatform extends Platform {
     /**
      * @override
      */
-    get supportsChannels() {
-        return false;
+    get supportedSfmEnabledValues() {
+        return Object.freeze([SfmEnabled.NEVER, SfmEnabled.ALWAYS]);
     }
 
     /**
@@ -800,10 +800,22 @@ function getOptSfmEnabledPlatforms(options) {
 }
 
 function getOptSfmEnabledPlatformsDefaultValue() {
+    /*
+     * We cannot just assign the same default value to all platforms because not all platforms support all SfmEnabled values.
+     * So define the order of the default values and check for each if it is supported and if yes, assign it.
+     */
+    const defaultValueOrder = [SfmEnabled.CUSTOM, SfmEnabled.NEVER, SfmEnabled.ALWAYS];
     const sfmEnabledPlatforms = {};
-    for (let i = 0; i < ALL_PLATFORMS.length; i++) {
-        const platformName = ALL_PLATFORMS[i].name;
-        sfmEnabledPlatforms[platformName] = SfmEnabled.CUSTOM;
+    for (let platform of ALL_PLATFORMS) {
+        for (let defaultValue of defaultValueOrder) {
+            if (platform.supportedSfmEnabledValues.includes(defaultValue)) {
+                sfmEnabledPlatforms[platform.name] = defaultValue;
+                break;
+            }
+        }
+        if (sfmEnabledPlatforms[platform.name] === undefined) {
+            throw Error("Failed to set default value for SfmEnabled of platform " + platform.name);
+        }
     }
     return Object.freeze(sfmEnabledPlatforms);
 }
@@ -981,7 +993,7 @@ function compareStringIgnoreCase(s1, s2) {
 
 /*
  * ====================================================================================================
- * ENUMUTILS
+ * ENUM UTILS
  * ====================================================================================================
  */
 /**
@@ -1395,20 +1407,29 @@ function setTextInputValue(textInputId, value) {
 
 /**
  *
- * @param selectElem {!HTMLSelectElement}
- * @param valueToMsgKeyMap {Map<!string, !string>} option value -> message key
+ * @param {!HTMLSelectElement} selectElem
  */
-function setSelectOptions(selectElem, valueToMsgKeyMap) {
-    // Clear old options
+function clearSelectOptions(selectElem) {
     selectElem.length = 0;
+}
+
+/**
+ *
+ * @param {!HTMLSelectElement} selectElem
+ * @param {!Map<!string, !string>} valueToMsgKeyMap option value -> message key
+ * @param {?Iterable<!string>} [values=valueToMsgKeyMap.values()] the actual values, don't define to use all the keys of the valueToMsgKeyMap
+ */
+function setSelectOptions(selectElem, valueToMsgKeyMap, values = valueToMsgKeyMap.keys()) {
+    // Clear old options
+    clearSelectOptions(selectElem);
 
     // Add new options
-    valueToMsgKeyMap.forEach((value, key, map) => {
+    for (let value of values) {
         const optionElem = document.createElement("option");
-        optionElem.value = key;
-        optionElem.textContent = chrome.i18n.getMessage(value);
+        optionElem.value = value;
+        optionElem.textContent = chrome.i18n.getMessage(valueToMsgKeyMap.get(value));
         selectElem.appendChild(optionElem);
-    });
+    }
 }
 
 /**

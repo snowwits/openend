@@ -136,7 +136,8 @@ function updateInputsWithOptions(options) {
                 newEnabledDiv.classList.add(SFM_ENABLED_ON_PLATFORM_CLS);
                 setData(newEnabledDiv, DATA_PLATFORM_NAME, platform.name);
                 const newEnabledSelect = document.createElement("select");
-                setSelectOptions(newEnabledSelect, buildEnumValueToMsgKeyMap(SfmEnabled, "options_sfmEnabled_onPlatform_"));
+                const enumValueToMsgKeyMap = buildEnumValueToMsgKeyMap(SfmEnabled, "options_sfmEnabled_onPlatform_");
+                setSelectOptions(newEnabledSelect, enumValueToMsgKeyMap, platform.supportedSfmEnabledValues);
                 newEnabledSelect.value = optSfmEnabledPlatforms[platform.name];
                 newEnabledDiv.appendChild(newEnabledSelect);
                 sfmEnabledPlatformsContainerDiv.appendChild((newEnabledDiv));
