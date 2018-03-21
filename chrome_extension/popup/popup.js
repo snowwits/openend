@@ -108,7 +108,7 @@ function updateHasNoEffect(options) {
                 title = chrome.i18n.getMessage("popup_sfmEnabled_hasNoEffect_enabledGlobally");
             }
             sfmEnabledOnPlatformContainerDiv.title = title;
-            sfmEnabledOnChannelContainerDiv.title = title
+            sfmEnabledOnChannelContainerDiv.title = title;
         } else {
             sfmEnabledOnPlatformContainerDiv.classList.remove(HAS_NO_EFFECT_CLASS);
             sfmEnabledOnPlatformContainerDiv.title = "";
@@ -190,21 +190,24 @@ function updateUiAfterTabInfoUpdate(tabInfo) {
         // SfmEnabled values
         clearSelectOptions(sfmEnabledOnPlatformSelect);
 
+        // Hide the container
         setVisible(sfmEnabledOnPlatformContainerDiv, false);
     } else {
         // SfmEnabled values
         const enumValueToMsgKeyMap = buildEnumValueToMsgKeyMap(SfmEnabled, "popup_sfmEnabled_onPlatform_");
         setSelectOptions(sfmEnabledOnPlatformSelect, enumValueToMsgKeyMap, platform.supportedSfmEnabledValues);
 
+        // Select the correct SfmEnabled value
         updateSfmEnabledOnPlatformSelect(sfmEnabledOnPlatformSelect, GLOBAL_options, platform);
-        setVisible(sfmEnabledOnPlatformContainerDiv, true);
 
-        // With potentially new platform information, hasNoEffect needs an update
-        updateHasNoEffect(GLOBAL_options);
+        // Show the container
+        setVisible(sfmEnabledOnPlatformContainerDiv, true);
     }
 
+    // With potentially new platform information, hasNoEffect needs an update
+    updateHasNoEffect(GLOBAL_options);
+
     // Channel
-    console.log("updating channel");
     setData(channelSpan, DATA_CHANNEL_QUALIFIED_NAME, channelQualifiedName);
     setData(channelSpan, DATA_CHANNEL_DISPLAY_NAME, channelDisplayName);
     channelDisplayNameSpan.textContent = channelDisplayName;
