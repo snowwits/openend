@@ -864,8 +864,11 @@ function getOptSfmEnabledPlatformsDefaultValue() {
      */
     const defaultValueOrder = [SfmEnabled.CUSTOM, SfmEnabled.NEVER, SfmEnabled.ALWAYS];
     const sfmEnabledPlatforms = {};
-    for (let platform of ALL_PLATFORMS) {
-        for (let defaultValue of defaultValueOrder) {
+
+    for (let i = 0; i < ALL_PLATFORMS.length; i++) {
+        const platform = ALL_PLATFORMS[i];
+        for (let j = 0; j < defaultValueOrder.length; j++) {
+            const defaultValue = defaultValueOrder[j];
             if (platform.supportedSfmEnabledValues.includes(defaultValue)) {
                 sfmEnabledPlatforms[platform.name] = defaultValue;
                 break;
