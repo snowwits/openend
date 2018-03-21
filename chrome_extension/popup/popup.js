@@ -163,13 +163,8 @@ function updateUiAfterTabInfoUpdate(tabInfo) {
     const channelDisplayNameSpan = document.getElementById(CHANNEL_DISPLAY_NAME_ID);
     const sfmEnabledOnChannelCheckbox = document.getElementById(SFM_ENABLED_ON_CHANNEL_ID);
 
-    // SfmEnabled values, SfmState
+    // SfmState
     if (platform) {
-        // SfmEnabled values
-        const enumValueToMsgKeyMap = buildEnumValueToMsgKeyMap(SfmEnabled, "popup_sfmEnabled_onPlatform_");
-        setSelectOptions(sfmEnabledOnPlatformSelect, enumValueToMsgKeyMap, platform.supportedSfmEnabledValues);
-
-        // SfmState
         if (SfmState.ACTIVE === sfmState || SfmState.INACTIVE === sfmState) {
             sfmStateIconImg.src = chrome.runtime.getURL(SfmState.ACTIVE === sfmState ? "img/hide_black.svg" : "img/show_black.svg");
             setVisible(sfmStateIconImg, true);
@@ -181,10 +176,6 @@ function updateUiAfterTabInfoUpdate(tabInfo) {
         const sfmStateLabelMsgKey = getEnumValueMsgKey(sfmState, "popup_sfmState_");
         sfmStateLabelSpan.textContent = chrome.i18n.getMessage(sfmStateLabelMsgKey);
     } else {
-        // SfmEnabled values
-        clearSelectOptions(sfmEnabledOnPlatformSelect);
-
-        // SfmState
         setVisible(sfmStateIconImg, false);
         sfmStateIconImg.src = "";
         sfmStateLabelSpan.textContent = chrome.i18n.getMessage("popup_sfmState_notOnPlatform");
@@ -196,8 +187,15 @@ function updateUiAfterTabInfoUpdate(tabInfo) {
     platformDisplayNameSpan.textContent = platformDisplayName;
     platformNameSpan.textContent = "(" + platformName + ")";
     if (platform === null) {
+        // SfmEnabled values
+        clearSelectOptions(sfmEnabledOnPlatformSelect);
+
         setVisible(sfmEnabledOnPlatformContainerDiv, false);
     } else {
+        // SfmEnabled values
+        const enumValueToMsgKeyMap = buildEnumValueToMsgKeyMap(SfmEnabled, "popup_sfmEnabled_onPlatform_");
+        setSelectOptions(sfmEnabledOnPlatformSelect, enumValueToMsgKeyMap, platform.supportedSfmEnabledValues);
+
         updateSfmEnabledOnPlatformSelect(sfmEnabledOnPlatformSelect, GLOBAL_options, platform);
         setVisible(sfmEnabledOnPlatformContainerDiv, true);
 
@@ -206,6 +204,7 @@ function updateUiAfterTabInfoUpdate(tabInfo) {
     }
 
     // Channel
+    console.log("updating channel");
     setData(channelSpan, DATA_CHANNEL_QUALIFIED_NAME, channelQualifiedName);
     setData(channelSpan, DATA_CHANNEL_DISPLAY_NAME, channelDisplayName);
     channelDisplayNameSpan.textContent = channelDisplayName;
