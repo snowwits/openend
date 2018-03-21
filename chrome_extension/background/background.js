@@ -68,11 +68,6 @@ function migrateFrom_v0_2_1() {
 function handleMessage(request, sender, sendResponse) {
     log("Received message [%o] from [%o]", request, sender);
 
-    if (sender.tab.active !== true) {
-        log("Ignoring message [%o] from [%o] because it did not came from the current tab", request, sender);
-        return;
-    }
-
     if (request.type === MessageType.TAB_INFO) {
         const tabInfo = request.body;
         const tabId = sender.tab.id;
