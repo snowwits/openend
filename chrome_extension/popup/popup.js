@@ -404,7 +404,7 @@ function init() {
     const necessaryOptions = {
         [OPT_SFM_ENABLED_GLOBAL_NAME]: OPT_SFM_ENABLED_GLOBAL_DEFAULT,
         [OPT_SFM_ENABLED_PLATFORMS_NAME]: OPT_SFM_ENABLED_PLATFORMS_DEFAULT,
-        [OPT_SFM_ENABLED_CHANNELS_NAME]: OPT_SFM_ENABLED_CHANNELS_NAME
+        [OPT_SFM_ENABLED_CHANNELS_NAME]: OPT_SFM_ENABLED_CHANNELS_DEFAULT
     };
     opnd.browser.readOptions(necessaryOptions).then((options) => {
         GLOBAL_options = options;
