@@ -343,12 +343,12 @@ function determineChannel() {
      *  so we have to take it from the (hopefully) already parsed channel from the URL (GLOBAL_channel).
      */
     if (GLOBAL_channel !== null) {
-        // Create a new channel instance because we want to replace the current channel object, not modify it
-        const channel = Channel.parseFromQualifiedName(GLOBAL_channel.qualifiedName);
         const channelLinkDiv = document.querySelector("div[data-target=channel-header__channel-link]");
         if (channelLinkDiv) {
             const channelHeading = channelLinkDiv.querySelector("h5");
             if (channelHeading) {
+                // Create a new channel instance because we want to replace the current channel object, not modify it
+                const channel = Channel.parseFromQualifiedName(GLOBAL_channel.qualifiedName);
                 channel.displayName = channelHeading.textContent;
                 updateChannel(channel);
             }
@@ -377,13 +377,28 @@ function updateChannel(channel) {
         GLOBAL_channel = channel;
         log("Updated [channel] to [%o]", GLOBAL_channel);
 
-        // sfmState needs to be re-determined after a channel change
+        // SfmState needs to be re-determined after a channel change
         updateSfmState(SfmState.UNDETERMINED);
 
         // Notify about TabInfo change (new channel)
         signalTabInfoChanged("channel");
+
+        // Check if display name has changed since channel was stored.
+        // If it did, update the stored channel's display name.
+        if (GLOBAL_channel && GLOBAL_channel.displayName !== null) {
+            const storedChannels = getOptSfmEnabledChannels(GLOBAL_options);
+            const storedChannel = storedChannels.find((channel) => {
+                return Channel.equal(channel, GLOBAL_channel);
+            });
+            if (storedChannel && storedChannel.displayName !== null && GLOBAL_channel.displayName !== storedChannel.displayName) {
+                log("Updating stored channel's display name because it changed. Old [%o], new [%o]", storedChannel, GLOBAL_channel);
+                storedChannel.displayName = GLOBAL_channel.displayName;
+                opnd.browser.writeOptions({[OPT_SFM_ENABLED_CHANNELS_NAME]: storedChannels});
+            }
+        }
     }
 }
+
 
 /*
  * ====================================================================================================

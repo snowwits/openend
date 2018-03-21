@@ -1,5 +1,5 @@
 # TODO version 0.3.0
-- When channel is determined and it is part of sfmEnabledChannels, compare determinedChannel.displayName (if non null) with sfmEnabledChannel.displayName and in case of non equality, update the sfmEnabledChannel.displayName
+- recognize settings url: https://www.twitch.tv/settings/profile
 
 # TODO version 0.4.0
 
