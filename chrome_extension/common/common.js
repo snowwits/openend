@@ -822,7 +822,7 @@ function getOptSfmEnabledPlatformsDefaultValue() {
 
 /**
  * @param options {!Object<!string, !Object>} the options
- * @return {!array.<!ChannelSerialized>} the unmodifiable array of sfm channels
+ * @return {!ReadonlyArray<!ChannelSerialized>} the unmodifiable array of sfm channels
  */
 function getOptSfmEnabledChannels(options) {
     return options[OPT_SFM_ENABLED_CHANNELS_NAME];
