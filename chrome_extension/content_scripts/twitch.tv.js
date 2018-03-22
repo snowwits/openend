@@ -52,6 +52,20 @@ let GLOBAL_elementsLoadedTimeoutReached = false;
  * @type {?string} {@link TwitchPageType}
  */
 let GLOBAL_pageType = null;
+
+/**
+ *
+ * @type {?MutationObserver} observes whether the href attribute of the channel link anchor changes.
+ *
+ * Sometimes, when changing the channel on-page, the channel link is not updated immediately.
+ * In this case the parsing of the channel link after a page change happens before the channel link is replaced with the new channel.
+ * This leads to the previous channel being determined as the current channel and not the new channel.
+ *
+ * Therefore, we need to observe the channel link anchor's href attribute for changes to then re-determine the channel.
+ *
+ */
+let GLOBAL_channelLinkAnchorHrefObserver = null;
+
 /**
  *
  * @type {?MutationObserver} the video list items added Observer
@@ -155,7 +169,11 @@ function resetGlobalPageFlags() {
     GLOBAL_elementsLoadedTimeoutReached = false;
     GLOBAL_pageType = null;
 
-    // Disconnect the observer and then set the variable to null
+    // Disconnect the observers and then set the variables to null
+    if (GLOBAL_channelLinkAnchorHrefObserver) {
+        GLOBAL_channelLinkAnchorHrefObserver.disconnect();
+    }
+    GLOBAL_channelLinkAnchorHrefObserver = null;
     if (GLOBAL_videoListItemsAddedObserver) {
         GLOBAL_videoListItemsAddedObserver.disconnect();
     }
@@ -333,6 +351,7 @@ function determineChannel() {
                 pageTypResult.channel.displayName = channelHeading.textContent;
             }
             updateChannel(pageTypResult.channel);
+            observeChannelLinkAnchorHref(channelLinkAnchor);
         }
     }
 
@@ -354,6 +373,44 @@ function determineChannel() {
             }
         }
     }
+}
+
+/**
+ *
+ * @param {!HTMLAnchorElement} channelLinkAnchor
+ */
+function observeChannelLinkAnchorHref(channelLinkAnchor) {
+    if (GLOBAL_channelLinkAnchorHrefObserver !== null) {
+        return;
+    }
+
+    const observer = new MutationObserver((mutations) => {
+        let channelLinkChanged = false;
+        for (let i = 0; i < mutations.length; i++) {
+            const mutation = mutations[i];
+            if (mutation.type === "attributes" && mutation.attributeName === "href") {
+                channelLinkChanged = true;
+                const oldHref = mutation.oldValue;
+                const newHref = mutation.target.href;
+                log("Channel link changed from [%s] to [%s]. Channel needs re-determination", oldHref, newHref);
+                break;
+            }
+        }
+        if (channelLinkChanged) {
+            updateChannel(null);
+        }
+    });
+
+    // Config: Observe the attribute href and also report the old value
+    const config = {
+        attributes: true,
+        attributeOldValue: true,
+        attributeFilter: ["href"]
+    };
+
+    observer.observe(channelLinkAnchor, config);
+
+    GLOBAL_channelLinkAnchorHrefObserver = observer;
 }
 
 function isChannelDetermined() {
@@ -791,36 +848,39 @@ function removeVideoListItemToolbars(videoCardDiv = null) {
  *
  */
 function observeVideoListItemsAdded() {
-    if (GLOBAL_videoListItemsAddedObserver === null) {
-        const videoListItemTowerDiv = document.querySelector(".tw-tower");
-        if (videoListItemTowerDiv) {
-            const observer = new MutationObserver(function (mutations) {
-                let elementsAdded = false;
-                for (let i = 0; i < mutations.length; i++) {
-                    const mutation = mutations[i];
-                    if (mutation.addedNodes && mutation.addedNodes.length > 0) {
-                        elementsAdded = true;
-                        break;
-                    }
-                }
-                if (elementsAdded) {
-                    setConfigured(OPT_SFM_VIDEO_LIST_HIDE_TITLE_NAME, false);
-                    setConfigured(OPT_SFM_VIDEO_LIST_HIDE_PREVIEW_NAME, false);
-                    setConfigured(OPT_SFM_VIDEO_LIST_HIDE_DURATION_NAME, false);
-                    // TODO: We should only configure the added video list items and not all video list items (including the already configured and maybe the ones that were customized by the user).
-                    // Right now, once we configure all items, the visible states of hideable elements are reset (so changes that the user made on the page will be reset).
-                    configureVideoListItems();
-                }
-            });
+    if (GLOBAL_videoListItemsAddedObserver !== null) {
+        return;
+    }
 
-            const config = {
-                childList: true // Set to true if additions and removals of the target node's child elements (including text nodes) are to be observed.
-            };
+    const videoListItemTowerDiv = document.querySelector(".tw-tower");
+    if (videoListItemTowerDiv) {
+        const observer = new MutationObserver(function (mutations) {
+            let elementsAdded = false;
+            for (let i = 0; i < mutations.length; i++) {
+                const mutation = mutations[i];
+                if (mutation.addedNodes && mutation.addedNodes.length > 0) {
+                    elementsAdded = true;
+                    break;
+                }
+            }
+            if (elementsAdded) {
+                setConfigured(OPT_SFM_VIDEO_LIST_HIDE_TITLE_NAME, false);
+                setConfigured(OPT_SFM_VIDEO_LIST_HIDE_PREVIEW_NAME, false);
+                setConfigured(OPT_SFM_VIDEO_LIST_HIDE_DURATION_NAME, false);
+                // TODO: We should only configure the added video list items and not all video list items (including the already configured and maybe the ones that were customized by the user).
+                // Right now, once we configure all items, the visible states of hideable elements are reset (so changes that the user made on the page will be reset).
+                configureVideoListItems();
+            }
+        });
 
-            // Observe the tower for card additions
-            observer.observe(videoListItemTowerDiv, config);
-            GLOBAL_videoListItemsAddedObserver = observer;
-        }
+        const config = {
+            childList: true // Set to true if additions and removals of the target node's child elements (including text nodes) are to be observed.
+        };
+
+        // Observe the tower for card additions
+        observer.observe(videoListItemTowerDiv, config);
+
+        GLOBAL_videoListItemsAddedObserver = observer;
     }
 }
 
