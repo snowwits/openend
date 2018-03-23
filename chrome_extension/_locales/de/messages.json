@@ -62,7 +62,7 @@
         "message": "Spoilerfreier Modus unbestimmt"
     },
     "popup_sfmState_notOnPlatform": {
-        "message": "Keine unterstützte Streaming-Plattform",
+        "message": "Keine unterstützte Video-Plattform",
         "description": ""
     },
     "popup_sfmEnabled": {

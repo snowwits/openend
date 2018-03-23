@@ -80,7 +80,7 @@
         "description": ""
     },
     "popup_sfmState_notOnPlatform": {
-        "message": "Not on a supported streaming platform",
+        "message": "Not on a supported video platform",
         "description": ""
     },
     "popup_sfmEnabled": {
@@ -208,7 +208,7 @@
         "description": "Label of the Remove Channels button."
     },
     "options_sfmCfg": {
-        "message": "Configure Spoiler-Free Mode",
+        "message": "Customize Spoiler-Free Mode",
         "description": "Label of the Configure Spoiler-Free Mode options section."
     },
     "options_sfmCfg_player": {
