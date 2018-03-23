@@ -14,6 +14,8 @@ This release contains a lot of quality of life changes to enhance the user exper
   - Cleaned up popup and options.
 - Added Keyboard / Mouse shortcuts for the Quick Video Navigation.
   - See [Usage: 3.4.1 Keyboard/Mouse Shortcuts](README.md#341-keyboardmouse-shortcuts).
+- Short time jumps (2 minutes and less) are now executed without a page reload.
+  - See [Usage: 3.4 Quick Video Navigation](README.md#34-quick-video-navigation).
 - Fixed a few bugs in regards to correctly handling channel changes and correctly determining the current channel on Twitch.
 
 ### Open End "0.2.x (BETA)" (2017-12-06)

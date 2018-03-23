@@ -90,8 +90,8 @@ For example, configurations on the platform and channel level only have an effec
 - If a video is run in Spoiler-Free Mode, Open End adds a quick navigation toolbar which you can use to make larger time jumps.
   - The length of the time jumps can be specified in the same format as Twitch time stamps:
     - E.g. \"2\" for 2 minutes or \"1h2m3s\" for 1 hour, 2 minutes and 3 seconds".
-  - Short time jumps (2 minutes and less) are executed without a page change (via repeatedly "pressing" the Arrow Left/Arrow Right keys)
-  - Large time jumps (over 2 minutes) are executed by reloading the page (with the target time in the URL)
+  - Short time jumps (2 minutes and less) are executed without a page reload (via repeatedly "pressing" the Arrow Left/Arrow Right keys).
+  - Large time jumps (over 2 minutes) are executed by reloading the page (setting the timestamp in the URL).
   
 #### 3.4.1 Keyboard/Mouse Shortcuts
 - When in the focus is on the time jump input field the following keyboard / mouse actions are supported:
