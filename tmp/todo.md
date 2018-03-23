@@ -3,6 +3,7 @@
 - Update github page
 - Change author of MH commits
 - bug hunt
+- disable log
 
 # TODO version 0.4.0
 
