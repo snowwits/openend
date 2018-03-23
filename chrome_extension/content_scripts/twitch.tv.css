@@ -33,6 +33,10 @@
     margin-right: 5px; /* spacing between the toolbar buttons: */
 }
 
+#opnd-player-show-hide-duration-btn {
+    margin-right: 10px; /* more spacing right of the show/hide duration button to not accidentially click it */
+}
+
 #opnd-player-jump-distance-input {
     height: 2em; /* for analog layout to the regular twitch buttons: */
     line-height: 2em;
