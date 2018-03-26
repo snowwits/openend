@@ -10,7 +10,6 @@
 - Validate migration routine
 - Doc: Screenshots
   - And put the screenshots used in the Chrome description into git
-- Change author of MH commits
 - bug hunt
 - disable log
 
