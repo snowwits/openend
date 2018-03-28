@@ -36,7 +36,14 @@ h3 {
 
 /* SFM STATE */
 #sfmStateContainer {
-    text-align: center;
+    margin-left: 1em;
+}
+
+#sfmStateContainer img {
+    width: 2em;
+    height: 2em;
+    vertical-align: middle; /* align the image with the text */
+    margin-right: 0.5em;
 }
 
 #sfmStateLabel {
@@ -81,12 +88,6 @@ h3 {
 
 #sfmEnabledOnChannel {
     margin-top: 0; /* override Chrome default to allow custom margins*/
-}
-
-#sfmStateContainer img {
-    width: 2em;
-    height: 2em;
-    vertical-align: middle;
 }
 
 /* BUTTON BAR */
