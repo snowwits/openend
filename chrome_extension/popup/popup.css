@@ -36,6 +36,7 @@ h3 {
 
 /* SFM STATE */
 #sfmStateContainer {
+    height: 2em; /* make at least as high as the icon - this way the div always has the same height, whether the icon is displayed or not */
     margin-left: 1em;
 }
 
