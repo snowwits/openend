@@ -37,10 +37,10 @@
         "message": "Titel anzeigen"
     },
     "videoListItem_showHidePreview_visible": {
-        "message": "Vorschaubild verbergen"
+        "message": "Vorschau verbergen"
     },
     "videoListItem_showHidePreview_hidden": {
-        "message": "Vorschaubild anzeigen"
+        "message": "Vorschau anzeigen"
     },
     "videoListItem_showHideDuration_visible": {
         "message": "Dauer verbergen"

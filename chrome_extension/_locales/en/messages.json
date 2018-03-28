@@ -48,11 +48,11 @@
         "description": "Label of the Show/Hide Title button for the visible state."
     },
     "videoListItem_showHidePreview_visible": {
-        "message": "Hide preview image",
+        "message": "Hide preview",
         "description": "Label of the Show/Hide Preview button for the visible state."
     },
     "videoListItem_showHidePreview_hidden": {
-        "message": "Show preview image",
+        "message": "Show preview",
         "description": "Label of the Show/Hide Preview button for the visible state."
     },
     "videoListItem_showHideDuration_visible": {
