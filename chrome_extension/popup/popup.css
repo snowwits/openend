@@ -1,5 +1,6 @@
 body {
     white-space: nowrap;
+    min-width: 20em;
 }
 
 h1, h2, h3 {
@@ -18,11 +19,12 @@ h2 {
 h3 {
     font-size: 1.2em;
     line-height: 1.2em;
-    margin-bottom: 0.2em;
 }
 
+/* HEADER */
 .header {
-    margin-bottom: 1.8em;
+    margin-bottom: 1.2em;
+    text-align: center;
 }
 
 .header img {
@@ -32,36 +34,53 @@ h3 {
     margin-right: 0.5em;
 }
 
-#sfmEnabledContainer {
-    margin-top: 1.8em;
-    margin-bottom: 2em;
+/* SFM STATE */
+#sfmStateContainer {
+    text-align: center;
 }
 
-.sfmEnabledSubContainer {
-    margin-top: 1.2em;
+#sfmStateLabel {
+    font-size: 1.2em;
+    margin-bottom: 0.5em;
+}
+
+/* SFM ENABLED */
+#sfmEnabledContainer {
+    margin-top: 1.6em;
+    margin-bottom: 1.6em;
+}
+
+.sfmEnabledLevelContainer {
+    margin-top: 1em;
     margin-bottom: 1.2em;
 }
 
-.sfmEnabledSubContainer img {
+.sfmEnabledLevelContainer img {
     width: 1.2em;
     height: 1.2em;
     vertical-align: bottom; /* align the image with the text */
     margin-right: 0.5em;
 }
 
-.platformOrChannel {
+.sfmEnabledLevelBodyContainer {
+    margin-left: 2.1em;
+}
+
+.sfmEnabledSettingContainer {
+    margin-top: 0.5em;
+}
+
+.qualifiedName {
+    color: grey;
     font-weight: bold;
-    margin-bottom: 0.3em;
-    margin-top: 0.2em;
 }
 
-#sfmEnabledGlobal {
-    margin-top: 0.3em;
+.hasNoEffect {
+    color: grey;
 }
 
-#sfmStateLabel {
-    font-size: 1.2em;
-    margin-bottom: 0.5em;
+#sfmEnabledOnChannel {
+    margin-top: 0; /* override Chrome default to allow custom margins*/
 }
 
 #sfmStateContainer img {
@@ -70,18 +89,7 @@ h3 {
     vertical-align: middle;
 }
 
-.hasNoEffect {
-    color: grey;
-}
-
-#platformDisplayName, #channelDisplayName {
-    margin-right: 3px; /* To add space between display name and qualified name*/
-}
-
-#platformName, #channelQualifiedName {
-    color: grey;
-}
-
+/* BUTTON BAR */
 #buttonBar {
     margin-top: 0.9em;
     margin-bottom: 0.9em;

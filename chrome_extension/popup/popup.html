@@ -31,36 +31,37 @@
 
     <h2 id="sfmEnabledLabel"></h2>
 
-    <div id="sfmEnabledGlobalContainer" class="sfmEnabledSubContainer">
+    <div id="sfmEnabledGlobalContainer" class="sfmEnabledLevelContainer">
         <h3><img id="sfmEnabledGlobalIcon"/><span id="sfmEnabledGlobalLabel"></span></h3>
-        <div>
-            <select id="sfmEnabledGlobal"></select>
+        <div class="sfmEnabledLevelBodyContainer">
+            <div class="sfmEnabledSettingContainer">
+                <select id="sfmEnabledGlobal"></select>
+            </div>
         </div>
     </div>
 
-    <div id="sfmEnabledOnPlatformContainer" class="sfmEnabledSubContainer opnd-hidden">
-        <h3><img id="sfmEnabledOnPlatformIcon"/><span id="sfmEnabledOnPlatformLabel"></span></h3>
-        <div class="platformOrChannel">
-            <span id="platform" data-platformname="">
-                <span id="platformDisplayName"></span>
+    <div id="sfmEnabledOnPlatformContainer" class="sfmEnabledLevelContainer opnd-hidden">
+        <h3><img id="platformIcon"/><span id="platform" data-platformname=""></span></h3>
+        <div class="sfmEnabledLevelBodyContainer">
+            <div class="qualifiedName">
                 <span id="platformName"></span>
-            </span>
-        </div>
-        <div>
-            <select id="sfmEnabledOnPlatform"></select>
+            </div>
+            <div class="sfmEnabledSettingContainer">
+                <select id="sfmEnabledOnPlatform"></select>
+            </div>
         </div>
     </div>
 
-    <div id="sfmEnabledOnChannelContainer" class="sfmEnabledSubContainer opnd-hidden">
-        <h3><img id="sfmEnabledOnChannelIcon"/><span id="sfmEnabledOnChannelLabel"></span></h3>
-        <div class="platformOrChannel">
-            <span id="channel" data-channelqualifiedname="" data-channeldisplayname="">
-                <span id="channelDisplayName"></span>
+    <div id="sfmEnabledOnChannelContainer" class="sfmEnabledLevelContainer opnd-hidden">
+        <h3><img id="channelIcon"/><span id="channel" data-channelqualifiedname="" data-channeldisplayname=""></span>
+        </h3>
+        <div class="sfmEnabledLevelBodyContainer">
+            <div class="qualifiedName">
                 <span id="channelQualifiedName"></span>
-            </span>
-        </div>
-        <div>
-            <input type="checkbox" id="sfmEnabledOnChannel"><span id="sfmEnabledOnChannelCheckboxLabel"></span>
+            </div>
+            <div class="sfmEnabledSettingContainer">
+                <input type="checkbox" id="sfmEnabledOnChannel"><span id="sfmEnabledOnChannelCheckboxLabel"></span>
+            </div>
         </div>
     </div>
 

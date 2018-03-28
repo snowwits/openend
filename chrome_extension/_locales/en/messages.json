@@ -103,10 +103,6 @@
         "message": "Platform-dependent",
         "description": ""
     },
-    "popup_sfmEnabled_onPlatform": {
-        "message": "On this platform",
-        "description": ""
-    },
     "popup_sfmEnabled_onPlatform_NEVER": {
         "message": "Never",
         "description": ""
@@ -117,10 +113,6 @@
     },
     "popup_sfmEnabled_onPlatform_CUSTOM": {
         "message": "Channel-dependent",
-        "description": ""
-    },
-    "popup_sfmEnabled_onChannel": {
-        "message": "On this channel",
         "description": ""
     },
     "popup_sfmEnabled_onChannel_enable": {

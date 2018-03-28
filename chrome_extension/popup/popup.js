@@ -27,13 +27,12 @@ const SFM_STATE_LABEL_ID = "sfmStateLabel";
 const SFM_ENABLED_GLOBAL_ID = "sfmEnabledGlobal";
 
 const PLATFORM_ID = "platform";
+const PLATFORM_ICON_ID = "platformIcon";
 const PLATFORM_NAME_ID = "platformName";
-const PLATFORM_DISPLAY_NAME_ID = "platformDisplayName";
 const SFM_ENABLED_ON_PLATFORM_ID = "sfmEnabledOnPlatform";
 
 const CHANNEL_ID = "channel";
 const CHANNEL_QUALIFIED_NAME_ID = "channelQualifiedName";
-const CHANNEL_DISPLAY_NAME_ID = "channelDisplayName";
 const SFM_ENABLED_ON_CHANNEL_ID = "sfmEnabledOnChannel";
 
 const HAS_NO_EFFECT_CLASS = "hasNoEffect";
@@ -154,13 +153,12 @@ function updateUiAfterTabInfoUpdate(tabInfo) {
     const sfmStateLabelSpan = document.getElementById(SFM_STATE_LABEL_ID);
     const sfmEnabledOnPlatformContainerDiv = document.getElementById("sfmEnabledOnPlatformContainer");
     const platformSpan = document.getElementById(PLATFORM_ID);
+    const platformIconImg = document.getElementById(PLATFORM_ICON_ID);
     const platformNameSpan = document.getElementById(PLATFORM_NAME_ID);
-    const platformDisplayNameSpan = document.getElementById(PLATFORM_DISPLAY_NAME_ID);
     const sfmEnabledOnPlatformSelect = document.getElementById(SFM_ENABLED_ON_PLATFORM_ID);
     const sfmEnabledOnChannelContainerDiv = document.getElementById("sfmEnabledOnChannelContainer");
     const channelSpan = document.getElementById(CHANNEL_ID);
     const channelQualifiedNameSpan = document.getElementById(CHANNEL_QUALIFIED_NAME_ID);
-    const channelDisplayNameSpan = document.getElementById(CHANNEL_DISPLAY_NAME_ID);
     const sfmEnabledOnChannelCheckbox = document.getElementById(SFM_ENABLED_ON_CHANNEL_ID);
 
     // SfmState
@@ -184,19 +182,23 @@ function updateUiAfterTabInfoUpdate(tabInfo) {
 
     // Platform
     setData(platformSpan, DATA_PLATFORM_NAME, platformName);
-    platformDisplayNameSpan.textContent = platformDisplayName;
-    platformNameSpan.textContent = "(" + platformName + ")";
+    platformSpan.textContent = platformDisplayName;
+    platformNameSpan.textContent = platformName;
     if (platform === null) {
+        // Change back to default icon
+        platformIconImg.src = chrome.runtime.getURL("img/platform_black.svg");
+
         // SfmEnabled values
         clearSelectOptions(sfmEnabledOnPlatformSelect);
 
         // Hide the container
         setVisible(sfmEnabledOnPlatformContainerDiv, false);
     } else {
+        platformIconImg.src = chrome.runtime.getURL("img/platform_" + platformName + "_black.svg");
+
         // SfmEnabled values
         const enumValueToMsgKeyMap = buildEnumValueToMsgKeyMap(SfmEnabled, "popup_sfmEnabled_onPlatform_");
         setSelectOptions(sfmEnabledOnPlatformSelect, enumValueToMsgKeyMap, platform.supportedSfmEnabledValues);
-
         // Select the correct SfmEnabled value
         updateSfmEnabledOnPlatformSelect(sfmEnabledOnPlatformSelect, GLOBAL_options, platform);
 
@@ -210,8 +212,8 @@ function updateUiAfterTabInfoUpdate(tabInfo) {
     // Channel
     setData(channelSpan, DATA_CHANNEL_QUALIFIED_NAME, channelQualifiedName);
     setData(channelSpan, DATA_CHANNEL_DISPLAY_NAME, channelDisplayName);
-    channelDisplayNameSpan.textContent = channelDisplayName;
-    channelQualifiedNameSpan.textContent = "(" + channelQualifiedName + ")";
+    channelSpan.textContent = channelDisplayName;
+    channelQualifiedNameSpan.textContent = channelQualifiedName;
     if (channel === null) {
         setVisible(sfmEnabledOnChannelContainerDiv, false);
     } else {
@@ -384,16 +386,14 @@ function init() {
     sfmEnabledGlobalSelect.onchange = handleSfmEnabledGlobalChange;
 
     // SFM enabled on platform
-    setMsgToTextContent("sfmEnabledOnPlatformLabel", "popup_sfmEnabled_onPlatform");
-    const sfmEnabledOnPlatformIconImg = document.getElementById("sfmEnabledOnPlatformIcon");
-    sfmEnabledOnPlatformIconImg.src = chrome.runtime.getURL("img/platform_black.svg");
+    const platformIconImg = document.getElementById(PLATFORM_ICON_ID);
+    platformIconImg.src = chrome.runtime.getURL("img/platform_black.svg");
     const sfmEnabledOnPlatformSelect = document.getElementById(SFM_ENABLED_ON_PLATFORM_ID);
     sfmEnabledOnPlatformSelect.onchange = handleSfmEnabledOnPlatformChange;
 
     // SFM enabled on channel
-    setMsgToTextContent("sfmEnabledOnChannelLabel", "popup_sfmEnabled_onChannel");
-    const sfmEnabledOnChannelIconImg = document.getElementById("sfmEnabledOnChannelIcon");
-    sfmEnabledOnChannelIconImg.src = chrome.runtime.getURL("img/channel_black.svg");
+    const channelIconImg = document.getElementById("channelIcon");
+    channelIconImg.src = chrome.runtime.getURL("img/channel_black.svg");
     const sfmEnabledOnChannelCheckbox = document.getElementById(SFM_ENABLED_ON_CHANNEL_ID);
     sfmEnabledOnChannelCheckbox.onchange = handleSfmEnabledOnChannelChange;
     setMsgToTextContent("sfmEnabledOnChannelCheckboxLabel", "popup_sfmEnabled_onChannel_enable");

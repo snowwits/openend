@@ -5,13 +5,11 @@
     - Check all the headlines
 - Fix: Add max-height to options because it does not scale/show a scrollbar on shorter screens.
 - "Not a supported video platform" is unclear. Either a longer text like "The current page is not a supported video platform" or remove completely.
-- Popup: Less margin above "Enable Spoiler-Free Mode"
-- Popup: Maybe smaller font size for qualified names
 - Validate migration routine
 - Doc: Screenshots
   - And put the screenshots used in the Chrome description into git
 - bug hunt
-- disable log
+- disable log, search for "console.log"
 
 # TODO version 0.4.0
 
