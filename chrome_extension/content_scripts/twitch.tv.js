@@ -105,16 +105,6 @@ let GLOBAL_tabInfoChanged = true;
  * UTIL FUNCTIONS
  * ====================================================================================================
  */
-/**
- *
- * @param time {!number} in seconds
- * @return {!string} the URL with the time parameter
- */
-function buildCurrentUrlWithTime(time) {
-    const newTimeFormatted = formatDuration(time);
-    const urlParams = newTimeFormatted.length > 0 ? "?t=" + newTimeFormatted : "";
-    return window.location.protocol + "//" + window.location.hostname + window.location.pathname + urlParams;
-}
 
 
 /*
@@ -1258,13 +1248,16 @@ function playerJump(direction) {
     const actualDistance = newTime - currentTime;
     const absActualDistance = Math.abs(actualDistance);
 
+    // TODO: Is this (or with a different threshold) still needed?
     // For jumps <= 2m (120s), use rapid seeking
     // For jumps over 2m, use the location changing jump as rapid seeking takes to long
+    /*
     if (absActualDistance <= 120) {
         playerJumpWithRapidSeeking(actualDistance, currentTime, newTime);
     } else {
         playerJumpWithLocationChange(actualDistance, currentTime, newTime);
     }
+    */
 }
 
 function playerJumpWithRapidSeeking(distance, currentTime, newTime) {
@@ -1286,11 +1279,29 @@ function playerJumpWithRapidSeeking(distance, currentTime, newTime) {
     }
 }
 
+/**
+ * @deprecated seems like the rapid seeking option is better (it works quickly right now ({@link playerJumpWithRapidSeeking}
+ *
+ * @param distance
+ * @param currentTime
+ * @param newTime
+ */
 function playerJumpWithLocationChange(distance, currentTime, newTime) {
     // Build the new url
     const newTimeUrl = buildCurrentUrlWithTime(newTime);
     log("Jumping %is: %is -> %is (new location: %s)", distance, currentTime, newTime, newTimeUrl);
     window.location.assign(newTimeUrl);
+}
+
+/**
+ *
+ * @param time {!number} in seconds
+ * @return {!string} the URL with the time parameter
+ */
+function buildCurrentUrlWithTime(time) {
+    const newTimeFormatted = formatDuration(time);
+    const urlParams = newTimeFormatted.length > 0 ? "?t=" + newTimeFormatted : "";
+    return window.location.protocol + "//" + window.location.hostname + window.location.pathname + urlParams;
 }
 
 
