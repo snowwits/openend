@@ -119,19 +119,19 @@
         "message": "Enable",
         "description": ""
     },
-    "popup_sfmEnabled_hasNoEffect_disabledGlobally": {
+    "popup_sfmEnabled_ineffective_disabledGlobally": {
         "message": "Spoiler-Free Mode is disabled on the global level.",
         "description": ""
     },
-    "popup_sfmEnabled_hasNoEffect_enabledGlobally": {
+    "popup_sfmEnabled_ineffective_enabledGlobally": {
         "message": "Spoiler-Free Mode is enabled on the global level.",
         "description": ""
     },
-    "popup_sfmEnabled_hasNoEffect_disabledOnPlatform": {
+    "popup_sfmEnabled_ineffective_disabledOnPlatform": {
         "message": "Spoiler-Free Mode is disabled on the platform level.",
         "description": ""
     },
-    "popup_sfmEnabled_hasNoEffect_enabledOnPlatform": {
+    "popup_sfmEnabled_ineffective_enabledOnPlatform": {
         "message": "Spoiler-Free Mode is enabled on the platform level.",
         "description": ""
     },
