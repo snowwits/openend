@@ -1248,6 +1248,8 @@ function playerJump(direction) {
     const actualDistance = newTime - currentTime;
     const absActualDistance = Math.abs(actualDistance);
 
+    playerJumpWithRapidSeeking(actualDistance, currentTime, newTime);
+
     // TODO: Is this (or with a different threshold) still needed?
     // For jumps <= 2m (120s), use rapid seeking
     // For jumps over 2m, use the location changing jump as rapid seeking takes to long
