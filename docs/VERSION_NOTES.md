@@ -12,7 +12,7 @@ This release contains a lot of quality of life changes to enhance the user exper
   - The Open End icon and the Popup now show whether the current page is a supported video platform and whether the Spoiler-Free Mode is currently active.
     - See [Usage: 3.1 General](../README.md#31-general). 
   - Improved design of Popup and Options.
-- Video navigation (time jumps) is now possible without reloading the page
+- Video navigation (time jumps) is now possible without reloading the page.
   - See [Usage: 3.4 Video Navigation](../README.md#34-video-navigation)
 - Added Keyboard / Mouse shortcuts for the video navigation.
   - See [Usage: 3.4.1 Keyboard/Mouse Shortcuts](../README.md#341-keyboardmouse-shortcuts).

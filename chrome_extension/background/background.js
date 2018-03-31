@@ -31,14 +31,14 @@ function handleInstalled(details) {
     } else if (details.reason === "update") {
         log("Updated Open End from version [%s] to [%s]", details.previousVersion, thisVersion);
 
-        if ("0.2.1" === details.previousVersion) {
-            migrateFrom_v0_2_1();
+        if ("0.3.0" !== details.previousVersion) {
+            migrateTo_v0_3_0();
         }
     }
 }
 
-function migrateFrom_v0_2_1() {
-    log("Migrating from version 0.2.1 (re-store options whose keys changed under the new keys)");
+function migrateTo_v0_3_0() {
+    log("Migrating to version 0.3.0 (re-store options whose keys changed under the new keys)");
     const optSfmEnabledGlobalKey_v0_2_1 = "sfmEnabled";
     const optSfmEnabledChannelsKey_v0_2_1 = "sfmChannels";
     const optKeys_v0_2_1 = [optSfmEnabledGlobalKey_v0_2_1, optSfmEnabledChannelsKey_v0_2_1];

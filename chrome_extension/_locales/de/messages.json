@@ -1,6 +1,6 @@
 {
     "manifest_description": {
-        "message": "Versteckt die Dauer und den Titel von Videos auf Twitch.tv, um vor Spoilern beim Gucken von (E-)Sport-Videos zu schützen."
+        "message": "Versteckt die Dauer von Videos und andere Informationen auf Twitch.tv, um vor Spoilern beim Gucken von (E-)Sport-Videos zu schützen."
     },
     "player_showHideDuration_visible": {
         "message": "Videodauer verbergen"

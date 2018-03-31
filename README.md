@@ -1,5 +1,5 @@
 # Open End
-Chrome extension that lets you hide the title, preview and duration of videos on Twitch.tv to prevent spoilers when watching e-sports or sports videos.
+Chrome extension that hides the duration of videos and other information on Twitch.tv to prevent spoilers when watching e-sports or sports videos.
 
 # Table of Contents  
 1. [Description](#1-description)  
@@ -34,7 +34,8 @@ Open End prevents those kinds of spoilers by hiding certain information on Twitc
 - 100% compatible with [Better Twitch TV](https://chrome.google.com/webstore/detail/betterttv/ajopnjidmegmdimjlfnijceegpefgped).
 
 ## 3. Usage
-### 3.1 General
+
+### 3.1 Overview
 - **Open End icon / Popup:** The extension has an icon in the Chrome toolbar (next to the address bar). If you click on it, a popup opens. The icon and the popup have two purposes:
   1. Inform you:
      - Whether the current web page is a supported video platform.
@@ -55,6 +56,12 @@ Open End prevents those kinds of spoilers by hiding certain information on Twitc
 - **Video Lists:** Open End can hide certain information about videos in videos lists to prevent spoilers, such as video title, video preview and video duration.
   - What information is hidden can be customized in the options, see [3.3 Customize the Spoiler-Free Mode](#33-customize-the-spoiler-free-mode).
 - **Options:** On the popup you can click on the "Options..." button to open the options of the extension. Feel free to explore the options and customize the extension according to your preferences.
+
+#### 3.1.1 Example Screenshots
+
+![alt text](docs/opnd-v0.3.0-screenshot-01-overview_labeled.png "Overview")
+
+![alt text](docs/opnd-v0.3.0-screenshot-03-videolist_labeled.png "Video Lists")
 
 ### 3.2 Enable/Disable the Spoiler-Free Mode
 There are three layers to give you fine control over where to enable/disable the Spoiler-Free Mode.
@@ -125,6 +132,8 @@ The support for MLG.com and overwatchleague.com (which uses the MLG.com video pl
 If you have questions or feature requests you can contact me:
 - Mail: [snowwits@gmail.com](mailto:snowwits@gmail.com)
 - Reddit: [/u/snowwits](https://www.reddit.com/user/snowwits)
+- Twitter: [@snowwits](https://twitter.com/snowwits)
+  - Follow to receive update news
 
 ## 7. License
 Exclusive copyright for now.
