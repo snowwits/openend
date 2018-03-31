@@ -1,7 +1,6 @@
 # Detailed Description
 
 - Copied (and translated) from README.md.
-- Use ・ as an enumeration symbol.
 
 ## English
 
@@ -12,6 +11,6 @@
 ## German
 
 - Versteckt den Fortschritt und die Dauer des aktuell abgespielten Videos.
-- Versteckt den Titel, die Vorschau und die Dauer von anderen Videos (vorgeschlagene/ähnliche Videos oder Videos in Videolisten)
+- Versteckt den Titel, die Vorschau und die Dauer von anderen Videos (vorgeschlagene/ähnliche Videos oder Videos in Videolisten).
 - Bietet eine Video-Navigations-Leiste im Videoplayer als Ersatz für den ausgeblendeten Fortschrittsbalken.
 

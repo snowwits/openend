@@ -7,8 +7,6 @@
   - Doc: How to time jump while keep full screen
     - [x] Auto enter Theatre Mode and enable Chrome full screen mode (F11)
     - -> Solved if we only use rapid seeking
-- bug hunt
-- Update version to 0.3.0 (no SNAPSHOT)
 
 # TODO version 0.3.x
 
@@ -27,3 +25,9 @@
   - Predefined: default, Overwatch (twitch.tv/overwatchleague, twitch.tv/overwatchcontenders, 3m, hide non-full-day VODs on twitch.tv/overwatchleague)
   - Profile selectable on popup and options -> options are changed accordingly
   - Current cfg storable as profile on options
+  
+# General TODO before release
+- Bug test
+- Search for console.log
+- Set LOG_ENABLED = false in common.js
+- Update version to non SNAPSHOT
