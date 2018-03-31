@@ -113,13 +113,13 @@ For example, settings on the platform and channel level only have an effect if t
   - **Shift + Enter:** Execute a backward jump.
 
 
-### 4 Supported Video Platforms
+## 4. Supported Video Platforms
 
-#### 4.1 Twitch.tv
+### 4.1 Twitch.tv
 
 Twitch.tv is **fully** supported.
 
-#### 4.2 MLG.com
+### 4.2 MLG.com
 
 There is only **limited** support for MLG.com and overwatchleague.com (which uses the MLG.com video platform):
 - Only the hiding of the seek bar and video duration of currently played videos is supported.
