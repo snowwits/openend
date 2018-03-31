@@ -121,7 +121,7 @@ Twitch.tv is **fully** supported.
 
 #### 4.2 MLG.com
 
-The support for MLG.com and overwatchleague.com (which uses the MLG.com video platform) is **limited**:
+There is only **limited** support for MLG.com and overwatchleague.com (which uses the MLG.com video platform):
 - Only the hiding of the seek bar and video duration of currently played videos is supported.
   - No Video Navigation Toolbar is provided.
 
