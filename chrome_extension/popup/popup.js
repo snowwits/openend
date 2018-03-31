@@ -138,7 +138,7 @@ function updateUiAfterTabInfoUpdate(tabInfo) {
     log("Updating UI after tab info received: %o", tabInfo);
 
     // Get relevant info from TabInfo
-    const sfmState = tabInfo ? tabInfo.sfmState : SfmState.UNDETERMINED;
+    const sfmState = tabInfo ? tabInfo.sfmState : SfmState.UNSUPPORTED;
     const platformSerialized = tabInfo ? tabInfo.platform : null;
     const platform = Platform.deserialize(platformSerialized);
     const platformName = platform ? platform.name : "";
@@ -161,24 +161,19 @@ function updateUiAfterTabInfoUpdate(tabInfo) {
     const channelQualifiedNameSpan = document.getElementById(CHANNEL_QUALIFIED_NAME_ID);
     const sfmEnabledOnChannelCheckbox = document.getElementById(SFM_ENABLED_ON_CHANNEL_ID);
 
-    // SfmState
-    if (platform) {
-        if (SfmState.ACTIVE === sfmState || SfmState.INACTIVE === sfmState) {
-            sfmStateIconImg.src = chrome.runtime.getURL(SfmState.ACTIVE === sfmState ? "img/hide_black.svg" : "img/show_black.svg");
-            setVisible(sfmStateIconImg, true);
-        }
-        else {
-            setVisible(sfmStateIconImg, false);
-            sfmStateIconImg.src = "";
-        }
-        const sfmStateLabelMsgKey = getEnumValueMsgKey(sfmState, "popup_sfmState_");
-        sfmStateLabelSpan.textContent = chrome.i18n.getMessage(sfmStateLabelMsgKey);
-    } else {
+    // SfmState: icon
+    if (SfmState.ACTIVE === sfmState || SfmState.INACTIVE === sfmState || SfmState.CHANNEL_DEPENDENT === sfmState) {
+        sfmStateIconImg.src = chrome.runtime.getURL(SfmState.INACTIVE === sfmState ? "img/show_black.svg" : "img/hide_black.svg");
+        setVisible(sfmStateIconImg, true);
+    }
+    else {
         setVisible(sfmStateIconImg, false);
         sfmStateIconImg.src = "";
-        sfmStateLabelSpan.textContent = chrome.i18n.getMessage("popup_sfmState_notOnPlatform");
     }
-
+    // SfmState: label, tooltip
+    const sfmStateLabelMsgKey = getEnumValueMsgKey(sfmState, "popup_sfmState_");
+    sfmStateLabelSpan.textContent = chrome.i18n.getMessage(sfmStateLabelMsgKey);
+    sfmStateLabelSpan.title = chrome.i18n.getMessage("popup_sfmState_" + sfmState + "_tooltip");
 
     // Platform
     setData(platformSpan, DATA_PLATFORM_NAME, platformName);
@@ -372,7 +367,8 @@ function init() {
     }
 
     // SFM state
-    setMsgToTextContent(SFM_STATE_LABEL_ID, "popup_sfmState_notOnPlatform");
+    setMsgToTextContent(SFM_STATE_LABEL_ID, "popup_sfmState_" + SfmState.UNSUPPORTED);
+    setMsgToTitle(SFM_STATE_LABEL_ID, "popup_sfmState_" + SfmState.UNSUPPORTED + "_tooltip");
 
     // SFM enabled
     setMsgToTextContent("sfmEnabledLabel", "popup_sfmEnabled");

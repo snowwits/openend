@@ -87,9 +87,9 @@ let GLOBAL_channel = null;
 
 /* Variables that need to be changed after options or channel changes */
 /**
- * @type {!string} {@link SfmState}
+ * @type {?string} {@link SfmState}
  */
-let GLOBAL_sfmState = SfmState.UNDETERMINED;
+let GLOBAL_sfmState = null;
 /**
  * Flags whether the dependencies of certain options have been configured yet
  */
@@ -177,7 +177,7 @@ function resetGlobalPageStateFlags(changedOptions) {
     // If something about SFM enabled changed, sfmState needs re-determination.
     // Also, all SFM dependencies need reconfiguration (they may be independent from sfmState, for example video list items on a directory/game/Overwatch page can be from several channels).
     if (containsSfmEnabledOption(changedOptions)) {
-        updateSfmState(SfmState.UNDETERMINED);
+        updateSfmState(null);
         determineSfmState();
 
         setSfmOptionsToNotConfigured();
@@ -425,7 +425,7 @@ function updateChannel(channel) {
         log("Updated [channel] to [%o]", GLOBAL_channel);
 
         // SfmState needs to be re-determined after a channel change
-        updateSfmState(SfmState.UNDETERMINED);
+        updateSfmState(null);
 
         // Notify about TabInfo change (new channel)
         signalTabInfoChanged("channel");
@@ -467,7 +467,7 @@ function determineSfmState() {
 }
 
 function isSfmStateDetermined() {
-    return SfmState.UNDETERMINED !== GLOBAL_sfmState;
+    return GLOBAL_sfmState !== null;
 }
 
 function isSfmStateActive() {
@@ -478,6 +478,14 @@ function isSfmStateInactive() {
     return SfmState.INACTIVE === GLOBAL_sfmState;
 }
 
+function isSfmStateChannelDependent() {
+    return SfmState.CHANNEL_DEPENDENT === GLOBAL_sfmState;
+}
+
+/**
+ *
+ * @param sfmState {?string} {@link SfmState}
+ */
 function updateSfmState(sfmState) {
     const isChange = GLOBAL_sfmState !== sfmState;
 
@@ -683,7 +691,7 @@ function configureVideoListItems() {
     const setPreviewVisible = !GLOBAL_options[OPT_SFM_VIDEO_LIST_HIDE_PREVIEW_NAME];
     const setDurationVisible = !GLOBAL_options[OPT_SFM_VIDEO_LIST_HIDE_DURATION_NAME];
 
-    // If SFM = enabled, configure according to the SFM config
+    // If SFM = active, configure according to the SFM config
     if (isSfmStateActive()) {
         setAllVisible(allTitleContainers, setTitleVisible);
         setAllVisible(allPreviewContainers, setPreviewVisible);
@@ -694,17 +702,9 @@ function configureVideoListItems() {
             addVideoListItemToolbar(videoCardDiv);
         }
     }
-    // If SFM = disabled, show everything and remove toolbars
-    else if (isSfmStateInactive()) {
-        setAllVisible(allTitleContainers, true);
-        setAllVisible(allPreviewContainers, true);
-        setAllVisible(allDurationContainers, true);
-
-        removeVideoListItemToolbars();
-    }
-    // If SFM = undetermined (maybe because sfmEnabledGlobal=CUSTOM and not on a channel page),
+    // If SFM = channel dependent,
     // only hide information of videos of channels for which SFM is enabled.
-    else {
+    else if (isSfmStateChannelDependent()) {
         for (let i = 0; i < videoCardDivs.length; i++) {
             const videoCardDiv = videoCardDivs[i];
 
@@ -721,7 +721,7 @@ function configureVideoListItems() {
 
                 addVideoListItemToolbar(videoCardDiv);
             }
-            // DISABLED or UNDETERMINED
+            // DISABLED
             else {
                 setAllVisible(videoTitleContainers, true);
                 setAllVisible(videoPreviewContainers, true);
@@ -730,6 +730,14 @@ function configureVideoListItems() {
                 removeVideoListItemToolbars(videoCardDiv);
             }
         }
+    }
+    // If SFM = inactive (or as fallback), show everything and remove toolbars
+    else {
+        setAllVisible(allTitleContainers, true);
+        setAllVisible(allPreviewContainers, true);
+        setAllVisible(allDurationContainers, true);
+
+        removeVideoListItemToolbars();
     }
 
     if (allTitleContainers.length > 0) {

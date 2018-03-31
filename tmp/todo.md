@@ -3,12 +3,13 @@
   - Maybe change tooltips to First Letter Uppercase (conform with Twitch tooltips)
     - Check all the headlines
 - Fix: Add max-height to options because it does not scale/show a scrollbar on shorter screens.
-  - Set a height of 500px -> try it out -> did not work
-  - Try 400px
-- "Not a supported video platform" is unclear. Either a longer text like "The current page is not a supported video platform" (maybe with a &lt;br&gt;) or remove completely.
+  - Set a height of 400px -> try it out
 - Validate migration routine
-- Doc: How to time jump while keep full screen
-  - [x] Auto enter Theatre Mode and enable Chrome full screen mode (F11)
+- Try out only using rapid seeking method for time jumps
+  - Maybe rename the buttons (seek x forward, seek x backward)
+  - Doc: How to time jump while keep full screen
+    - [x] Auto enter Theatre Mode and enable Chrome full screen mode (F11)
+    -> Solved if we only use rapid seeking
 - Doc: Screenshots
   - And put the screenshots used in the Chrome description into git
 - bug hunt
@@ -17,6 +18,7 @@
   - Firefox
   - YouTube
   - The 0.4.0 features
+- Use ・ as enumeration char on chrome store description
 
 # TODO version 0.3.x
 

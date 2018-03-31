@@ -45,9 +45,9 @@ let GLOBAL_options = getDefaultOptionsCopy();
 
 /* Variables that need to be changed after options change */
 /**
- * @type {!string} {@link SfmState}
+ * @type {?string} {@link SfmState}
  */
-let GLOBAL_sfmState = SfmState.UNDETERMINED;
+let GLOBAL_sfmState = null;
 /**
  * Flags whether the dependencies of certain options have been configured yet
  */
@@ -118,7 +118,7 @@ function resetGlobalPageStateFlags(changedOptions) {
     // If something about SFM enabled changed, sfmState needs re-determination.
     // Also, all SFM dependencies need reconfiguration (they may be independent from sfmState, for example video list items on a directory/game/Overwatch page can be from several channels).
     if (containsSfmEnabledOption(changedOptions)) {
-        updateSfmState(SfmState.UNDETERMINED);
+        updateSfmState(null);
         determineSfmState();
 
         setSfmOptionsToNotConfigured();
@@ -197,7 +197,7 @@ function determineSfmState() {
 
 
 function isSfmStateDetermined() {
-    return SfmState.UNDETERMINED !== GLOBAL_sfmState;
+    return GLOBAL_sfmState !== null;
 }
 
 function isSfmStateActive() {
@@ -210,7 +210,7 @@ function isSfmStateInactive() {
 
 /**
  *
- * @param sfmState {!string} {@link SfmState}
+ * @param sfmState {?string} {@link SfmState}
  */
 function updateSfmState(sfmState) {
     const isChange = GLOBAL_sfmState !== sfmState;

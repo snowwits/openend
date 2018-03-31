@@ -67,20 +67,36 @@
         "message": "SFM",
         "description": ""
     },
+    "popup_sfmState_UNSUPPORTED": {
+        "message": "SFM not supported",
+        "description": ""
+    },
+    "popup_sfmState_UNSUPPORTED_tooltip": {
+        "message": "The current page is not a supported video platform",
+        "description": ""
+    },
     "popup_sfmState_ACTIVE": {
-        "message": "Spoiler-Free Mode active",
+        "message": "SFM active",
+        "description": ""
+    },
+    "popup_sfmState_ACTIVE_tooltip": {
+        "message": "Spoiler-Free Mode is active",
         "description": ""
     },
     "popup_sfmState_INACTIVE": {
-        "message": "Spoiler-Free Mode inactive",
+        "message": "SFM inactive",
         "description": ""
     },
-    "popup_sfmState_UNDETERMINED": {
-        "message": "Spoiler-Free Mode undetermined",
+    "popup_sfmState_INACTIVE_tooltip": {
+        "message": "Spoiler-Free Mode is inactive",
         "description": ""
     },
-    "popup_sfmState_notOnPlatform": {
-        "message": "Not on a supported video platform",
+    "popup_sfmState_CHANNEL_DEPENDENT": {
+        "message": "SFM channel-dependent",
+        "description": ""
+    },
+    "popup_sfmState_CHANNEL_DEPENDENT_tooltip": {
+        "message": "Spoiler-Free Mode is active on selected channels",
         "description": ""
     },
     "popup_sfmEnabled": {

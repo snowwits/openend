@@ -813,9 +813,10 @@ function containsSfmEnabledOption(options) {
 }
 
 const SfmState = Object.freeze({
+    UNSUPPORTED: "UNSUPPORTED",
     ACTIVE: "ACTIVE",
     INACTIVE: "INACTIVE",
-    UNDETERMINED: "UNDETERMINED"
+    CHANNEL_DEPENDENT: "CHANNEL_DEPENDENT"
 });
 
 /**
@@ -825,15 +826,15 @@ const SfmState = Object.freeze({
  * @return {!string} {@link SfmState}
  */
 function checkSfmState(options, platform, channel) {
+    if (platform === null) {
+        return SfmState.UNSUPPORTED;
+    }
     const sfmEnabledGlobal = options[OPT_SFM_ENABLED_GLOBAL_NAME];
     if (SfmEnabled.ALWAYS === sfmEnabledGlobal) {
         return SfmState.ACTIVE;
     } else if (SfmEnabled.NEVER === sfmEnabledGlobal) {
         return SfmState.INACTIVE;
     } else if (SfmEnabled.CUSTOM === sfmEnabledGlobal) {
-        if (platform === null) {
-            return SfmState.UNDETERMINED;
-        }
         const sfmEnabledOnPlatform = getSfmEnabledOnPlatform(options, platform);
         if (SfmEnabled.ALWAYS === sfmEnabledOnPlatform) {
             return SfmState.ACTIVE;
@@ -843,9 +844,9 @@ function checkSfmState(options, platform, channel) {
         }
         else if (SfmEnabled.CUSTOM === sfmEnabledOnPlatform) {
             if (channel === null) {
-                return SfmState.UNDETERMINED;
+                return SfmState.CHANNEL_DEPENDENT;
             }
-            if (getSfmEnabledOnChannel(options, channel)) {
+            else if (getSfmEnabledOnChannel(options, channel)) {
                 return SfmState.ACTIVE;
             }
             else {
@@ -853,7 +854,6 @@ function checkSfmState(options, platform, channel) {
             }
         }
     }
-    return SfmState.UNDETERMINED;
 }
 
 /**
@@ -948,10 +948,10 @@ class Message {
 /**
  * @property {!PlatformSerialized} platform the serialized platform of the current tab
  * @property {?ChannelSerialized} [channel] the serialized channel of the current tab
- * @property {?string} [sfmState] {@link SfmState}
+ * @property {!string} [sfmState] {@link SfmState}
  */
 class TabInfo {
-    constructor(platform, channel = null, sfmState = SfmState.UNDETERMINED) {
+    constructor(platform, channel = null, sfmState = SfmState.UNSUPPORTED) {
         this.platform = platform;
         this.channel = channel;
         this.sfmState = sfmState;

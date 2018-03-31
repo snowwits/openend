@@ -52,17 +52,33 @@
         "message": "SFM",
         "description": ""
     },
+    "popup_sfmState_UNSUPPORTED": {
+        "message": "SFM nicht unterstützt",
+        "description": ""
+    },
+    "popup_sfmState_UNSUPPORTED_tooltip": {
+        "message": "Die aktuelle Seite ist keine unterstützte Video-Plattform",
+        "description": ""
+    },
     "popup_sfmState_ACTIVE": {
-        "message": "Spoilerfreier Modus aktiv"
+        "message": "SFM aktiv"
+    },
+    "popup_sfmState_ACTIVE_tooltip": {
+        "message": "Spoilerfreier Modus ist aktiv",
+        "description": ""
     },
     "popup_sfmState_INACTIVE": {
-        "message": "Spoilerfreier Modus inaktiv"
+        "message": "SFM inaktiv"
     },
-    "popup_sfmState_UNDETERMINED": {
-        "message": "Spoilerfreier Modus unbestimmt"
+    "popup_sfmState_INACTIVE_tooltip": {
+        "message": "Spoilerfreier Modus ist inaktiv",
+        "description": ""
     },
-    "popup_sfmState_notOnPlatform": {
-        "message": "Keine unterstützte Video-Plattform",
+    "popup_sfmState_CHANNEL_DEPENDENT": {
+        "message": "SFM kanalabhängig"
+    },
+    "popup_sfmState_CHANNEL_DEPENDENT_tooltip": {
+        "message": "Spoilerfreier Modus ist auf ausgewählten Kanälen aktiv",
         "description": ""
     },
     "popup_sfmEnabled": {

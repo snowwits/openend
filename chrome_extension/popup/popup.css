@@ -1,6 +1,6 @@
 body {
     white-space: nowrap;
-    min-width: 20em;
+    min-width: 19em;
 }
 
 h1, h2, h3 {
@@ -37,19 +37,18 @@ h3 {
 /* SFM STATE */
 #sfmStateContainer {
     height: 2em; /* make at least as high as the icon - this way the div always has the same height, whether the icon is displayed or not */
-    margin-left: 1em;
+    margin: 0.6em 0.5em 0.6em 1em;
 }
 
 #sfmStateContainer img {
     width: 2em;
     height: 2em;
-    vertical-align: middle; /* align the image with the text */
-    margin-right: 0.5em;
+    vertical-align: top; /* align the image with the text */
+    margin-right: 0.6em;
 }
 
 #sfmStateLabel {
-    font-size: 1.2em;
-    margin-bottom: 0.5em;
+    font-size: 1.3em;
 }
 
 /* SFM ENABLED */

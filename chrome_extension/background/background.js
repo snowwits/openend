@@ -83,7 +83,8 @@ function handleMessage(request, sender, sendResponse) {
             tabId: tabId
         });
 
-        const badgeText = (SfmState.ACTIVE === tabInfo.sfmState ? chrome.i18n.getMessage("popup_sfmState_sfmBadge") : "");
+        const sfmActiveOrPartlyActive = SfmState.ACTIVE === tabInfo.sfmState || SfmState.CHANNEL_DEPENDENT === tabInfo.sfmState;
+        const badgeText = (sfmActiveOrPartlyActive ? chrome.i18n.getMessage("popup_sfmState_sfmBadge") : "");
         chrome.browserAction.setBadgeText({
             text: badgeText,
             tabId: tabId
