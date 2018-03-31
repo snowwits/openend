@@ -75,7 +75,7 @@
         "description": ""
     },
     "popup_sfmState_CHANNEL_DEPENDENT": {
-        "message": "SFM kanalabhängig"
+        "message": "SFM kanal-abhängig"
     },
     "popup_sfmState_CHANNEL_DEPENDENT_tooltip": {
         "message": "Spoilerfreier Modus ist auf ausgewählten Kanälen aktiv",
