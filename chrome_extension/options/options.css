@@ -4,7 +4,7 @@ body {
 
 #options {
     width: 500px;
-    height: 400px;
+    height: 500px;
     /* height so that the div is not higher than the Chrome options box and Chrome won't display their own scroll pane
            PROBLEM is that the options box's height depends on the height of Chrome. So on 720p its smaller than on 1080p*/
     overflow-y: auto;
