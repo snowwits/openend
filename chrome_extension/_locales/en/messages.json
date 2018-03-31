@@ -68,7 +68,7 @@
         "description": ""
     },
     "popup_sfmState_UNSUPPORTED": {
-        "message": "SFM not supported",
+        "message": "SFM not supported here",
         "description": ""
     },
     "popup_sfmState_UNSUPPORTED_tooltip": {
