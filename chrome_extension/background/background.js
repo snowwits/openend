@@ -31,14 +31,15 @@ function handleInstalled(details) {
     } else if (details.reason === "update") {
         log("Updated Open End from version [%s] to [%s]", details.previousVersion, thisVersion);
 
+        // TODO: Implement a function compareVersions(versionA, versionB)
         if ("0.3.0" !== details.previousVersion) {
-            migrateTo_v0_3_0();
+            migrateFrom_v0_2_1();
         }
     }
 }
 
-function migrateTo_v0_3_0() {
-    log("Migrating to version 0.3.0 (re-store options whose keys changed under the new keys)");
+function migrateFrom_v0_2_1() {
+    log("Migrating from version 0.2.1 (re-storing options sfmEnabled, sfmChannels under the new keys and in the new format)");
     const optSfmEnabledGlobalKey_v0_2_1 = "sfmEnabled";
     const optSfmEnabledChannelsKey_v0_2_1 = "sfmChannels";
     const optKeys_v0_2_1 = [optSfmEnabledGlobalKey_v0_2_1, optSfmEnabledChannelsKey_v0_2_1];
@@ -49,7 +50,12 @@ function migrateTo_v0_3_0() {
             updatedOptions[OPT_SFM_ENABLED_GLOBAL_NAME] = items[optSfmEnabledGlobalKey_v0_2_1];
         }
         if (optSfmEnabledChannelsKey_v0_2_1 in items) {
-            updatedOptions[OPT_SFM_ENABLED_CHANNELS_NAME] = items[optSfmEnabledChannelsKey_v0_2_1];
+            // Channels were stored as an Array<String> of qualified names
+            const channelQualifiedNames = items[optSfmEnabledChannelsKey_v0_2_1];
+            const channels = Channel.parseArrayFromQualifiedNames(channelQualifiedNames);
+            const serializedChannels = Channel.serializeArray(channels);
+            log("Migrated channels from [%o] to [%o]", channelQualifiedNames, serializedChannels);
+            updatedOptions[OPT_SFM_ENABLED_CHANNELS_NAME] = serializedChannels;
         }
         return updatedOptions;
     }).then((updatedOptions) => {

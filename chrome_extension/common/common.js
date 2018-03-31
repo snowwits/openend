@@ -278,6 +278,15 @@ class Channel {
 
     /**
      *
+     * @param qualifiedNames {!Array<String>}
+     * @return {!Array<!Channel>} the parsed channels (qualified names that could not be parsed are filtered out)
+     */
+    static parseArrayFromQualifiedNames(qualifiedNames) {
+        return qualifiedNames.map(qualifiedName => Channel.parseFromQualifiedName(qualifiedName)).filter(channel => channel !== null);
+    }
+
+    /**
+     *
      * @param url {!URL} a {@link Location} or {@link HTMLAnchorElement}
      * @param displayName {?string} the optional display name of the channel
      * @return {?Channel} the parsed channel or null if the URL was not recognized
