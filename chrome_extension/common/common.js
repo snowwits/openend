@@ -83,6 +83,31 @@ class PlatformPage {
 
 class Platform {
     /**
+     * @return {!string} the name
+     */
+    get name() {
+        throw new Error("Not implemented");
+    }
+
+    /**
+     * @return {!string} the display name
+     */
+    get displayName() {
+        throw new Error("Not implemented");
+    }
+
+    get verboseName() {
+        return this.displayName + " (" + this.name + ")";
+    }
+
+    /**
+     * @return {!ReadonlyArray<string>} the allowed {@link SfmEnabled} values
+     */
+    get supportedSfmEnabledValues() {
+        throw new Error("Not implemented");
+    }
+
+    /**
      *
      * @param platformName {?string} the name of the platform
      * @returns {?Platform} the parsed Platform or null if the given platformName does not match any platform
@@ -200,6 +225,42 @@ class Platform {
 class Channel {
     /**
      *
+     * @param platform {!Platform}
+     * @param name {!string}
+     * @param displayName {?string} the display name of the channel
+     */
+    constructor(platform, name, displayName = null) {
+        this.platform = platform;
+        this.name = name;
+        this.displayName = displayName;
+    }
+
+    get qualifiedName() {
+        return this.platform.name + "/" + this.name;
+    }
+
+    get displayNameOrName() {
+        return this.displayName !== null ? this.displayName : this.name;
+    }
+
+    get qualifiedDisplayNameOrName() {
+        return this.platform.displayName + "/" + this.displayNameOrName;
+    }
+
+    get verboseName() {
+        return this.displayNameOrName + " (" + this.qualifiedName + ")";
+    }
+
+    get verboseQualifiedName() {
+        return this.qualifiedDisplayNameOrName + " (" + this.qualifiedName + ")";
+    }
+
+    get url() {
+        this.platform.buildChannelUrl(this);
+    }
+
+    /**
+     *
      * @param channelQualifiedName {!string} the qualified name of the channel
      * @param displayName {?string} the optional display name of the channel
      * @return {?Channel} the parsed Channel or null if no platform could parse the qualified name
@@ -280,42 +341,6 @@ class Channel {
      */
     static serializeArray(channels) {
         return channels.map(ch => ch.serialize());
-    }
-
-    /**
-     *
-     * @param platform {!Platform}
-     * @param name {!string}
-     * @param displayName {?string} the display name of the channel
-     */
-    constructor(platform, name, displayName = null) {
-        this.platform = platform;
-        this.name = name;
-        this.displayName = displayName;
-    }
-
-    get qualifiedName() {
-        return this.platform.name + "/" + this.name;
-    }
-
-    get displayNameOrName() {
-        return this.displayName !== null ? this.displayName : this.name;
-    }
-
-    get qualifiedDisplayNameOrName() {
-        return this.platform.displayName + "/" + this.displayNameOrName;
-    }
-
-    get verboseName() {
-        return this.displayNameOrName + " (" + this.qualifiedName + ")";
-    }
-
-    get verboseQualifiedName() {
-        return this.qualifiedDisplayNameOrName + " (" + this.qualifiedName + ")";
-    }
-
-    get url() {
-        this.platform.buildChannelUrl(this);
     }
 
     serialize() {
