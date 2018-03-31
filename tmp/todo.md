@@ -9,16 +9,19 @@
   - Maybe rename the buttons (seek x forward, seek x backward)
   - Doc: How to time jump while keep full screen
     - [x] Auto enter Theatre Mode and enable Chrome full screen mode (F11)
-    -> Solved if we only use rapid seeking
+    - -> Solved if we only use rapid seeking
 - Doc: Screenshots
-  - And put the screenshots used in the Chrome description into git
+  - And put the used screenshots into git
+- Doc: Chrome description
+  - Use ・ as enumeration char on chrome store description
+  - Put the Chrome description into git
 - bug hunt
 - disable log, search for "console.log"
 - survey: next feature?
   - Firefox
   - YouTube
   - The 0.4.0 features
-- Use ・ as enumeration char on chrome store description
+
 
 # TODO version 0.3.x
 

@@ -65,7 +65,7 @@ There are three layers to give you fine control over where to enable/disable the
 2. **Platform:** Enable/disable the Spoiler-Free mode for a specific video platform. You can choose between:
    - *Never:* Disable the Spoiler-Free Mode on this platform.
    - *Always:* Enable the Spoiler-Free Mode on this platform.
-   - *Channel-dependent:* Defer the decision to the channel level
+   - *Channel-dependent:* Defer the decision to the channel level.
      - If channels are supported on this platform. For example on Twitch.tv channels are supported, on MLG.com they are not.
 3. **Channel:** Enable/disable the Spoiler-Free mode for a specific video channel. You can choose between:
    - *Disable:* Disable the Spoiler-Free Mode on this channel.
@@ -94,10 +94,8 @@ For example, settings on the platform and channel level only have an effect if t
 ### 3.4 Video Navigation
 - Like always, you can use the Arrow Left/Arrow Right keys (<-, ->) on your keyboard for 5 second time jumps.
 - If a video is run in Spoiler-Free Mode, Open End adds a Video Navigation Toolbar which you can use to make larger time jumps.
-  - The length of the time jumps can be specified in the same format as Twitch time stamps:
-    - E.g. \"2\" for 2 minutes or \"1h2m3s\" for 1 hour, 2 minutes and 3 seconds".
-  - Short time jumps (2 minutes and less) are executed without a page reload (via repeatedly "pressing" the Arrow Left/Arrow Right keys).
-  - Large time jumps (over 2 minutes) are executed by reloading the page (setting the timestamp in the URL).
+- The length of the time jumps can be specified in the same format as Twitch time stamps:
+  - E.g. \"2\" for 2 minutes or \"1h2m3s\" for 1 hour, 2 minutes and 3 seconds".
   
 #### 3.4.1 Keyboard/Mouse Shortcuts
 - When the focus is on the time jump input field, the following keyboard / mouse actions are supported:
@@ -121,7 +119,7 @@ The support for MLG.com and overwatchleague.com (which uses the MLG.com video pl
   - No Video Navigation Toolbar is provided.
 
 ## 5. Version Notes and Roadmap
-[See here](VERSION_NOTES.md)
+[See here](docs/VERSION_NOTES.md)
 
 ## 6. Contact
 If you have questions or feature requests you can contact me:
