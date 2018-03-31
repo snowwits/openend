@@ -1,15 +1,15 @@
 # TODO version 0.3.0
-- Fix: Add max-height to options because it does not scale/show a scrollbar on shorter screens.
-  - Set a height of 400px -> try it out
-- Validate migration routine
 - Try out only using rapid seeking method for time jumps
-  - Maybe rename the buttons (seek x forward, seek x backward)
   - Doc: How to time jump while keep full screen
     - [x] Auto enter Theatre Mode and enable Chrome full screen mode (F11)
     - -> Solved if we only use rapid seeking
 
 # TODO version 0.3.x
-
+- Find a good height for options
+  - 500px is ok but seems like any height leeds to a scrollbar being visible when laptop is connected to TV.
+- Maybe rename "time jump" to "seek" as we don't jump anymore with rapid seeking
+  - Seek x forward, seek x backward; x vorspulen, x zurückspulen
+  - "jump" is used over 100 times in the code.
 - Fix: Video List Items Toolbar: Change icons based on whether it's currently visible or not
   - Currently only distinguished by the color of the icon (hidden: purple, shown: grey)
     - Color is not enough, shape needs to change
@@ -27,7 +27,6 @@
   - Current cfg storable as profile on options
   
 # General TODO before release
-- Bug test
 - Search for console.log
 - Set LOG_ENABLED = false in common.js
 - Update version to non SNAPSHOT
