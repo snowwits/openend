@@ -1,7 +1,4 @@
 # TODO version 0.3.0
-- Fix: Video List Items: Tooltip for buttons ("Hide title", "Hide preview image") is rendered behind the game logo.
-  - Maybe change tooltips to First Letter Uppercase (conform with Twitch tooltips)
-    - Check all the headlines
 - Fix: Add max-height to options because it does not scale/show a scrollbar on shorter screens.
   - Set a height of 400px -> try it out
 - Validate migration routine
@@ -25,6 +22,10 @@
 
 # TODO version 0.3.x
 
+- Fix: Video List Items Toolbar: Change icons based on whether it's currently visible or not
+  - Currently only distinguished by the color of the icon (hidden: purple, shown: grey)
+    - Color is not enough, shape needs to change
+  - Instead use regular icons with diagonal cross through (like on hide svg)
 - Refactor twitch.tv and mlg.com to both use the same common content_script.js routine and just configure it accordingly.
   - Remove huge amounts of code duplication -> improved code quality and maintainability.
 

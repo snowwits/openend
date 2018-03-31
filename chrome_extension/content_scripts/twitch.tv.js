@@ -1029,6 +1029,24 @@ function buildPlayerToolbarButton(id, onclick, tooltipId = null, tooltipTxtMsgNa
  * BUILD VIDEO LIST ITEM TOOLBAR
  * ====================================================================================================
  */
+
+/**
+ *
+ * <div class="opnd-video-list-item-toolbar">
+ *     <button title="Hide title">
+ *         <img src="chrome-extension://nelphjignnodkaellhbmnbmlfjppbbdo/img/title_grey.svg">
+ *     </button>
+ *     <button title="Show preview">
+ *         <img src="chrome-extension://nelphjignnodkaellhbmnbmlfjppbbdo/img/preview_grey.svg">
+ *     </button>
+ *     <button title="Hide duration">
+ *         <img src="chrome-extension://nelphjignnodkaellhbmnbmlfjppbbdo/img/duration_grey.svg">
+ *     </button>
+ * </div>
+ *
+ * @param videoCardDiv
+ * @return {HTMLDivElement}
+ */
 function buildVideoListItemToolbar(videoCardDiv) {
     const setTitleVisible = !GLOBAL_options[OPT_SFM_VIDEO_LIST_HIDE_TITLE_NAME];
     const setPreviewVisible = !GLOBAL_options[OPT_SFM_VIDEO_LIST_HIDE_PREVIEW_NAME];
@@ -1038,74 +1056,59 @@ function buildVideoListItemToolbar(videoCardDiv) {
     toolbarElem.classList.add(OPND_VIDEO_LIST_ITEM_TOOLBAR_CLASS);
 
     // Title
-    const showHideTitleBtn = buildVideoListItemToolbarButton(videoCardDiv, "img/title_grey.svg", OPND_CONTAINER_VIDEO_LIST_ITEM_TITLE_CLASS, OPND_VIDEO_LIST_ITEM_TITLE_TOOLTIP_CLASS, "videoListItem_showHideTitle_visible", "videoListItem_showHideTitle_hidden", setTitleVisible);
+    const showHideTitleBtn = buildVideoListItemToolbarButton(videoCardDiv, OPND_CONTAINER_VIDEO_LIST_ITEM_TITLE_CLASS, "img/hide_title_grey.svg", "videoListItem_showHideTitle_visible", "img/show_title_grey.svg", "videoListItem_showHideTitle_hidden", setTitleVisible);
     toolbarElem.appendChild(showHideTitleBtn);
 
     // Preview
-    const showHidePreviewBtn = buildVideoListItemToolbarButton(videoCardDiv, "img/preview_grey.svg", OPND_CONTAINER_VIDEO_LIST_ITEM_PREVIEW_CLASS, OPND_VIDEO_LIST_ITEM_PREVIEW_TOOLTIP_CLASS, "videoListItem_showHidePreview_visible", "videoListItem_showHidePreview_hidden", setPreviewVisible);
+    const showHidePreviewBtn = buildVideoListItemToolbarButton(videoCardDiv, OPND_CONTAINER_VIDEO_LIST_ITEM_PREVIEW_CLASS, "img/hide_preview_grey.svg", "videoListItem_showHidePreview_visible", "img/show_preview_grey.svg", "videoListItem_showHidePreview_hidden", setPreviewVisible);
     toolbarElem.appendChild(showHidePreviewBtn);
 
     // Duration
-    const showHideDurationBtn = buildVideoListItemToolbarButton(videoCardDiv, "img/duration_grey.svg", OPND_CONTAINER_VIDEO_LIST_ITEM_DURATION_CLASS, OPND_VIDEO_LIST_ITEM_DURATION_TOOLTIP_CLASS, "videoListItem_showHideDuration_visible", "videoListItem_showHideDuration_hidden", setDurationVisible);
+    const showHideDurationBtn = buildVideoListItemToolbarButton(videoCardDiv, OPND_CONTAINER_VIDEO_LIST_ITEM_DURATION_CLASS, "img/hide_duration_grey.svg", "videoListItem_showHideDuration_visible", "img/show_duration_grey.svg", "videoListItem_showHideDuration_hidden", setDurationVisible);
     toolbarElem.appendChild(showHideDurationBtn);
 
     return toolbarElem;
 }
 
 /**
- * Tooltip div of stat:
- * <div class="tw-tooltip-wrapper inline-flex"><div class="tw-stat" data-test-selector="video-view-count">
- *     ...
- *     <div class="tw-tooltip tw-tooltip--down tw-tooltip--align-center" data-a-target="tw-tooltip-label">views</div>
- * </div>
+ * <button title="Hide title">
+ *     <img src="chrome-extension://nelphjignnodkaellhbmnbmlfjppbbdo/img/title_grey.svg">
+ * </button>
  *
  * @param videoCardDiv {!HTMLDivElement} the video card div element
- * @param imgSrc {!string}
  * @param hideableContainerClass {!string}
- * @param tooltipClass {!string}
+ * @param visibleImgSrc {!string}
  * @param visibleTooltipMsg {!string}
+ * @param hiddenImgSrc {!string}
  * @param hiddenTooltipMsg {!string}
  * @param initialVisible {!boolean}
- * @returns {!HTMLDivElement}
+ * @returns {!HTMLButtonElement}
  */
-function buildVideoListItemToolbarButton(videoCardDiv, imgSrc, hideableContainerClass, tooltipClass, visibleTooltipMsg, hiddenTooltipMsg, initialVisible) {
-    const tooltipWrapper = document.createElement("div");
-    tooltipWrapper.classList.add("tw-tooltip-wrapper");
-
+function buildVideoListItemToolbarButton(videoCardDiv, hideableContainerClass, visibleImgSrc, visibleTooltipMsg, hiddenImgSrc, hiddenTooltipMsg, initialVisible) {
     const btn = document.createElement("button");
     btn.onclick = () => {
         const setVisibleResult = setAllVisible(videoCardDiv.getElementsByClassName(hideableContainerClass), null);
-        const tooltipSpan = videoCardDiv.querySelector("." + tooltipClass);
-        updateShowHideTooltip(tooltipSpan, setVisibleResult, visibleTooltipMsg, hiddenTooltipMsg);
+        updateVideoListItemToolbarShowHideTooltip(btn, setVisibleResult, visibleImgSrc, visibleTooltipMsg, hiddenImgSrc, hiddenTooltipMsg);
     };
-
-    // Build button content span
-    const content = document.createElement("span");
-    btn.appendChild(content);
 
     // Build img
     const img = document.createElement("img");
-    img.src = chrome.runtime.getURL(imgSrc);
-    content.appendChild(img);
-
-    // Tooltip
-    const tooltipSpan = document.createElement("span");
-    tooltipSpan.classList.add(tooltipClass, "tw-tooltip", "tw-tooltip--down", "tw-tooltip--align-center");
-    content.appendChild(tooltipSpan);
+    btn.appendChild(img);
 
     // Execute one time to initially set the button tooltip text
-    updateShowHideTooltip(tooltipSpan, initialVisible, visibleTooltipMsg, hiddenTooltipMsg);
+    updateVideoListItemToolbarShowHideTooltip(btn, initialVisible, visibleImgSrc, visibleTooltipMsg, hiddenImgSrc, hiddenTooltipMsg);
 
-    tooltipWrapper.appendChild(btn);
-
-    return tooltipWrapper;
+    return btn;
 }
 
-function updateShowHideTooltip(tooltipSpan, visible, visibleTooltipMsg, hiddenTooltipMsg) {
+function updateVideoListItemToolbarShowHideTooltip(button, visible, visibleImgSrc, visibleTooltipMsg, hiddenImgSrc, hiddenTooltipMsg) {
+    const img = button.getElementsByTagName("img")[0];
     if (visible === true) {
-        tooltipSpan.textContent = chrome.i18n.getMessage(visibleTooltipMsg);
+        img.src = chrome.runtime.getURL(visibleImgSrc);
+        button.title = chrome.i18n.getMessage(visibleTooltipMsg);
     } else if (visible === false) {
-        tooltipSpan.textContent = chrome.i18n.getMessage(hiddenTooltipMsg);
+        img.src = chrome.runtime.getURL(hiddenImgSrc);
+        button.title = chrome.i18n.getMessage(hiddenTooltipMsg);
     }
 }
 
