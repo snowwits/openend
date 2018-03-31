@@ -10,7 +10,7 @@ This release contains a lot of quality of life changes to enhance the user exper
   - See [Usage: 3.2 Enable/Disable the Spoiler-Free Mode](../README.md#32-enabledisable-the-spoiler-free-mode).
 - Many improvements to the user interface:
   - The Open End icon and the Popup now show whether the current page is a supported video platform and whether the Spoiler-Free Mode is currently active.
-    - See [Usage: 3.1 General](../README.md#31-general). 
+    - See [Usage: 3.1 Overview](../README.md#31-overview). 
   - Improved design of Popup and Options.
 - Video navigation (time jumps) is now possible without reloading the page.
   - See [Usage: 3.4 Video Navigation](../README.md#34-video-navigation)

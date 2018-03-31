@@ -8,6 +8,7 @@
     - [x] Auto enter Theatre Mode and enable Chrome full screen mode (F11)
     - -> Solved if we only use rapid seeking
 - bug hunt
+- Update version to 0.3.0 (no SNAPSHOT)
 
 # TODO version 0.3.x
 
