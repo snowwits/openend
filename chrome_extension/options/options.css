@@ -33,7 +33,7 @@ label {
 /* Channels Grid */
 #sfmEnabledChannelsGrid {
     display: grid;
-    grid-template-columns: max-content auto; /* first row as big as it needs to be, second row auto */
+    grid-template-columns: 5fr 3fr; /* first row as big as it needs to be, second row auto */
     grid-row-gap: 0.3em;
     grid-column-gap: 1em;
 }
