@@ -11,14 +11,14 @@ body {
     padding-right: 1em;
 }
 
-#options hr {
-    margin-top: 3.5em;
-}
-
 label {
     /* to vertically align the text in the div */
     margin-top: auto;
     margin-bottom: auto;
+}
+
+.optionsSectionContainer {
+    margin-bottom: 2.5em;
 }
 
 .formGrid {
@@ -57,10 +57,10 @@ label {
     grid-column: 2;
 }
 
-/* empty row at 3 for increased gap */
+/* empty row at 5 for increased gap */
 
 #sfmEnabledRemoveChannelCell {
-    grid-row: 5;
+    grid-row: 6;
     grid-column: 2;
 }
 
