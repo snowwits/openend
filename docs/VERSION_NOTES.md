@@ -2,7 +2,7 @@
 
 ## Version Notes
 
-### Open End "0.3.0 (BETA)" (TBA, ~2018-03-31)
+### Open End "0.3.1 (BETA)" (2018-04-01)
 
 This release contains a lot of quality of life changes to enhance the user experience.
 
