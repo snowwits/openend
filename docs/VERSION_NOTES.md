@@ -18,6 +18,12 @@ This release contains a lot of quality of life changes to enhance the user exper
   - See [Usage: 3.4.1 Keyboard/Mouse Shortcuts](../README.md#341-keyboardmouse-shortcuts).
 - Fixed a few bugs in regards to correctly handling channel changes and correctly determining the current channel on Twitch.
 
+
+#### Installation
+You can install it via the Chrome Web Store:
+
+https://chrome.google.com/webstore/detail/open-end/bgajbplcmfhpfebhiigohjannldlolpf
+
 ### Open End "0.2.x (BETA)" (2017-12-06)
 - Very basic support for MLG.com and OverwatchLeague.com for the Overwatch League Pre-Season matches.
   - Hides duration of currently played video and other videos if Spoiler-Free Mode is enabled.

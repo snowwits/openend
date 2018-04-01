@@ -17,6 +17,11 @@ Or if you are scrolling through a video list to find the semifinals videos and a
 
 Open End prevents those kinds of spoilers by hiding certain information on Twitch.tv. Its features include:
 
+### 1.1 Installation
+You can install it via the Chrome Web Store:
+
+https://chrome.google.com/webstore/detail/open-end/bgajbplcmfhpfebhiigohjannldlolpf
+
 ## 2. Features
 ### 2.1 Main Feature: Spoiler-Free Mode
 - Hides the progress and duration of the video you are currently watching.
