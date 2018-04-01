@@ -47,14 +47,16 @@ function migrateFrom_v0_2_1() {
     opnd.browser.readOptions(optKeys_v0_2_1).then((items) => {
         const updatedOptions = {};
         if (optSfmEnabledGlobalKey_v0_2_1 in items) {
-            updatedOptions[OPT_SFM_ENABLED_GLOBAL_NAME] = items[optSfmEnabledGlobalKey_v0_2_1];
+            const sfmEnabledGlobal = items[optSfmEnabledGlobalKey_v0_2_1];
+            log("Migrating option [%s] from [%s=%o] to [%s=%o]", OPT_SFM_ENABLED_GLOBAL_NAME, optSfmEnabledGlobalKey_v0_2_1, sfmEnabledGlobal, OPT_SFM_ENABLED_GLOBAL_NAME, sfmEnabledGlobal);
+            updatedOptions[OPT_SFM_ENABLED_GLOBAL_NAME] = sfmEnabledGlobal;
         }
         if (optSfmEnabledChannelsKey_v0_2_1 in items) {
             // Channels were stored as an Array<String> of qualified names
             const channelQualifiedNames = items[optSfmEnabledChannelsKey_v0_2_1];
             const channels = Channel.parseArrayFromQualifiedNames(channelQualifiedNames);
             const serializedChannels = Channel.serializeArray(channels);
-            log("Migrated channels from [%o] to [%o]", channelQualifiedNames, serializedChannels);
+            log("Migrating option [%s] from [%s=%o] to [%s=%o]", OPT_SFM_ENABLED_CHANNELS_NAME, optSfmEnabledChannelsKey_v0_2_1, channelQualifiedNames, OPT_SFM_ENABLED_CHANNELS_NAME, serializedChannels);
             updatedOptions[OPT_SFM_ENABLED_CHANNELS_NAME] = serializedChannels;
         }
         return updatedOptions;
