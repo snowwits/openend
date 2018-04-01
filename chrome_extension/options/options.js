@@ -239,9 +239,10 @@ function init() {
     // Channel to add text input
     setMsgToTextContent("sfmEnabledChannelToAddLabel", "options_sfmEnabled_channelToAdd");
     const sfmEnabledChannelToAddInput = document.getElementById("sfmEnabledChannelToAdd");
-    setMsgToTitle("sfmEnabledChannelToAdd", "options_sfm_channelToAdd");
+    setMsgToPlaceholder("sfmEnabledChannelToAdd", "options_sfmEnabled_channelToAdd_placeholder");
 
     setMsgToTextContent("sfmEnabledChannelToAddDisplayNameLabel", "options_sfmEnabled_channelToAddDisplayName");
+    setMsgToPlaceholder("sfmEnabledChannelToAddDisplayName", "options_sfmEnabled_channelToAddDisplayName_placeholder");
     const sfmEnabledChannelToAddDisplayNameInput = document.getElementById("sfmEnabledChannelToAddDisplayName");
 
     // Add channel button
@@ -300,6 +301,7 @@ function init() {
     setMsgToTextContent("sfmCfgPlayerLabel", "options_sfmCfg_player");
     setMsgToTextContent("sfmCfgPlayerHideDurationLabel", "options_sfmCfg_player_hideDuration");
     setMsgToTextContent("sfmCfgPlayerJumpDistanceLabel", "options_sfmCfg_player_jumpDistance");
+    setMsgToPlaceholder(SFM_CFG_PLAYER_JUMP_DISTANCE_ID, "options_sfmCfg_player_jumpDistance_placeholder");
     // Video List
     setMsgToTextContent("sfmCfgVideoListLabel", "options_sfmCfg_videoList");
     setMsgToTextContent("sfmCfgVideoListHideTitleLabel", "options_sfmCfg_videoList_hideTitle");

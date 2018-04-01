@@ -1621,6 +1621,15 @@ function setMsgToTitle(elementId, messageName) {
 }
 
 /**
+ *
+ * @param elementId the id of the element
+ * @param messageName the message name of the localized placeholder
+ */
+function setMsgToPlaceholder(elementId, messageName) {
+    document.getElementById(elementId).placeholder = chrome.i18n.getMessage(messageName);
+}
+
+/**
  * Creates an anchor element that can be queried for:
  * <ul>
  *     <li>protocol</li>

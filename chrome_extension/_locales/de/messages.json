@@ -157,10 +157,16 @@
         "message": "Auf den folgenden Kanälen aktivieren"
     },
     "options_sfmEnabled_channelToAdd": {
-        "message": "Qualifizierter Name oder URL:"
+        "message": "Qualifizierter Name oder URL"
+    },
+    "options_sfmEnabled_channelToAdd_placeholder": {
+        "message": "z. B. twitch.tv/overwatchleague"
     },
     "options_sfmEnabled_channelToAddDisplayName": {
-        "message": "Anzeigename:"
+        "message": "Anzeigename (optional)"
+    },
+    "options_sfmEnabled_channelToAddDisplayName_placeholder": {
+        "message": "z. B. OverwatchLeague"
     },
     "options_sfmEnabled_addChannel": {
         "message": "Kanal hinzufügen"
@@ -179,6 +185,9 @@
     },
     "options_sfmCfg_player_jumpDistance": {
         "message": "Länge der Zeitsprünge"
+    },
+    "options_sfmCfg_player_jumpDistance_placeholder": {
+        "message": "z. B. 3m"
     },
     "options_sfmCfg_videoList": {
         "message": "Einträge in Videolisten"

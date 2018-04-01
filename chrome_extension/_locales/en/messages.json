@@ -200,12 +200,20 @@
         "description": "Label of the Channels text area tooltip."
     },
     "options_sfmEnabled_channelToAdd": {
-        "message": "Qualified name or URL:",
+        "message": "Qualified name or URL",
         "description": "The label for the channel's qualified name or URL input."
     },
+    "options_sfmEnabled_channelToAdd_placeholder": {
+        "message": "e.g. twitch.tv/overwatchleague",
+        "description": "The placeholder for the channel's qualified name or URL input."
+    },
     "options_sfmEnabled_channelToAddDisplayName": {
-        "message": "Display name:",
+        "message": "Display name (optional)",
         "description": "The label for the channel's display name input."
+    },
+    "options_sfmEnabled_channelToAddDisplayName_placeholder": {
+        "message": "e.g. OverwatchLeague",
+        "description": "The placeholder for the channel's display name input."
     },
     "options_sfmEnabled_addChannel": {
         "message": "Add channel",
@@ -230,6 +238,10 @@
     "options_sfmCfg_player_jumpDistance": {
         "message": "Time jump distance",
         "description": "Label of the Jump Distance option."
+    },
+    "options_sfmCfg_player_jumpDistance_placeholder": {
+        "message": "e.g. 3m",
+        "description": "Placeholder of the Jump Distance option."
     },
     "options_sfmCfg_videoList": {
         "message": "Items in video lists",
