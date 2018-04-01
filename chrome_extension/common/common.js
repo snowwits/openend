@@ -21,7 +21,7 @@
  */
 
 // TODO: disable before publishing
-const LOG_ENABLED = true;
+const LOG_ENABLED = false;
 
 function logWithComponent(component, msg, ...substitutions) {
     if (LOG_ENABLED) {
