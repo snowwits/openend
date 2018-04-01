@@ -1,5 +1,5 @@
 body {
-    padding: 0 5px 5px 10px;
+    padding: 0 0.5em 0.5em 1em;
 }
 
 #options {
@@ -8,10 +8,11 @@ body {
     /* height so that the div is not higher than the Chrome options box and Chrome won't display their own scroll pane
            PROBLEM is that the options box's height depends on the height of Chrome. So on 720p its smaller than on 1080p*/
     overflow-y: auto;
+    padding-right: 1em;
 }
 
 #options hr {
-    margin-top: 35px;
+    margin-top: 3.5em;
 }
 
 label {
@@ -23,8 +24,8 @@ label {
 .formGrid {
     display: grid;
     grid-template-columns: max-content auto; /* first row as big as it needs to be, second row auto */
-    grid-row-gap: 5px;
-    grid-column-gap: 10px;
+    grid-row-gap: 0.5em;
+    grid-column-gap: 1em;
 }
 
 /* Platforms */
@@ -32,34 +33,39 @@ label {
 /* Channels Grid */
 #sfmEnabledChannelsGrid {
     display: grid;
-    grid-template-columns: 5fr 4fr 3fr;
-    grid-row-gap: 5px;
-    grid-column-gap: 10px;
+    grid-template-columns: max-content auto; /* first row as big as it needs to be, second row auto */
+    grid-row-gap: 0.3em;
+    grid-column-gap: 1em;
 }
 
 #sfmEnabledChannels {
-    grid-column: 1 / 4;
+    grid-column: 1 / 3; /* start before column 1, end before column 3 */
+}
+
+/* empty row at 2 for increased gap */
+
+#sfmEnabledChannelToAddLabel {
+    grid-row: 3;
 }
 
 #sfmEnabledChannelToAdd {
-    grid-row: 3;
-}
-
-#sfmEnabledChannelToAddDisplayName {
-    grid-row: 3;
+    grid-row: 4;
 }
 
 #sfmEnabledAddChannelCell {
-    grid-row: 3;
+    grid-row: 4;
+    grid-column: 2;
 }
 
+/* empty row at 3 for increased gap */
+
 #sfmEnabledRemoveChannelCell {
-    grid-row: 4;
+    grid-row: 5;
+    grid-column: 2;
 }
 
 /* Channels */
 #sfmEnabledChannels {
-    width: 95%;
 }
 
 /* Config Player */

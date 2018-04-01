@@ -207,14 +207,6 @@
         "message": "e.g. twitch.tv/overwatchleague",
         "description": "The placeholder for the channel's qualified name or URL input."
     },
-    "options_sfmEnabled_channelToAddDisplayName": {
-        "message": "Display name (optional)",
-        "description": "The label for the channel's display name input."
-    },
-    "options_sfmEnabled_channelToAddDisplayName_placeholder": {
-        "message": "e.g. OverwatchLeague",
-        "description": "The placeholder for the channel's display name input."
-    },
     "options_sfmEnabled_addChannel": {
         "message": "Add channel",
         "description": "Label of the Add Channel button."
@@ -240,7 +232,7 @@
         "description": "Label of the Jump Distance option."
     },
     "options_sfmCfg_player_jumpDistance_placeholder": {
-        "message": "e.g. 3m",
+        "message": "e.g. 1h2m3s",
         "description": "Placeholder of the Jump Distance option."
     },
     "options_sfmCfg_videoList": {

@@ -181,17 +181,16 @@ function showStatusMsg(msg) {
 /**
  *
  * @param channelQualifiedNameOrUrl {!string} the qualified name of the channel or the channel URL
- * @param channelDisplayName {?string} the display name
  * @return {?Channel} the parsed channel
  */
-function parseChannel(channelQualifiedNameOrUrl, channelDisplayName = null) {
+function parseChannel(channelQualifiedNameOrUrl) {
     // Try to parse the given channel as url and as qualified name
-    let channel = Channel.parseFromQualifiedName(channelQualifiedNameOrUrl, channelDisplayName);
+    let channel = Channel.parseFromQualifiedName(channelQualifiedNameOrUrl);
     if (channel) {
         return channel;
     }
     const dummyAnchor = createAnchor(channelQualifiedNameOrUrl);
-    return Channel.parseFromUrl(dummyAnchor, channelDisplayName);
+    return Channel.parseFromUrl(dummyAnchor);
 }
 
 /**
@@ -241,21 +240,17 @@ function init() {
     const sfmEnabledChannelToAddInput = document.getElementById("sfmEnabledChannelToAdd");
     setMsgToPlaceholder("sfmEnabledChannelToAdd", "options_sfmEnabled_channelToAdd_placeholder");
 
-    setMsgToTextContent("sfmEnabledChannelToAddDisplayNameLabel", "options_sfmEnabled_channelToAddDisplayName");
-    setMsgToPlaceholder("sfmEnabledChannelToAddDisplayName", "options_sfmEnabled_channelToAddDisplayName_placeholder");
-    const sfmEnabledChannelToAddDisplayNameInput = document.getElementById("sfmEnabledChannelToAddDisplayName");
-
     // Add channel button
     setMsgToTextContent("sfmEnabledAddChannel", "options_sfmEnabled_addChannel");
     const sfmEnabledAddChannelBtn = document.getElementById("sfmEnabledAddChannel");
 
     // Set add channel action
     sfmEnabledAddChannelBtn.onclick = function handleAddChannelAction() {
-        const channel = parseChannel(sfmEnabledChannelToAddInput.value, getAttr(sfmEnabledChannelToAddDisplayNameInput, "value"));
+        const channel = parseChannel(sfmEnabledChannelToAddInput.value);
         if (channel) {
             insertChannelInSortedSetSelect(sfmEnabledOnChannelsSelect, channel);
         } else {
-            error("Failed to add channel: %s, %s", sfmEnabledChannelToAddInput.value, sfmEnabledChannelToAddDisplayNameInput.value);
+            error("Failed to add channel: %s", sfmEnabledChannelToAddInput.value);
         }
     };
 

@@ -444,8 +444,8 @@ function mayUpdateChannelDisplayName() {
         const storedChannel = storedChannels.find((channel) => {
             return Channel.equal(channel, GLOBAL_channel);
         });
-        if (storedChannel && storedChannel.displayName !== null && GLOBAL_channel.displayName !== storedChannel.displayName) {
-            log("Updating stored channel's display name because it changed. Old [%o], new [%o]", storedChannel, GLOBAL_channel);
+        if (storedChannel && GLOBAL_channel.displayName !== storedChannel.displayName) {
+            log("Updating stored channel's display name because it changed: stored channel [%o], current channel [%o]", storedChannel, GLOBAL_channel);
             storedChannel.displayName = GLOBAL_channel.displayName;
             opnd.browser.writeOptions({[OPT_SFM_ENABLED_CHANNELS_NAME]: storedChannels});
         }
