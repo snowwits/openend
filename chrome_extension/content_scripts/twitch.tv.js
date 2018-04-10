@@ -720,16 +720,16 @@ function configureVideoListItems() {
         removeVideoListItemToolbars();
     }
 
-    if (allTitleContainers.length > 0) {
+    if (videoCardDivs.length === allTitleContainers.length) {
         setConfigured(OPT_SFM_VIDEO_LIST_HIDE_TITLE_NAME, true);
         // If any loaded, add the observer to handle the async addition of more video list items in the future
         // (when scrolling to the end of the list, more items are loaded async)
         observeVideoListItemsAdded();
     }
-    if (allPreviewContainers.length > 0) {
+    if (videoCardDivs.length === allPreviewContainers.length) {
         setConfigured(OPT_SFM_VIDEO_LIST_HIDE_PREVIEW_NAME, true);
     }
-    if (allDurationContainers.length > 0) {
+    if (videoCardDivs.length === allDurationContainers.length) {
         setConfigured(OPT_SFM_VIDEO_LIST_HIDE_DURATION_NAME, true);
     }
 }
