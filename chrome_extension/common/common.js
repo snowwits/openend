@@ -45,7 +45,7 @@ function errorWithComponent(component, msg, ...substitutions) {
  */
 
 const CHECK_PAGE_TASK_INTERVAL = 200; // 200ms
-const PAGE_CONFIGURATION_TIMEOUT = 45000; // 45s
+const PAGE_CONFIGURATION_TIMEOUT = 60000; // 60s
 
 
 /*

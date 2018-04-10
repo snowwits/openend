@@ -46,7 +46,14 @@ const TWITCH_VIDEO_LIST_ITEM_CARD_CLASS = "tw-card";
  * ====================================================================================================
  */
 /* Variables that only need to be changed after a page change */
-let GLOBAL_elementsLoadedTimeoutReached = false;
+/*
+ * @type {!Date} The last time the page changed asynchronously. Changes can be:
+ * <ul>
+ *     <li>The location changed (new URL)</li>
+ *     <li>Some content was added (e.g. async loading of more video list items)</li>
+ * </ul>
+ */
+let GLOBAL_pageChangedTime;
 /**
  *
  * @type {?string} {@link TwitchPageType}
@@ -155,7 +162,7 @@ function setSfmOptionsToNotConfigured() {
 }
 
 function resetGlobalPageFlags() {
-    GLOBAL_elementsLoadedTimeoutReached = false;
+    resetGlobalPageChangedTime();
     GLOBAL_pageType = null;
 
     // Disconnect the observers and then set the variables to null
@@ -170,6 +177,10 @@ function resetGlobalPageFlags() {
 
     updateChannel(null);
     resetGlobalPageStateFlags(GLOBAL_options)
+}
+
+function resetGlobalPageChangedTime() {
+    GLOBAL_pageChangedTime = Date.now();
 }
 
 function resetGlobalPageStateFlags(changedOptions) {
@@ -202,7 +213,7 @@ function determinePageType() {
 }
 
 function startCheckPageTask() {
-    let pageChangedTime = Date.now();
+    resetGlobalPageChangedTime();
     let oldLocation = createLocationIdentifier(location);
 
     const constCheckPageTask = function () {
@@ -211,21 +222,17 @@ function startCheckPageTask() {
         if (newLocation !== oldLocation) {
             log("Window location changed from [%s] to [%s]", oldLocation, newLocation);
             oldLocation = createLocationIdentifier(location);
-            pageChangedTime = Date.now();
             handlePageChange();
         }
 
-        // As long as the time out hasn't been reached, periodically try to configure the page
-        if (!GLOBAL_elementsLoadedTimeoutReached) {
-            const checkTime = Date.now();
-            if (checkTime - pageChangedTime < PAGE_CONFIGURATION_TIMEOUT) {
-                configurePage();
-            }
-            else {
-                GLOBAL_elementsLoadedTimeoutReached = true;
-                if (!isPageConfigured()) {
-                    log("Elements loaded timeout reached (%d ms). Some components may not be configured. Configuration state: %o", PAGE_CONFIGURATION_TIMEOUT, formatPageConfigurationState());
-                }
+        // As long as the timeout has not been reached, periodically try to configure the page
+        const checkTime = Date.now();
+        if (checkTime - GLOBAL_pageChangedTime < PAGE_CONFIGURATION_TIMEOUT) {
+            configurePage();
+        }
+        else {
+            if (!isPageConfigured()) {
+                log("Elements loaded timeout reached (%d ms). Some components may not be configured. Configuration state: %o", PAGE_CONFIGURATION_TIMEOUT, formatPageConfigurationState());
             }
         }
     };
@@ -950,6 +957,7 @@ function observeVideoListItemsAdded() {
             }
             if (elementsAdded) {
                 log("Detected async added video items");
+                resetGlobalPageChangedTime();
                 setConfigured(OPT_SFM_VIDEO_LIST_HIDE_TITLE_NAME, false);
                 setConfigured(OPT_SFM_VIDEO_LIST_HIDE_PREVIEW_NAME, false);
                 setConfigured(OPT_SFM_VIDEO_LIST_HIDE_DURATION_NAME, false);
