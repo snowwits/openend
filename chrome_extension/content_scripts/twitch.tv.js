@@ -99,7 +99,6 @@ let GLOBAL_configuredFlags = getDefaultConfiguredFlagsCopy();
  */
 let GLOBAL_tabInfoChanged = true;
 
-
 /*
  * ====================================================================================================
  * UTIL FUNCTIONS
@@ -679,6 +678,9 @@ function configureVideoListItems() {
 
         for (let i = 0; i < videoCardDivs.length; i++) {
             const videoCardDiv = videoCardDivs[i];
+
+            mayHideVideoListItem(videoCardDiv);
+
             injectVideoListItemToolbar(videoCardDiv);
         }
     }
@@ -698,6 +700,8 @@ function configureVideoListItems() {
                 setAllVisible(videoTitleContainers, setTitleVisible);
                 setAllVisible(videoPreviewContainers, setPreviewVisible);
                 setAllVisible(videoDurationContainers, setDurationVisible);
+
+                mayHideVideoListItem(videoCardDiv);
 
                 injectVideoListItemToolbar(videoCardDiv);
             }
@@ -740,8 +744,22 @@ function isVideoListItemsConfigured() {
 
 function mayHideVideoListItem(videoCardDiv) {
     const videoCardContainer = videoCardDiv.parentNode.parentNode;
-
+    const videoTitle = getVideoTitle(videoCardDiv);
+    if (videoTitle !== null) {
+        if (videoTitle.match(new RegExp("Game\\s+\\d+.*"))) {
+            console.log("VIDEO TITLE MATCH: " + videoTitle);
+            const opndContainer = getOrWrapInOpndContainer(videoCardContainer, OPND_CONTAINER_HIDDEN_VIDEO_LIST_ITEM);
+            setVisible(opndContainer, false);
+        } else {
+            console.log("VIDEO TITLE NO MATCH: " + videoTitle);
+        }
+    }
 }
+
+function setAllVideoListItemsVisible(visible) {
+    setAllVisible(document.getElementsByClassName(OPND_CONTAINER_HIDDEN_VIDEO_LIST_ITEM), visible);
+}
+
 
 /**
  * The video list item toolbar is injected in the container where the title is in.
@@ -793,8 +811,22 @@ function getVideoDurationOpndContainers(videoCardDiv = null) {
     return getOrWrapSuppliedInOpndContainers(() => getVideoLengthDivs(videoCardDiv), OPND_CONTAINER_VIDEO_LIST_ITEM_DURATION_CLASS);
 }
 
+/**
+ *
+ * @param videoCardDiv
+ * @return {?String}
+ */
 function getVideoTitle(videoCardDiv) {
-    const videoTitleAnchor = getVideoTitleAnchors(videoCardDiv)[0];
+    const videoTitleAnchors = getVideoTitleAnchors(videoCardDiv);
+    if (videoTitleAnchors.length < 0) {
+        warn("Could not get video title: No video title anchors found in: %o", videoCardDiv);
+        return null;
+    }
+    const videoTitleAnchor = videoTitleAnchors[0];
+    if (!videoTitleAnchor) {
+        warn("Could not get video title: First video title anchor is invalid: %o", videoCardDiv);
+        return null;
+    }
     return videoTitleAnchor.title;
 }
 
@@ -917,6 +949,7 @@ function observeVideoListItemsAdded() {
                 }
             }
             if (elementsAdded) {
+                log("Detected async added video items");
                 setConfigured(OPT_SFM_VIDEO_LIST_HIDE_TITLE_NAME, false);
                 setConfigured(OPT_SFM_VIDEO_LIST_HIDE_PREVIEW_NAME, false);
                 setConfigured(OPT_SFM_VIDEO_LIST_HIDE_DURATION_NAME, false);
@@ -1144,6 +1177,8 @@ function buildVideoListItemToolbarButton(videoCardDiv, hideableContainerClass, v
     btn.onclick = () => {
         const setVisibleResult = setAllVisible(videoCardDiv.getElementsByClassName(hideableContainerClass), null);
         updateVideoListItemToolbarShowHideTooltip(btn, setVisibleResult, visibleImgSrc, visibleTooltipMsg, hiddenImgSrc, hiddenTooltipMsg);
+        // TODO: NOT ACTUALLY DO THE NEXT LINE, instead add a toggle button somewhere
+        setAllVideoListItemsVisible(setVisibleResult);
     };
 
     // Build img

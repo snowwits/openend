@@ -1011,6 +1011,11 @@ const OPND_PLAYER_TOOLBAR_ID = "opnd-player-toolbar";
 const OPND_CONTAINER_PLAYER_DURATION_CLASS = "opnd-container-player-duration";
 
 /**
+ * The CSS class of an Open End container of a hidden video list item.
+ * @type {string}
+ */
+const OPND_CONTAINER_HIDDEN_VIDEO_LIST_ITEM = "opnd-container-hidden-video-list-item";
+/**
  * The CSS class of an Open End video ist item toolbar.
  * @type {string}
  */
