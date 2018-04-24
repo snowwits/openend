@@ -46,6 +46,12 @@ const TWITCH_VIDEO_LIST_ITEM_CARD_CLASS = "tw-card";
  * ====================================================================================================
  */
 /* Variables that only need to be changed after a page change */
+/**
+ *
+ * @type {boolean} Whether the timeout to periodically check for new elements has been reached yet.
+ * This will be set to true once the timeout is reached and will be reset whenever {@link GLOBAL_pageChangedTime} is reset.
+ */
+let GLOBAL_elementsLoadedTimeoutReached = false;
 /*
  * @type {!Date} The last time the page changed asynchronously. Changes can be:
  * <ul>
@@ -180,6 +186,7 @@ function resetGlobalPageFlags() {
 }
 
 function resetGlobalPageChangedTime() {
+    GLOBAL_elementsLoadedTimeoutReached = false;
     GLOBAL_pageChangedTime = Date.now();
 }
 
@@ -226,13 +233,19 @@ function startCheckPageTask() {
         }
 
         // As long as the timeout has not been reached, periodically try to configure the page
-        const checkTime = Date.now();
-        if (checkTime - GLOBAL_pageChangedTime < PAGE_CONFIGURATION_TIMEOUT) {
-            configurePage();
-        }
-        else {
-            if (!isPageConfigured()) {
-                log("Elements loaded timeout reached (%d ms). Some components may not be configured. Configuration state: %o", PAGE_CONFIGURATION_TIMEOUT, formatPageConfigurationState());
+        if (!GLOBAL_elementsLoadedTimeoutReached) {
+            const checkTime = Date.now();
+            if (checkTime - GLOBAL_pageChangedTime < PAGE_CONFIGURATION_TIMEOUT) {
+                configurePage();
+            }
+            else {
+                GLOBAL_elementsLoadedTimeoutReached = true;
+                if (isPageConfigured()) {
+                    log("Elements loaded timeout reached (%d ms). Page fully configured", PAGE_CONFIGURATION_TIMEOUT);
+                }
+                else {
+                    log("Elements loaded timeout reached (%d ms). Some components may not be configured. Configuration state: %o", PAGE_CONFIGURATION_TIMEOUT, formatPageConfigurationState());
+                }
             }
         }
     };
@@ -826,12 +839,12 @@ function getVideoDurationOpndContainers(videoCardDiv = null) {
 function getVideoTitle(videoCardDiv) {
     const videoTitleAnchors = getVideoTitleAnchors(videoCardDiv);
     if (videoTitleAnchors.length < 0) {
-        warn("Could not get video title: No video title anchors found in: %o", videoCardDiv);
+        //warn("Could not get video title: No video title anchors found in: %o", videoCardDiv);
         return null;
     }
     const videoTitleAnchor = videoTitleAnchors[0];
     if (!videoTitleAnchor) {
-        warn("Could not get video title: First video title anchor is invalid: %o", videoCardDiv);
+        //warn("Could not get video title: First video title anchor is invalid: %o", videoCardDiv);
         return null;
     }
     return videoTitleAnchor.title;
@@ -1022,6 +1035,7 @@ function isTheatreModeConfigured() {
  * @return {boolean}
  */
 function isTheatreModeActive(theatreModeButton) {
+    console.log("TheatreModeButton: %o", theatreModeButton);
     const innerHtml = theatreModeButton.innerHTML;
     if (innerHtml.indexOf("xlink:href='#icon_theatre_deactivate'") !== -1) {
         return true;
