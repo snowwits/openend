@@ -38,6 +38,14 @@ const TWITCH_PLAYER_BTN_CLASS = "player-button";
 const TWITCH_PLAYER_TOOLTIP_SPAN_CLASS = "player-tip";
 const TWITCH_PLAYER_TOOLTIP_SPAN_TEXT_ATTR = "data-tip";
 
+/**
+ *
+ * @type {string} the CSS class of the video list container
+ */
+const TWITCH_VIDEO_LIST_CONTAINER_CLASS = "tw-tower";
+/**
+ * @type {string} the CSS class of the video cards (not the video list item container, that is some un-classed div above the card div)
+ */
 const TWITCH_VIDEO_LIST_ITEM_CARD_CLASS = "tw-card";
 
 /*
@@ -81,9 +89,9 @@ let GLOBAL_channelLinkAnchorHrefObserver = null;
 
 /**
  *
- * @type {?MutationObserver} the video list items added Observer
+ * @type {?Array<MutationObserver>} the observers that observe all video list for new videos being added
  */
-let GLOBAL_videoListItemsAddedObserver = null;
+let GLOBAL_videoListObservers = [];
 
 /* Variables that can change at any given time */
 /**
@@ -171,15 +179,15 @@ function resetGlobalPageFlags() {
     resetGlobalPageChangedTime();
     GLOBAL_pageType = null;
 
-    // Disconnect the observers and then set the variables to null
+    // Disconnect the observers and then reset the variables (null / empty array)
     if (GLOBAL_channelLinkAnchorHrefObserver) {
         GLOBAL_channelLinkAnchorHrefObserver.disconnect();
     }
     GLOBAL_channelLinkAnchorHrefObserver = null;
-    if (GLOBAL_videoListItemsAddedObserver) {
-        GLOBAL_videoListItemsAddedObserver.disconnect();
+    for (let i = 0; i < GLOBAL_videoListObservers.length; i++) {
+        GLOBAL_videoListObservers[i].disconnect();
     }
-    GLOBAL_videoListItemsAddedObserver = null;
+    GLOBAL_videoListObservers = [];
 
     updateChannel(null);
     resetGlobalPageStateFlags(GLOBAL_options)
@@ -661,17 +669,6 @@ function updatePlayerDurationVisibleAndShowHideButton(configuring, visible) {
  * ====================================================================================================
  */
 
-/**
- * Video card divs:
- * <div class="tw-tower tw-tower--gutter-sm tw-tower--300 tw-flex-wrap">
- *     <div data-a-target="video-tower-card-1" class="tw-mg-b-2">
- *         <div>
- *             <div class="tw-card relative"> ... </div>
- *         </div>
- *     </div>
- * </div>
- *
- */
 function configureVideoListItems() {
     if (isVideoListItemsConfigured()) {
         return;
@@ -773,7 +770,7 @@ function mayHideVideoListItem(videoCardDiv) {
             console.log("VIDEO TITLE MATCH: " + videoTitle);
         } else {
             console.log("VIDEO TITLE NO MATCH: " + videoTitle);
-            const videoCardContainer = getVideoCardContainer(videoCardDiv);
+            const videoCardContainer = getVideoListItemContainer(videoCardDiv);
             const opndContainer = getOrWrapInOpndContainer(videoCardContainer, OPND_CONTAINER_HIDDEN_VIDEO_LIST_ITEM);
             setVisible(opndContainer, false);
         }
@@ -782,11 +779,41 @@ function mayHideVideoListItem(videoCardDiv) {
 
 /**
  *
+ * The video list item container is the one right below the video list container
+ *
+ * Video card divs:
+ * <div class="tw-tower tw-tower--gutter-sm tw-tower--300 tw-flex-wrap">
+ *     <div data-a-target="video-tower-card-1" class="tw-mg-b-2">
+ *         <div>
+ *             <div class="tw-card relative"> ... </div>
+ *         </div>
+ *     </div>
+ * </div>
+ *
+ * or
+ *
+ * <div class="tw-tower tw-tower--gutter-sm tw-tower--300 tw-flex-wrap">
+ *     <div>
+ *         <div class="tw-card relative"> ... </div>
+ *     </div>
+ * </div>
+ *
  * @param videoCardDiv {!HTMLDivElement}
  * @return {Node}
  */
-function getVideoCardContainer(videoCardDiv) {
-    return videoCardDiv.parentNode.parentNode;
+function getVideoListItemContainer(videoCardDiv) {
+    let videoListContainerFound = false;
+    let currentParent = videoCardDiv;
+    let currentChild = null;
+    while (!currentParent.classList.contains(TWITCH_VIDEO_LIST_CONTAINER_CLASS)) {
+        currentChild = currentParent;
+        currentParent = currentParent.parentNode;
+        if (currentParent == null) {
+            warn("Could not find video card container: Could not find video list container (.%s)", TWITCH_VIDEO_LIST_CONTAINER_CLASS);
+            break;
+        }
+    }
+    return currentChild;
 }
 
 /**
@@ -795,7 +822,7 @@ function getVideoCardContainer(videoCardDiv) {
  * @param visible {!boolean}
  */
 function setHiddenVideoListItemVisible(videoCardDiv, visible) {
-    const videoCardContainer = getVideoCardContainer(videoCardDiv);
+    const videoCardContainer = getVideoListItemContainer(videoCardDiv);
     const opndContainer = getOpndContainer(videoCardContainer, OPND_CONTAINER_HIDDEN_VIDEO_LIST_ITEM);
     if (opndContainer != null) {
         setVisible(opndContainer, visible);
@@ -979,14 +1006,15 @@ function removeVideoListItemToolbars(videoCardDiv = null) {
  *
  */
 function observeVideoListItemsAdded() {
-    if (GLOBAL_videoListItemsAddedObserver !== null) {
+    if (GLOBAL_videoListObservers.length > 0) {
         return;
     }
 
-    const videoListItemTowerDiv = document.querySelector(".tw-tower");
-    if (videoListItemTowerDiv) {
+    const videoListContainers = document.getElementsByClassName(TWITCH_VIDEO_LIST_CONTAINER_CLASS);
+    for (let i = 0; i < videoListContainers.length; i++) {
+        const videoListContainer = videoListContainers[i];
         const observer = new MutationObserver(function (mutations) {
-            log("Detected video list tower mutation");
+            log("Detected video list mutation");
             let elementsAdded = false;
             for (let i = 0; i < mutations.length; i++) {
                 const mutation = mutations[i];
@@ -996,7 +1024,7 @@ function observeVideoListItemsAdded() {
                 }
             }
             if (elementsAdded) {
-                log("Detected async added video items");
+                log("Detected async added videos");
                 resetGlobalPageChangedTime();
                 setConfigured(OPT_SFM_VIDEO_LIST_HIDE_TITLE_NAME, false);
                 setConfigured(OPT_SFM_VIDEO_LIST_HIDE_PREVIEW_NAME, false);
@@ -1011,13 +1039,12 @@ function observeVideoListItemsAdded() {
             childList: true // Set to true if additions and removals of the target node's child elements (including text nodes) are to be observed.
         };
 
-        // Observe the tower for card additions
-        observer.observe(videoListItemTowerDiv, config);
+        // Observe the video list container for child additions
+        observer.observe(videoListContainer, config);
 
-        GLOBAL_videoListItemsAddedObserver = observer;
-    } else {
-        warn("Failed to observe video list tower for added video items: Could not find tower");
+        GLOBAL_videoListObservers.push(observer);
     }
+    log("Observing %s video lists for new videos being added", GLOBAL_videoListObservers.length)
 }
 
 
