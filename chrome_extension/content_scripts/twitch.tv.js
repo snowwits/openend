@@ -731,6 +731,8 @@ function configureVideoListItems() {
                 setAllVisible(videoPreviewContainers, true);
                 setAllVisible(videoDurationContainers, true);
 
+                setHiddenVideoListItemVisible(videoCardDiv, true);
+
                 removeVideoListItemToolbars(videoCardDiv);
             }
         }
@@ -740,6 +742,8 @@ function configureVideoListItems() {
         setAllVisible(allTitleContainers, true);
         setAllVisible(allPreviewContainers, true);
         setAllVisible(allDurationContainers, true);
+
+        setAllHiddenVideoListItemsVisible(true);
 
         removeVideoListItemToolbars();
     }
@@ -763,20 +767,42 @@ function isVideoListItemsConfigured() {
 }
 
 function mayHideVideoListItem(videoCardDiv) {
-    const videoCardContainer = videoCardDiv.parentNode.parentNode;
     const videoTitle = getVideoTitle(videoCardDiv);
     if (videoTitle !== null) {
-        if (videoTitle.match(new RegExp("Game\\s+\\d+.*"))) {
+        if (videoTitle.match(new RegExp("Inaugural\\sSeason\\s\\|\\sStage\\s+\\d+\\s+Week\\s+\\d+\\s+Day\\s+\\d+"))) {
             console.log("VIDEO TITLE MATCH: " + videoTitle);
-            const opndContainer = getOrWrapInOpndContainer(videoCardContainer, OPND_CONTAINER_HIDDEN_VIDEO_LIST_ITEM);
-            setVisible(opndContainer, false);
         } else {
             console.log("VIDEO TITLE NO MATCH: " + videoTitle);
+            const videoCardContainer = getVideoCardContainer(videoCardDiv);
+            const opndContainer = getOrWrapInOpndContainer(videoCardContainer, OPND_CONTAINER_HIDDEN_VIDEO_LIST_ITEM);
+            setVisible(opndContainer, false);
         }
     }
 }
 
-function setAllVideoListItemsVisible(visible) {
+/**
+ *
+ * @param videoCardDiv {!HTMLDivElement}
+ * @return {Node}
+ */
+function getVideoCardContainer(videoCardDiv) {
+    return videoCardDiv.parentNode.parentNode;
+}
+
+/**
+ *
+ * @param videoCardDiv {!HTMLDivElement}
+ * @param visible {!boolean}
+ */
+function setHiddenVideoListItemVisible(videoCardDiv, visible) {
+    const videoCardContainer = getVideoCardContainer(videoCardDiv);
+    const opndContainer = getOpndContainer(videoCardContainer, OPND_CONTAINER_HIDDEN_VIDEO_LIST_ITEM);
+    if (opndContainer != null) {
+        setVisible(opndContainer, visible);
+    }
+}
+
+function setAllHiddenVideoListItemsVisible(visible) {
     setAllVisible(document.getElementsByClassName(OPND_CONTAINER_HIDDEN_VIDEO_LIST_ITEM), visible);
 }
 
@@ -1200,7 +1226,7 @@ function buildVideoListItemToolbarButton(videoCardDiv, hideableContainerClass, v
         const setVisibleResult = setAllVisible(videoCardDiv.getElementsByClassName(hideableContainerClass), null);
         updateVideoListItemToolbarShowHideTooltip(btn, setVisibleResult, visibleImgSrc, visibleTooltipMsg, hiddenImgSrc, hiddenTooltipMsg);
         // TODO: NOT ACTUALLY DO THE NEXT LINE, instead add a toggle button somewhere
-        setAllVideoListItemsVisible(setVisibleResult);
+        setAllHiddenVideoListItemsVisible(setVisibleResult);
     };
 
     // Build img
