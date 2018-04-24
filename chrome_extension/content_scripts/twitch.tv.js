@@ -986,6 +986,7 @@ function observeVideoListItemsAdded() {
     const videoListItemTowerDiv = document.querySelector(".tw-tower");
     if (videoListItemTowerDiv) {
         const observer = new MutationObserver(function (mutations) {
+            log("Detected video list tower mutation");
             let elementsAdded = false;
             for (let i = 0; i < mutations.length; i++) {
                 const mutation = mutations[i];
@@ -1014,6 +1015,8 @@ function observeVideoListItemsAdded() {
         observer.observe(videoListItemTowerDiv, config);
 
         GLOBAL_videoListItemsAddedObserver = observer;
+    } else {
+        warn("Failed to observe video list tower for added video items: Could not find tower");
     }
 }
 
