@@ -428,6 +428,8 @@ function observeChannelLinkAnchorHref(channelLinkAnchor) {
     observer.observe(channelLinkAnchor, config);
 
     GLOBAL_channelLinkAnchorHrefObserver = observer;
+
+    log("Added observer to channel link [%o]", channelLinkAnchor);
 }
 
 function isChannelDetermined() {
@@ -765,11 +767,11 @@ function isVideoListItemsConfigured() {
 
 function mayHideVideoListItem(videoCardDiv) {
     const videoTitle = getVideoTitle(videoCardDiv);
-    if (videoTitle !== null) {
+    if (videoTitle != null) {
         if (videoTitle.match(new RegExp("Inaugural\\sSeason\\s\\|\\sStage\\s+\\d+\\s+Week\\s+\\d+\\s+Day\\s+\\d+"))) {
-            console.log("VIDEO TITLE MATCH: " + videoTitle);
+            // console.log("VIDEO TITLE MATCH: " + videoTitle);
         } else {
-            console.log("VIDEO TITLE NO MATCH: " + videoTitle);
+            // console.log("VIDEO TITLE NO MATCH: " + videoTitle);
             const videoCardContainer = getVideoListItemContainer(videoCardDiv);
             const opndContainer = getOrWrapInOpndContainer(videoCardContainer, OPND_CONTAINER_HIDDEN_VIDEO_LIST_ITEM);
             setVisible(opndContainer, false);
@@ -1014,13 +1016,21 @@ function observeVideoListItemsAdded() {
     for (let i = 0; i < videoListContainers.length; i++) {
         const videoListContainer = videoListContainers[i];
         const observer = new MutationObserver(function (mutations) {
-            log("Detected video list mutation");
+            log("Detected video list mutations");
             let elementsAdded = false;
             for (let i = 0; i < mutations.length; i++) {
                 const mutation = mutations[i];
                 if (mutation.addedNodes && mutation.addedNodes.length > 0) {
-                    elementsAdded = true;
-                    break;
+                    // Only nodes that are not opnd-containers are counted as added nodes.
+                    // opnd-containers are added in the process of wrapping video list items and this must not trigger
+                    // the reconfiguration again.
+                    for (let j = 0; j < mutation.addedNodes.length; j++) {
+                        const addedNode = mutation.addedNodes[j];
+                        if (!addedNode.classList.contains(OPND_CONTAINER_CLASS)) {
+                            elementsAdded = true;
+                            break;
+                        }
+                    }
                 }
             }
             if (elementsAdded) {
@@ -1043,6 +1053,8 @@ function observeVideoListItemsAdded() {
         observer.observe(videoListContainer, config);
 
         GLOBAL_videoListObservers.push(observer);
+
+        log("Added observer to video list [%o]", videoListContainer);
     }
     log("Observing %s video lists for new videos being added", GLOBAL_videoListObservers.length)
 }
@@ -1091,7 +1103,6 @@ function isTheatreModeConfigured() {
  * @return {boolean}
  */
 function isTheatreModeActive(theatreModeButton) {
-    console.log("TheatreModeButton: %o", theatreModeButton);
     const innerHtml = theatreModeButton.innerHTML;
     if (innerHtml.indexOf("xlink:href='#icon_theatre_deactivate'") !== -1) {
         return true;
