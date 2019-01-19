@@ -537,6 +537,8 @@ function updateSfmState(sfmState) {
  * ====================================================================================================
  */
 function configurePlayer() {
+    return;
+
     if (isPlayerConfigured()) {
         return;
     }
