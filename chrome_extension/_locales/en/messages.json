@@ -32,7 +32,7 @@
         }
     },
     "player_jump_help": {
-        "message": "Format: \"2\" for 2 minutes or \"1h2m3s\" for 1 hour, 2 minutes and 3 seconds",
+        "message": "Format: \"1h2m3s\" for 1 hour, 2 minutes and 3 seconds",
         "description": "The help message to be displayed for the Jump Distance input."
     },
     "player_jump_err": {

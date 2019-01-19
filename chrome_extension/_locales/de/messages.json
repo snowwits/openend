@@ -25,7 +25,7 @@
         }
     },
     "player_jump_help": {
-        "message": "Format: \"2\" für zwei Minuten oder \"1h2m3s\" für 1 Stunde, 2 Minuten und 3 Sekunden"
+        "message": "Format: \"1h2m3s\" für 1 Stunde, 2 Minuten und 3 Sekunden"
     },
     "player_jump_err": {
         "message": "Ungültige Zeitsprunglänge"
