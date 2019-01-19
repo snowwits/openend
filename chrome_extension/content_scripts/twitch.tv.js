@@ -25,28 +25,74 @@ function error(msg, ...substitutions) {
 const TWITCH_PLAYER_CLASS = "player";
 const TWITCH_PROGRESS_TOTAL_TIME_DIV_CLASS = "player-seek__time--total";
 const TWITCH_PROGRESS_SLIDER_DIV_CLASS = "js-player-slider";
-const TWITCH_THEATRE_MODE_BTN_CLASS = "qa-theatre-mode-button";
+
 /**
- *  The Twitch player button CSS class.
+ * The CSS class of the button to enable/disable the Theatre Mode in Twitch.
+ *
  * @type {string}
+ *
+ * Example:
+ * <button class="player-button qa-theatre-mode-button" id="" tabindex="-1" type="button">
+ *     <span>
+ *         <span class="player-tip player-tip--theater-mode" data-tip="Kino-Modus"></span>
+ *         <span class="">
+ *             <svg id="icon_theatre" viewBox="0 0 30 30" xmlns="http://www.w3.org/2000/svg"><path d="M23 8a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1h16zm-4 12h3V10h-3v10zM8 20h9V10H8v10z" fill-rule="nonzero"></path></svg>
+ *         </span>
+ *     </span>
+ * </button>
+ */
+const TWITCH_THEATRE_MODE_BTN_CLASS = "qa-theatre-mode-button";
+
+/**
+ * The Twitch player button CSS class.
+ *
+ * @type {string}
+ *
+ * Example (Theatre mode button):
+ * <button class="player-button qa-theatre-mode-button" id="" tabindex="-1" type="button">
+ *     <span>
+ *         <span class="player-tip player-tip--theater-mode" data-tip="Kino-Modus"></span>
+ *         <span class="">
+ *             <svg id="icon_theatre" viewBox="0 0 30 30" xmlns="http://www.w3.org/2000/svg"><path d="M23 8a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1h16zm-4 12h3V10h-3v10zM8 20h9V10H8v10z" fill-rule="nonzero"></path></svg>
+ *         </span>
+ *     </span>
+ * </button>
+ *
  */
 const TWITCH_PLAYER_BTN_CLASS = "player-button";
+
 /**
- *  Tooltip span: <span class="player-tip" data-tip="Mute"></span>
+ * The CSS class of player tooltips (to style our tooltips the way that tooltips in the Twitch player are styled).
+ *
  * @type {string}
+ *
+ * Example:
+ * <span class="player-tip" data-tip="Mute"></span>
  */
 const TWITCH_PLAYER_TOOLTIP_SPAN_CLASS = "player-tip";
 const TWITCH_PLAYER_TOOLTIP_SPAN_TEXT_ATTR = "data-tip";
 
 /**
  *
- * @type {string} the CSS class of the video list container
+ * @type {string} the CSS class of the video list container (tower)
+ *
+ * Example:
+ * <div data-js-selector="carousel-content" class="tw-flex-nowrap tw-tower tw-tower--300 tw-tower--gutter-sm tw-tower--nogrow">
+ *     <div class="preview-card" data-a-target="video-carousel-card-0">
+ *         ...
+ *     </div>
+ * </div>
  */
 const TWITCH_VIDEO_LIST_CONTAINER_CLASS = "tw-tower";
 /**
- * @type {string} the CSS class of the video cards (not the video list item container, that is some un-classed div above the card div)
+ * @type {string} the CSS class of the video list items (video cards)
+ *
+ * Example:
+ * <div class="preview-card" data-a-target="video-carousel-card-0">
+ *     ...
+ * </div>
  */
-const TWITCH_VIDEO_LIST_ITEM_CARD_CLASS = "tw-card";
+const TWITCH_VIDEO_LIST_ITEM_CARD_CLASS = "preview-card";
 
 /*
  * ====================================================================================================
@@ -245,13 +291,11 @@ function startCheckPageTask() {
             const checkTime = Date.now();
             if (checkTime - GLOBAL_pageChangedTime < PAGE_CONFIGURATION_TIMEOUT) {
                 configurePage();
-            }
-            else {
+            } else {
                 GLOBAL_elementsLoadedTimeoutReached = true;
                 if (isPageConfigured()) {
                     log("Elements loaded timeout reached (%d ms). Page fully configured", PAGE_CONFIGURATION_TIMEOUT);
-                }
-                else {
+                } else {
                     log("Elements loaded timeout reached (%d ms). Some components may not be configured. Configuration state: %o", PAGE_CONFIGURATION_TIMEOUT, formatPageConfigurationState());
                 }
             }
@@ -561,8 +605,7 @@ function configurePlayer() {
             // Set initial Show/Hide Duration state
             updatePlayerDurationVisibleAndShowHideButton(true, !GLOBAL_options[OPT_SFM_PLAYER_HIDE_DURATION_NAME]);
         }
-    }
-    else {
+    } else {
         removePlayerToolbarAndShowPlayerDuration();
 
         // Set the configured flag for the jump distance as well because it doesn't need any configuration in this case
@@ -610,8 +653,7 @@ function updateJumpButtonsAfterJumpDistanceChange() {
         if (jumpDistanceValue > 0) {
             backwardMsg = chrome.i18n.getMessage("player_jumpBackward", jumpDistanceInputValue);
             forwardMsg = chrome.i18n.getMessage("player_jumpForward", jumpDistanceInputValue);
-        }
-        else {
+        } else {
             backwardMsg = forwardMsg = chrome.i18n.getMessage("player_jump_err");
         }
 
@@ -825,21 +867,23 @@ function setAllHiddenVideoListItemsVisible(visible) {
  *
  * Injection container:
  *
- * <div class="tw-overflow-hidden tw-flex tw-flex-column">
- *     <div class="opnd-video-list-item-toolbar">
- *         <button title="Hide title"><img src="chrome-extension://nelphjignnodkaellhbmnbmlfjppbbdo/img/hide_title_grey.svg"></button>
- *         <button title="Hide preview"><img src="chrome-extension://nelphjignnodkaellhbmnbmlfjppbbdo/img/hide_preview_grey.svg"></button>
- *         <button title="Show duration"><img src="chrome-extension://nelphjignnodkaellhbmnbmlfjppbbdo/img/show_duration_grey.svg"></button>
- *     </div>
- *     <div data-test-selector="video-title" class="tw-overflow-hidden tw-relative">
- *         <p class="tw-c-text tw-line-height-heading tw-font-size-5 ">
- *             <span class="opnd-container opnd-container-video-list-item-title">
- *                 <a class="video-preview-card__video-title" title="Watchpoint: Recap Edition | Stage 3 Week 1" data-a-target="video-preview-card-title-link" href="/videos/248664471">Watchpoint: Recap Edition | Stage 3 Week 1</a>
- *             </span>
- *         </p>
- *     </div>
- *     <div class="tw-ellipsis tw-flex-grow-0 tw-flex-shrink-0">
- *         <span class="tw-ellipsis tw-c-text-alt-2 " title="Apr 10, 2018 · OverwatchLeague">Apr 10, 2018<span class="tw-pd-x-05">·</span><a class="video-preview-card__owner-display-name" data-a-target="video-preview-card-channel-link" data-test-selector="video-owner" title="OverwatchLeague" href="/overwatchleague">OverwatchLeague</a></span>
+ * <div class="preview-card__titles-wrapper tw-flex-grow-1 tw-flex-shrink-1 tw-full-width">
+ *     <div>
+ *         <a class="tw-interactive tw-link tw-link--inherit" data-a-target="preview-card-title-link" data-test-selector="preview-card-titles__primary-link" href="/videos/366201084">
+ *             <h3 class="tw-ellipsis tw-font-size-5 tw-strong" title="Overwatch Contenders Korea | Runaway vs Element Mystic | Finals (First to 4 Wins) | S3 Playoffs">Overwatch Contenders Korea | Runaway vs Element Mystic | Finals (First to 4 Wins) | S3 Playoffs</h3>
+ *         </a>
+ *         <div class="preview-card-titles__subtitle-wrapper">
+ *             <div data-test-selector="preview-card-titles__subtitle" class="">
+ *                 <p class="tw-c-text-alt tw-ellipsis">
+ *                     <a class="tw-interactive tw-link tw-link--inherit" data-a-target="preview-card-channel-link" href="/overwatchcontenders">OverwatchContenders</a>
+ *                 </p>
+ *             </div>
+ *             <div data-test-selector="preview-card-titles__subtitle" class="">
+ *                 <p class="tw-c-text-alt tw-ellipsis">
+ *                     <a class="tw-interactive tw-link tw-link--inherit" data-a-target="preview-card-game-link" href="/directory/game/Overwatch">Overwatch</a>
+ *                 </p>
+ *             </div>
+ *         </div>
  *     </div>
  * </div>
  *
@@ -849,10 +893,12 @@ function setAllHiddenVideoListItemsVisible(visible) {
 function injectVideoListItemToolbar(videoCardDiv) {
     let toolbarElem = videoCardDiv.querySelector("." + OPND_VIDEO_LIST_ITEM_TOOLBAR_CLASS);
     if (!toolbarElem) {
-        const injectionContainerChild = videoCardDiv.querySelector("div[data-test-selector='video-title']");
-        if (injectionContainerChild) {
+        const injectionContainer = videoCardDiv.querySelector("div.preview-card__titles-wrapper");
+        if (injectionContainer) {
             toolbarElem = buildVideoListItemToolbar(videoCardDiv);
-            injectionContainerChild.parentNode.insertBefore(toolbarElem, injectionContainerChild);
+            injectionContainer.insertBefore(toolbarElem, injectionContainer.firstChild);
+        } else {
+            warn("Could not find injection container for OpenEnd VideoListItemToolbar in videoCardDiv: %o", videoCardDiv)
         }
     }
     return toolbarElem;
@@ -872,10 +918,24 @@ function getVideoDurationOpndContainers(videoCardDiv = null) {
 
 /**
  * Video title div:
- * <div data-test-selector="video-title" class="overflow-hidden relative">
- *      <p class="c-text font-size-5">
- *          <a class="video-preview-card__video-title" title="!RED Mickie | Dallas Fuel | EN-TH" data-a-target="video-preview-card-title-link" href="/videos/206218321">!RED Mickie | Dallas Fuel | EN-TH</a>
- *     </p>
+ * <div class="preview-card__titles-wrapper tw-flex-grow-1 tw-flex-shrink-1 tw-full-width">
+ *     <div>
+ *         <a class="tw-interactive tw-link tw-link--inherit" data-a-target="preview-card-title-link" data-test-selector="preview-card-titles__primary-link" href="/videos/366201084">
+ *             <h3 class="tw-ellipsis tw-font-size-5 tw-strong" title="Overwatch Contenders Korea | Runaway vs Element Mystic | Finals (First to 4 Wins) | S3 Playoffs">Overwatch Contenders Korea | Runaway vs Element Mystic | Finals (First to 4 Wins) | S3 Playoffs</h3>
+ *         </a>
+ *         <div class="preview-card-titles__subtitle-wrapper">
+ *             <div data-test-selector="preview-card-titles__subtitle" class="">
+ *                 <p class="tw-c-text-alt tw-ellipsis">
+ *                     <a class="tw-interactive tw-link tw-link--inherit" data-a-target="preview-card-channel-link" href="/overwatchcontenders">OverwatchContenders</a>
+ *                 </p>
+ *             </div>
+ *             <div data-test-selector="preview-card-titles__subtitle" class="">
+ *                 <p class="tw-c-text-alt tw-ellipsis">
+ *                     <a class="tw-interactive tw-link tw-link--inherit" data-a-target="preview-card-game-link" href="/directory/game/Overwatch">Overwatch</a>
+ *                 </p>
+ *             </div>
+ *         </div>
+ *     </div>
  * </div>
  *
  * @param videoCardDiv {?Element} the video card div to use for the query root or null to use the document
@@ -883,17 +943,13 @@ function getVideoDurationOpndContainers(videoCardDiv = null) {
  */
 function getVideoTitleAnchors(videoCardDiv = null) {
     const queryRoot = videoCardDiv ? videoCardDiv : document;
-    return queryRoot.querySelectorAll("a[data-a-target='video-preview-card-title-link']");
+    return queryRoot.querySelectorAll("a[data-a-target='preview-card-title-link']");
 }
 
 /**
  * Video preview div:
- * <div class="video-preview-card__image-wrapper" data-test-selector="preview-image-wrapper">
- *      <figure class="flex-shrink-0">
- *          <figure class="tw-aspect tw-aspect--16x9 tw-aspect--align-top">
- *              <img alt="!RED Mickie | Dallas Fuel | TH-EN" class="video-preview-card__preview-image" data-test-selector="preview-image" src="https://static-cdn.jtvnw.net/s3_vods/179fedfa3031185e4302_mickiepp_26871265136_748124242/thumb/thumb0-320x180.jpg">
- *          </figure>
- *      </figure>
+ * <div class="preview-card-thumbnail__image">
+ *     <img class="tw-image" data-test-selector="preview-card-thumbnail__image-selector" alt="Overwatch Contenders Korea | Runaway vs Element Mystic | Finals (First to 4 Wins) | S3 Playoffs" src="https://static-cdn.jtvnw.net/s3_vods/fc05c41da95f8da262e4_overwatchcontenders_32254884672_1084555725/thumb/thumb0-320x180.jpg">
  * </div>
  *
  * @param videoCardDiv {?Element} the video card div to use for the query root or null to use the document
@@ -901,50 +957,38 @@ function getVideoTitleAnchors(videoCardDiv = null) {
  */
 function getVideoPreviewDivs(videoCardDiv = null) {
     const queryRoot = videoCardDiv ? videoCardDiv : document;
-    return queryRoot.querySelectorAll("div[data-test-selector='preview-image-wrapper']");
+    return queryRoot.querySelectorAll("div.preview-card-thumbnail__image");
 }
 
 /**
  * Video duration div (length):
- * <div class="video-preview-card__preview-overlay-stat c-background-overlay c-text-overlay font-size-6 top-0 right-0 z-default inline-flex absolute mg-05">
- *      <div class="tw-tooltip-wrapper inline-flex">
- *          <div class="tw-stat" data-test-selector="video-length">
- *              <span class="tw-stat__icon"><figure class="svg-figure"><svg ...> ... </svg></figure></span>
- *              <span class="tw-stat__value" data-a-target="tw-stat-value">4:33:57</span>
- *          </div>
- *          <div class="tw-tooltip tw-tooltip--down tw-tooltip--align-center" data-a-target="tw-tooltip-label">Länge</div>
- *      </div>
+ * <div data-test-selector="top-left-selector" class="tw-absolute tw-left-0 tw-mg-1 tw-top-0">
+ *     <div class="preview-card-stat tw-align-items-center tw-border-radius-small tw-c-background-overlay tw-c-text-overlay tw-flex tw-font-size-6 tw-justify-content-center">
+ *         <div class="tw-flex tw-mg-r-05">
+ *             <figure class="tw-svg"><svg class="tw-svg__asset tw-svg__asset--play tw-svg__asset--inherit" width="10px" height="10px" version="1.1" viewBox="0 0 20 20" x="0px" y="0px"><path d="M4.447 2.105a1.008 1.008 0 0 0-.973.044A1 1 0 0 0 3 3v14a.999.999 0 0 0 1.447.894l12-7a1 1 0 0 0 0-1.789l-12-7z" fill-rule="evenodd"></path></svg></figure>
+ *         </div>
+ *         <p class="">3:30:13</p>
+ *     </div>
  * </div>
  *
  * @param videoCardDiv {?Element} the video card div to use for the query root or null to use the document
  * @returns {!Array.<!Element>}
  */
 function getVideoLengthDivs(videoCardDiv = null) {
-    const videoLengthStatDivs = [];
     const queryRoot = videoCardDiv ? videoCardDiv : document;
-    const videoStatDivs = queryRoot.getElementsByClassName("video-preview-card__preview-overlay-stat");
-    if (videoStatDivs.length > 0) {
-        for (let i = 0; i < videoStatDivs.length; ++i) {
-            const videoStatDiv = videoStatDivs[i];
-            const videoLengthDiv = videoStatDiv.querySelector("div[data-test-selector='video-length']");
-            if (videoLengthDiv) {
-                videoLengthStatDivs.push(videoStatDiv);
-            }
-        }
-    }
-    return videoLengthStatDivs;
+    return queryRoot.querySelectorAll("div[data-test-selector='top-left-selector']");
 }
 
 /**
  *
  * Video channel anchor:
- * <a class="video-preview-card__owner-display-name" data-a-target="video-preview-card-channel-link" data-test-selector="video-owner" title="xQcOW" href="/xqcow">xQcOW</a>
+ * <a class="tw-interactive tw-link tw-link--inherit" data-a-target="preview-card-channel-link" href="/noserino/videos">Noserino</a>
  *
  * @param videoCardDiv
  * @return {?Channel} the channel if it can be determined
  */
 function getVideoChannel(videoCardDiv) {
-    const channelAnchor = videoCardDiv.querySelector("a[data-test-selector='video-owner']");
+    const channelAnchor = videoCardDiv.querySelector("a[data-a-target='preview-card-channel-link']");
     if (channelAnchor) {
         const channel = TWITCH_PLATFORM.parseChannelFromUrl(channelAnchor);
         channel.displayName = channelAnchor.textContent;
@@ -1071,8 +1115,7 @@ function isTheatreModeActive(theatreModeButton) {
     const innerHtml = theatreModeButton.innerHTML;
     if (innerHtml.indexOf("xlink:href='#icon_theatre_deactivate'") !== -1) {
         return true;
-    }
-    else if (innerHtml.indexOf("xlink:href='#icon_theatre'") !== -1) {
+    } else if (innerHtml.indexOf("xlink:href='#icon_theatre'") !== -1) {
         return false;
     }
     warn("Could not determine if Theatre Mode is active");
@@ -1279,8 +1322,7 @@ function handleJumpDistanceInputMouseWheelEvent(wheelEvent) {
     let direction = 0;
     if (wheelEvent.wheelDelta > 0) {
         direction = 1;
-    }
-    else if (wheelEvent.wheelDelta < 0) {
+    } else if (wheelEvent.wheelDelta < 0) {
         direction = -1;
     }
     spinPlayerJumpDistance(direction);

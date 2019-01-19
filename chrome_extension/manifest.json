@@ -1,8 +1,8 @@
 {
     "manifest_version": 2,
     "name": "Open End",
-    "version": "0.3.2",
-    "version_name": "0.3.2-SNAPSHOT (BETA)",
+    "version": "0.4",
+    "version_name": "0.4-SNAPSHOT (BETA)",
     "default_locale": "en",
     "description": "__MSG_manifest_description__",
     "icons": {
