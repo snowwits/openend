@@ -700,8 +700,6 @@ function configureVideoListItems() {
         for (let i = 0; i < videoCardDivs.length; i++) {
             const videoCardDiv = videoCardDivs[i];
 
-            mayHideVideoListItem(videoCardDiv);
-
             injectVideoListItemToolbar(videoCardDiv);
         }
     }
@@ -721,8 +719,6 @@ function configureVideoListItems() {
                 setAllVisible(videoTitleContainers, setTitleVisible);
                 setAllVisible(videoPreviewContainers, setPreviewVisible);
                 setAllVisible(videoDurationContainers, setDurationVisible);
-
-                mayHideVideoListItem(videoCardDiv);
 
                 injectVideoListItemToolbar(videoCardDiv);
             }
@@ -765,20 +761,6 @@ function configureVideoListItems() {
 
 function isVideoListItemsConfigured() {
     return isConfigured(OPT_SFM_VIDEO_LIST_HIDE_TITLE_NAME) && isConfigured(OPT_SFM_VIDEO_LIST_HIDE_PREVIEW_NAME) && isConfigured(OPT_SFM_VIDEO_LIST_HIDE_DURATION_NAME);
-}
-
-function mayHideVideoListItem(videoCardDiv) {
-    const videoTitle = getVideoTitle(videoCardDiv);
-    if (videoTitle != null) {
-        if (videoTitle.match(new RegExp("Inaugural\\sSeason\\s\\|\\sStage\\s+\\d+\\s+Week\\s+\\d+\\s+Day\\s+\\d+"))) {
-            // console.log("VIDEO TITLE MATCH: " + videoTitle);
-        } else {
-            // console.log("VIDEO TITLE NO MATCH: " + videoTitle);
-            const videoCardContainer = getVideoListItemContainer(videoCardDiv);
-            const opndContainer = getOrWrapInOpndContainer(videoCardContainer, OPND_CONTAINER_HIDDEN_VIDEO_LIST_ITEM);
-            setVisible(opndContainer, false);
-        }
-    }
 }
 
 /**
@@ -886,25 +868,6 @@ function getVideoPreviewOpndContainers(videoCardDiv = null) {
 
 function getVideoDurationOpndContainers(videoCardDiv = null) {
     return getOrWrapSuppliedInOpndContainers(() => getVideoLengthDivs(videoCardDiv), OPND_CONTAINER_VIDEO_LIST_ITEM_DURATION_CLASS);
-}
-
-/**
- *
- * @param videoCardDiv
- * @return {?String}
- */
-function getVideoTitle(videoCardDiv) {
-    const videoTitleAnchors = getVideoTitleAnchors(videoCardDiv);
-    if (videoTitleAnchors.length < 0) {
-        //warn("Could not get video title: No video title anchors found in: %o", videoCardDiv);
-        return null;
-    }
-    const videoTitleAnchor = videoTitleAnchors[0];
-    if (!videoTitleAnchor) {
-        //warn("Could not get video title: First video title anchor is invalid: %o", videoCardDiv);
-        return null;
-    }
-    return videoTitleAnchor.title;
 }
 
 /**
