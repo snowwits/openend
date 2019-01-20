@@ -46,3 +46,8 @@
     margin-right: 5px;
     width: 5em;
 }
+
+
+.opnd-some-children-hidden .player-seek__time--total, .opnd-some-children-hidden .js-player-slider {
+    display: none;
+}

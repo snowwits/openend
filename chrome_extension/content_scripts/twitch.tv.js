@@ -23,6 +23,7 @@ function error(msg, ...substitutions) {
  */
 /* Constants element IDs and classes */
 const TWITCH_PLAYER_CLASS = "player";
+const TWITCH_PROGRESS_CONTAINER_CLASS = "player-seek";
 const TWITCH_PROGRESS_TOTAL_TIME_DIV_CLASS = "player-seek__time--total";
 const TWITCH_PROGRESS_SLIDER_DIV_CLASS = "js-player-slider";
 
@@ -31,7 +32,7 @@ const TWITCH_PROGRESS_SLIDER_DIV_CLASS = "js-player-slider";
  *
  * @type {string}
  *
- * Example:
+ * @example
  * <button class="player-button qa-theatre-mode-button" id="" tabindex="-1" type="button">
  *     <span>
  *         <span class="player-tip player-tip--theater-mode" data-tip="Kino-Modus"></span>
@@ -48,7 +49,7 @@ const TWITCH_THEATRE_MODE_BTN_CLASS = "qa-theatre-mode-button";
  *
  * @type {string}
  *
- * Example (Theatre mode button):
+ * @example (Theatre mode button)
  * <button class="player-button qa-theatre-mode-button" id="" tabindex="-1" type="button">
  *     <span>
  *         <span class="player-tip player-tip--theater-mode" data-tip="Kino-Modus"></span>
@@ -66,7 +67,7 @@ const TWITCH_PLAYER_BTN_CLASS = "player-button";
  *
  * @type {string}
  *
- * Example:
+ * @example
  * <span class="player-tip" data-tip="Mute"></span>
  */
 const TWITCH_PLAYER_TOOLTIP_SPAN_CLASS = "player-tip";
@@ -76,7 +77,7 @@ const TWITCH_PLAYER_TOOLTIP_SPAN_TEXT_ATTR = "data-tip";
  *
  * @type {string} the CSS class of the video list container (tower)
  *
- * Example:
+ * @example
  * <div data-js-selector="carousel-content" class="tw-flex-nowrap tw-tower tw-tower--300 tw-tower--gutter-sm tw-tower--nogrow">
  *     <div class="preview-card" data-a-target="video-carousel-card-0">
  *         ...
@@ -87,7 +88,7 @@ const TWITCH_VIDEO_LIST_CONTAINER_CLASS = "tw-tower";
 /**
  * @type {string} the CSS class of the video list items (video cards)
  *
- * Example:
+ * @example
  * <div class="preview-card" data-a-target="video-carousel-card-0">
  *     ...
  * </div>
@@ -581,8 +582,6 @@ function updateSfmState(sfmState) {
  * ====================================================================================================
  */
 function configurePlayer() {
-    return;
-
     if (isPlayerConfigured()) {
         return;
     }
@@ -682,12 +681,15 @@ function updatePlayerDurationVisibleAndShowHideButton(configuring, visible) {
     if (configuring && isPlayerDurationConfigured()) {
         return;
     }
-    // Make progress indicators visible / hidden
-    const allDurationElements = getElementsByClassNames([TWITCH_PROGRESS_TOTAL_TIME_DIV_CLASS, TWITCH_PROGRESS_SLIDER_DIV_CLASS]);
-    const opndContainersOfAllDurationElements = getOrWrapAllInOpndContainers(allDurationElements, OPND_CONTAINER_PLAYER_DURATION_CLASS);
 
-    if (opndContainersOfAllDurationElements.length > 0) {
-        const setVisibleResult = setAllVisible(opndContainersOfAllDurationElements, visible);
+    // Make progress indicators visible / hidden:
+    // Because Twitch swaps out the actual elements, we neither can wrap them in OpenEnd containers (then the swap fails)
+    // nor can we hide them themselves (because they are swapped out, everything we changed about the original elements is lost)
+    // That's why we add the "opnd-some-children-hidden" class to the parent element which leads to them being hidden (see use of "opnd-some-children-hidden" in twitch.tv.css)
+    const allProgressContainers = document.getElementsByClassName(TWITCH_PROGRESS_CONTAINER_CLASS);
+
+    if (allProgressContainers.length > 0) {
+        const setVisibleResult = setAllVisible(allProgressContainers, visible, OPND_SOME_CHILDREN_HIDDEN_CLASS);
         log("Updated Player Duration visible to [%s]", setVisibleResult);
 
         // Update the Player Progress Visibility img src and alt

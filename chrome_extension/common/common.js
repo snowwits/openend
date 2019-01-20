@@ -530,8 +530,7 @@ class TwitchPlatform extends Platform {
             const channelName = qualifiedChannelName.substr(platformPrefix.length);
             try {
                 return this.buildChannel(channelName);
-            }
-            catch (err) {
+            } catch (err) {
                 return null;
             }
         }
@@ -612,8 +611,7 @@ class TwitchPlatform extends Platform {
                 return new PlatformPage(TwitchPageType.UNKNOWN);
             }
             return null;
-        }
-        catch (err) {
+        } catch (err) {
             // For example if the channel name is incorrect
             logWithComponent("common", "Failed to determine page: %o", err);
             return null;
@@ -847,18 +845,14 @@ function checkSfmState(options, platform, channel) {
         const sfmEnabledOnPlatform = getSfmEnabledOnPlatform(options, platform);
         if (SfmEnabled.ALWAYS === sfmEnabledOnPlatform) {
             return SfmState.ACTIVE;
-        }
-        else if (SfmEnabled.NEVER === sfmEnabledOnPlatform) {
+        } else if (SfmEnabled.NEVER === sfmEnabledOnPlatform) {
             return SfmState.INACTIVE;
-        }
-        else if (SfmEnabled.CUSTOM === sfmEnabledOnPlatform) {
+        } else if (SfmEnabled.CUSTOM === sfmEnabledOnPlatform) {
             if (channel === null) {
                 return SfmState.CHANNEL_DEPENDENT;
-            }
-            else if (getSfmEnabledOnChannel(options, channel)) {
+            } else if (getSfmEnabledOnChannel(options, channel)) {
                 return SfmState.ACTIVE;
-            }
-            else {
+            } else {
                 return SfmState.INACTIVE;
             }
         }
@@ -993,16 +987,32 @@ class TabInfoRequestMessage extends Message {
  */
 const OPND_CONTAINER_CLASS = "opnd-container";
 const OPND_INNER_CONTAINER_CLASS = "opnd-inner-container";
+
 /**
  * The CSS class that is added to Open End containers to hide them and thus their content.
  * @type {string}
  */
 const OPND_HIDDEN_CLASS = "opnd-hidden";
+
+/**
+ * The CSS class that is added to elements to hide some of their child elements.
+ *
+ * This class does not do anything CSS wise. You need to define a CSS rule like this:
+ * @example
+ * .opnd-some-children-hidden .player-seek__time--total, .opnd-some-children-hidden .js-player-slider {
+ *     display: none;
+ * }
+ *
+ * @type {string}
+ */
+const OPND_SOME_CHILDREN_HIDDEN_CLASS = "opnd-some-children-hidden";
+
 /**
  * The ID of the Open End player toolbar.
  * @type {string}
  */
 const OPND_PLAYER_TOOLBAR_ID = "opnd-player-toolbar";
+
 /**
  * The CSS class of Open End containers
  * that wrap elements of the player which contain a video's duration or the seek bar.
@@ -1309,12 +1319,13 @@ function removeElement(element) {
  *
  * @param elements {?Iterable.<Element>} the elements which visibility should be changed or null to change all
  * @param visible {?boolean} true, false or null (to toggle)
+ * @param hiddenClass {?string} the css class to add to hide elements
  * @return {?boolean} true if the elements were set visible, false if not. null if there were no elements
  */
-function setAllVisible(elements, visible) {
+function setAllVisible(elements, visible, hiddenClass = OPND_HIDDEN_CLASS) {
     let actualElements = elements;
     if (actualElements === null) {
-        actualElements = document.getElementsByClassName(OPND_HIDDEN_CLASS);
+        actualElements = document.getElementsByClassName(hiddenClass);
     }
     let actuallySetVisible = visible;
     for (let i = 0; i < actualElements.length; i++) {
@@ -1322,12 +1333,12 @@ function setAllVisible(elements, visible) {
         if (actuallySetVisible === null) {
             // If the visible param is null,
             // we check the first element's visible state and use that to toggle all elements.
-            actuallySetVisible = elem.classList.contains(OPND_HIDDEN_CLASS);
+            actuallySetVisible = elem.classList.contains(hiddenClass);
         }
         if (actuallySetVisible) {
-            elem.classList.remove(OPND_HIDDEN_CLASS);
+            elem.classList.remove(hiddenClass);
         } else {
-            elem.classList.add(OPND_HIDDEN_CLASS);
+            elem.classList.add(hiddenClass);
         }
     }
     return actuallySetVisible;
