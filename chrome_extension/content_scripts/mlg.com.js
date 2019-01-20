@@ -149,8 +149,7 @@ function startCheckPageTask() {
             const checkTime = Date.now();
             if (checkTime - pageChangedTime < PAGE_CONFIGURATION_TIMEOUT) {
                 configurePage();
-            }
-            else {
+            } else {
                 GLOBAL_elementsLoadedTimeoutReached = true;
                 if (!isPageConfigured()) {
                     log("Elements loaded timeout reached (%d ms). Some components may not be configured. Configuration state: %o", PAGE_CONFIGURATION_TIMEOUT, formatPageConfigurationState());
@@ -258,8 +257,7 @@ function configurePlayer() {
         let setDurationVisible;
         if (isSfmStateActive()) {
             setDurationVisible = !GLOBAL_options[OPT_SFM_PLAYER_HIDE_DURATION_NAME];
-        }
-        else {
+        } else {
             setDurationVisible = true;
         }
         const opndContainers = getOrWrapAllInOpndContainers(durationElements);
@@ -286,14 +284,19 @@ function isPlayerDurationConfigured() {
  *
  * On mlg.com
  * Duration:
- * <div data-v-c420a302="" class="md-card-content">
- *     <div data-v-c420a302="" class="card-row">
- *         <div data-v-c420a302="" class="title">Overwatch League Preseason Day 1 Highlights</div>
- *         <div data-v-c420a302="" class="info">17 minutes ago&nbsp;&nbsp;·&nbsp;&nbsp;4:03</div>
- *         <div data-v-c420a302="" class="subhead">Check out the best moments of Day 1 and tune into MLG for Day 2, broadcasting live at 2 pm (EST).</div>
- *     </div>
- *     <div data-v-c420a302="" class="card-row">
- *         <div data-v-c420a302="" class="card-cell"></div>
+ * @example
+ * <div data-v-0638f512="" class="card-tertiary">
+ *     <div data-v-0638f512="" class="image-container">
+ *         <img data-v-0638f512="" src="https://s3.amazonaws.com/mlg-image-resize/auto-resize-service/7MrNaTDeSjV/bc8f3321-5320-4c92-b80e-5c3a189e3b2a-480x270.jpeg?v=1547956087" alt="Watch Heretics Celebrate Qualifying for Pro League" class="vod-img"> <img data-v-0638f512="" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgdmlld0JveD0iMCAwIDMyIDMyIj4KICAgIDxwYXRoIGZpbGw9IiNGRkYiIGZpbGwtcnVsZT0ibm9uemVybyIgZD0iTTE2IDMyQzcuMTYzIDMyIDAgMjQuODM3IDAgMTZTNy4xNjMgMCAxNiAwczE2IDcuMTYzIDE2IDE2LTcuMTYzIDE2LTE2IDE2em0tNC0yMC44MTN2OS42MjZjMCAuNjU2LjU0IDEuMTg3IDEuMjA4IDEuMTg3LjI1MiAwIC40OTctLjA3Ny43MDItLjIyMWw3LjU4NC00LjgxM2ExLjE3MyAxLjE3MyAwIDAgMCAwLTEuOTMxTDEzLjkxIDEwLjIyYTEuMjIyIDEuMjIyIDAgMCAwLTEuNjg1LjI3NiAxLjE3MiAxLjE3MiAwIDAgMC0uMjI1LjY5eiIvPgo8L3N2Zz4K" alt="" class="vod-play-btn"></div> <div data-v-0638f512="" class="content-container"><div data-v-0638f512="" class="title">Watch Heretics Celebrate Qualifying for Pro League</div>
+ *         <div data-v-0638f512="" class="info">
+ *             <span class="opnd-container opnd-inner-container">21 hours ago&nbsp;&nbsp;•&nbsp;&nbsp;1:03</span>
+ *         </div>
+ *         <div data-v-0638f512="" class="subhead">It was an emotional celebration, as Heretics stuck it out to clinch a Pro League spot.</div>
+ *         <div data-v-0638f512="" class="tags-container">
+ *             <a data-v-0638f512="" href="/game/call-of-duty" class="tag-link">
+ *                 <button data-v-0638f512="">Call of Duty</button>
+ *             </a>
+ *         </div>
  *     </div>
  * </div>
  */
@@ -327,18 +330,21 @@ function configureVideoListItems() {
     }
 
     // On MLG.com
-    // Search for the inner containers
-    const existingMlgOpndInnerContainers = document.querySelectorAll(".md-card-content .info ." + OPND_INNER_CONTAINER_CLASS);
+    // On MLG.com the upload date and the duration are in one span, not differentiable DOM-wise
+    // So we parse the text (e.g. "21 hours ago&nbsp;&nbsp;•&nbsp;&nbsp;1:03"),
+    // insert a OpenEnd inner container around just the duration (everything after "•")
+    // and hide that inner container if wanted.
+    const existingMlgOpndInnerContainers = document.querySelectorAll(".card-tertiary .info ." + OPND_INNER_CONTAINER_CLASS);
     if (existingMlgOpndInnerContainers.length > 0) {
         opndContainers = existingMlgOpndInnerContainers;
     } else {
-        const mlgInfoSpans = document.querySelectorAll(".md-card-content .info");
+        const mlgInfoSpans = document.querySelectorAll(".card-tertiary .info");
         if (mlgInfoSpans.length > 0) {
             const newOpndInnerContainers = [];
             for (let i = 0; i < mlgInfoSpans.length; i++) {
                 const mlgInfoSpan = mlgInfoSpans[i];
                 const innerHtmlValue = mlgInfoSpan.innerHTML;
-                const indexOfPoint = innerHtmlValue.indexOf("·");
+                const indexOfPoint = innerHtmlValue.indexOf("•");
                 const dateHtmlValue = innerHtmlValue.substring(0, indexOfPoint + 1);
                 const durationHtmlValue = innerHtmlValue.substring(indexOfPoint + 1);
                 const innerContainer = document.createElement("span");
@@ -356,8 +362,7 @@ function configureVideoListItems() {
         let setDurationVisible;
         if (isSfmStateActive()) {
             setDurationVisible = !GLOBAL_options[OPT_SFM_VIDEO_LIST_HIDE_DURATION_NAME];
-        }
-        else {
+        } else {
             setDurationVisible = true;
         }
         setAllVisible(opndContainers, setDurationVisible);
