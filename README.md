@@ -12,10 +12,15 @@ Chrome extension that hides the duration of videos and other information on Twit
 8. [Credits](#8-credits)
 
 ## 1. Description 
-Sometimes you can't or don't want to watch a e-sports or sports event live. But when you are watching the videos later, the titles, previews or durations of videos can often give away the ending. For example, if you are watching a best-of-3 series and the video has almost reached its end during second match, you know that it will be a 2:0 victory.
+Sometimes you can't or don't want to watch a e-sports or sports event live.
+But when you are watching the videos later, the titles, previews or durations of videos can often give away the ending.
+
+For example, if you are watching a best-of-3 series and the video has almost reached its end during the second match, you know that it will be a 2:0 victory.
+
 Or if you are scrolling through a video list to find the semifinals videos and accidentally read the finalists names in the grand final video title, the excitement for the semifinals quickly fades away.
 
-Open End prevents those kinds of spoilers by hiding certain information on Twitch.tv. Its features include:
+Open End brings you a Spoiler-Free Mode to Twitch which prevents those kinds of spoilers by hiding certain information.
+You can easily control on which channels the Spoiler-Free Mode should be active.
 
 ### 1.1 Installation
 You can install it via the Chrome Web Store:
@@ -41,7 +46,7 @@ https://chrome.google.com/webstore/detail/open-end/bgajbplcmfhpfebhiigohjannldlo
 ## 3. Usage
 
 ### 3.1 Overview
-- **Open End icon / Popup:** The extension has an icon in the Chrome toolbar (next to the address bar). If you click on it, a popup opens. The icon and the popup have two purposes:
+- **Open End Icon / Popup:** The extension has an icon in the Chrome toolbar (next to the address bar). If you click on it, a popup opens. The icon and the popup have two purposes:
   1. Inform you:
      - Whether the current web page is a supported video platform.
        - On supported platforms the icon is colored, otherwise it is grey.
@@ -49,7 +54,7 @@ https://chrome.google.com/webstore/detail/open-end/bgajbplcmfhpfebhiigohjannldlo
        - When the Spoiler-Free Mode is active, the icon has an "SFM" badge.
      - The current status is also displayed on the popup.
   2. Provide quick access to the most important options. On the popup you can quickly:
-     - Enabled/disable the Spoiler-Free Mode vor a video platform or a channel.
+     - Enabled/disable the Spoiler-Free Mode for a video platform or a channel.
        - See [3.2 Enable/Disable the Spoiler-Free Mode](#32-enabledisable-the-spoiler-free-mode).
      - Open the options page.
 - **Video Navigation Toolbar:** If the Spoiler-Free Mode is enabled, a Video Navigation Toolbar will be added to the video player because the regular seek bar will be hidden.
@@ -79,7 +84,7 @@ There are three layers to give you fine control over where to enable/disable the
    - *Always:* Enable the Spoiler-Free Mode on this platform.
    - *Channel-dependent:* Defer the decision to the channel level.
      - If channels are supported on this platform. For example on Twitch.tv channels are supported, on MLG.com they are not.
-3. **Channel:** Enable/disable the Spoiler-Free mode for a specific video channel. You can choose between:
+3. **Channel:** Enable/disable the Spoiler-Free Mode for a specific video channel. You can choose between:
    - *Disable:* Disable the Spoiler-Free Mode on this channel.
    - *Enable:* Enable the Spoiler-Free Mode on this channel.
 
