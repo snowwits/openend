@@ -5,7 +5,7 @@
     - "jump" is used over 100 times in the code.
   - Fix: Video List Items Toolbar: Change icons based on whether it's currently visible or not
     - Currently only distinguished by the color of the icon (hidden: purple, shown: grey)
-      - Color is not enough, shape needs to change
+      - Color is not enough, shape needs to change (color blind)
     - Instead use regular icons with diagonal cross through (like on hide svg)
   - Migration: Add a Version JS class that is comparable (to be able to say `if (version < new Version("0.3.0") migrate)`
     - https://developer.chrome.com/extensions/manifest/version
