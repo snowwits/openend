@@ -1120,7 +1120,7 @@ function isTheatreModeActive(theatreModeButton) {
     } else if (innerHtml.indexOf("xlink:href='#icon_theatre'") !== -1) {
         return false;
     }
-    warn("Could not determine if Theatre Mode is active");
+    log("Could not determine if Theatre Mode is active");
     return false;
 }
 
