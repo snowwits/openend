@@ -109,16 +109,16 @@
         "message": "Aktivieren"
     },
     "popup_sfmEnabled_ineffective_disabledGlobally": {
-        "message": "Spoilerfreier Modus ist auf globaler Ebene deaktiviert."
+        "message": "Spoilerfreier Modus ist auf globaler Ebene deaktiviert"
     },
     "popup_sfmEnabled_ineffective_enabledGlobally": {
-        "message": "Spoilerfreier Modus ist auf globaler Ebene aktiviert."
+        "message": "Spoilerfreier Modus ist auf globaler Ebene aktiviert"
     },
     "popup_sfmEnabled_ineffective_disabledOnPlatform": {
-        "message": "Spoilerfreier Modus ist auf Plattform-Ebene deaktiviert."
+        "message": "Spoilerfreier Modus ist auf Plattform-Ebene deaktiviert"
     },
     "popup_sfmEnabled_ineffective_enabledOnPlatform": {
-        "message": "Spoilerfreier Modus ist auf Plattform-Ebene aktiviert."
+        "message": "Spoilerfreier Modus ist auf Plattform-Ebene aktiviert"
     },
     "popup_openOptions": {
         "message": "Optionen..."
@@ -205,15 +205,15 @@
         "message": "Speichern"
     },
     "options_save_successMsg": {
-        "message": "Optionen gespeichert."
+        "message": "Optionen gespeichert"
     },
     "options_save_errorMsg": {
-        "message": "Fehler beim Speichern der Optionen."
+        "message": "Fehler beim Speichern der Optionen"
     },
     "options_restoreDefaults": {
         "message": "Standardwerte wiederherstellen"
     },
     "options_restoreDefaults_successMsg": {
-        "message": "Standardwerte wiederhergestellt."
+        "message": "Standardwerte wiederhergestellt"
     }
 }
