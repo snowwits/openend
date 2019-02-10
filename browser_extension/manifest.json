@@ -13,7 +13,6 @@
     },
     "author": "snowwits@gmail.com",
     "homepage_url": "https://github.com/snowwits/openend",
-    "minimum_chrome_version": "58.0",
     "background": {
         "scripts": [
             "common/common.js",
@@ -59,6 +58,7 @@
     ],
     "options_ui": {
         "page": "options/options.html",
+        "browser_style": true,
         "chrome_style": true
     },
     "permissions": [
@@ -68,5 +68,11 @@
     "web_accessible_resources": [
         "img/*",
         "options/options.html"
-    ]
+    ],
+    "browser_specific_settings": {
+        "gecko": {
+            "id": "openend@snowwits.github.com"
+        }
+    },
+    "minimum_chrome_version": "58.0"
 }
