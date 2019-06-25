@@ -1014,13 +1014,6 @@ const OPND_SOME_CHILDREN_HIDDEN_CLASS = "opnd-some-children-hidden";
 const OPND_PLAYER_TOOLBAR_ID = "opnd-player-toolbar";
 
 /**
- * The CSS class of Open End containers
- * that wrap elements of the player which contain a video's duration or the seek bar.
- * @type {string}
- */
-const OPND_CONTAINER_PLAYER_DURATION_CLASS = "opnd-container-player-duration";
-
-/**
  * The CSS class of an Open End container of a hidden video list item.
  * @type {string}
  */
@@ -1789,7 +1782,7 @@ const opnd = {
                             reject(Error(chrome.runtime.lastError.message));
                             return;
                         }
-                        log("[browser.removeOptions] Removed options [%o]", keys);
+                        log("[browser.removeOptions] Removed options (if existed) [%o]", keys);
                         resolve();
                     });
                 });
