@@ -23,8 +23,6 @@ function error(msg, ...substitutions) {
  */
 /* Constants element IDs and classes */
 const TWITCH_PLAYER_CLASS = "player";
-const TWITCH_PROGRESS_CONTAINER_CLASS = "player-seek";
-const TWITCH_PROGRESS_TOTAL_TIME_DIV_CLASS = "player-seek__time--total";
 const TWITCH_PROGRESS_SLIDER_DIV_CLASS = "js-player-slider";
 
 /**
@@ -686,10 +684,10 @@ function updatePlayerDurationVisibleAndShowHideButton(configuring, visible) {
     // Because Twitch swaps out the actual elements, we neither can wrap them in OpenEnd containers (then the swap fails)
     // nor can we hide them themselves (because they are swapped out, everything we changed about the original elements is lost)
     // That's why we add the "opnd-some-children-hidden" class to the parent element which leads to them being hidden (see use of "opnd-some-children-hidden" in twitch.tv.css)
-    const allProgressContainers = document.getElementsByClassName(TWITCH_PROGRESS_CONTAINER_CLASS);
+    const twitchPlayerDivs = document.getElementsByClassName(TWITCH_PLAYER_CLASS);
 
-    if (allProgressContainers.length > 0) {
-        const setVisibleResult = setAllVisible(allProgressContainers, visible, OPND_SOME_CHILDREN_HIDDEN_CLASS);
+    if (twitchPlayerDivs.length > 0) {
+        const setVisibleResult = setAllVisible(twitchPlayerDivs, visible, OPND_SOME_CHILDREN_HIDDEN_CLASS);
         log("Updated Player Duration visible to [%s]", setVisibleResult);
 
         // Update the Player Progress Visibility img src and alt
@@ -1339,7 +1337,7 @@ function handleJumpDistanceInputKeyUpEvent(keyboardEvent) {
 
     /*
      * - Enter: Forward jump
-     * - Shift+Enter: Backwards jump
+     * - Shift+Enter: Backward jump
      * - ArrowUp Spin up
      * - ArrowDown: Spin down
      */
@@ -1416,7 +1414,7 @@ function handlePlayerJumpForwardAction() {
 function playerJump(direction) {
     const sliderDiv = getSingleElementByClassName(TWITCH_PROGRESS_SLIDER_DIV_CLASS);
     if (!sliderDiv) {
-        error("Time jump failed: slider not available", TWITCH_PROGRESS_SLIDER_DIV_CLASS);
+        error("Could not jump: Slider not available [.%s]", TWITCH_PROGRESS_SLIDER_DIV_CLASS);
         return;
     }
 
@@ -1426,7 +1424,7 @@ function playerJump(direction) {
     const currentTime = parseInt(sliderDiv.getAttribute("aria-valuenow"));
 
     if (maxTime === 0) {
-        error("Time jump failed: Video duration not available (yet)");
+        error("Could not jump: Video duration not available (yet)");
         return;
     }
 
@@ -1435,7 +1433,7 @@ function playerJump(direction) {
     // distance is an absolute value
     const distance = parseDuration(distanceInputValue);
     if (distance === 0) {
-        log("Time jump failed: No valid jump distance given: %s", distanceInputValue);
+        log("Could not jump: No valid jump distance given [%s]", distanceInputValue);
         return;
     }
 
@@ -1445,24 +1443,16 @@ function playerJump(direction) {
      *     Can be negative (for jumping backwards) or positive (for jumping forward)
      */
     const actualDistance = newTime - currentTime;
-    const absActualDistance = Math.abs(actualDistance);
 
     playerJumpWithRapidSeeking(actualDistance, currentTime, newTime);
-
-    // TODO: Is this (or with a different threshold) still needed?
-    // For jumps <= 2m (120s), use rapid seeking
-    // For jumps over 2m, use the location changing jump as rapid seeking takes to long
-    /*
-    if (absActualDistance <= 120) {
-        playerJumpWithRapidSeeking(actualDistance, currentTime, newTime);
-    } else {
-        playerJumpWithLocationChange(actualDistance, currentTime, newTime);
-    }
-    */
 }
 
 function playerJumpWithRapidSeeking(distance, currentTime, newTime) {
     const playerElem = document.querySelector("." + TWITCH_PLAYER_CLASS);
+    if (!playerElem) {
+        error("Could not jump: Twitch player not available [.%s]", TWITCH_PLAYER_CLASS);
+        return;
+    }
     const keyEvent = new KeyboardEvent("keydown", {
         bubbles: false,
         cancelable: false,
@@ -1473,7 +1463,7 @@ function playerJumpWithRapidSeeking(distance, currentTime, newTime) {
     // One arrow button push equals 5 seconds of seeking
     const numArrowSeeks = Math.ceil(Math.abs(distance) / 5);
 
-    log("Jumping %is: %is -> %is (using %i arrow seeks)", distance, currentTime, newTime, numArrowSeeks);
+    log("Jumping %s: %s -> %s (using %i arrow seeks)", formatDuration(distance), formatDuration(currentTime), formatDuration(newTime), numArrowSeeks);
 
     for (let i = 0; i < numArrowSeeks; i++) {
         playerElem.dispatchEvent(keyEvent);
