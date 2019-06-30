@@ -1149,7 +1149,7 @@ function buildPlayerToolbar() {
     jumpDistanceInput.title = chrome.i18n.getMessage("player_jump_help");
     jumpDistanceInput.oninput = updateJumpButtonsAfterJumpDistanceChange;
     jumpDistanceInput.onkeyup = handleJumpDistanceInputKeyUpEvent;
-    jumpDistanceInput.onmousewheel = handleJumpDistanceInputMouseWheelEvent;
+    jumpDistanceInput.onwheel = handleJumpDistanceInputWheelEvent;
     toolbar.appendChild(jumpDistanceInput);
 
     // Build "Jump Forward" button
@@ -1316,13 +1316,13 @@ function handlePlayerShowHideDurationAction() {
  *
  * @param wheelEvent {!WheelEvent}
  */
-function handleJumpDistanceInputMouseWheelEvent(wheelEvent) {
+function handleJumpDistanceInputWheelEvent(wheelEvent) {
     wheelEvent.preventDefault();
 
     let direction = 0;
-    if (wheelEvent.wheelDelta > 0) {
+    if (wheelEvent.deltaY < 0) {
         direction = 1;
-    } else if (wheelEvent.wheelDelta < 0) {
+    } else if (wheelEvent.deltaY > 0) {
         direction = -1;
     }
     spinPlayerJumpDistance(direction);
