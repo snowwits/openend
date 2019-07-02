@@ -1,17 +1,38 @@
 # Version Notes and Roadmap
 
+
 ## Version Notes
 
+
+### Open End "0.5.0 (BETA)" (2019-07-23)
+
+Firefox support!
+
+New features:
+
+- Available for Firefox: https://addons.mozilla.org/firefox/addon/open-end/
+  - However, it is strongly recommended to use Chrome to watch Twitch.tv videos because time-jumping in a video on Twitch.tv works way smoother in Chrome than in Firefox
+
+Notable bug fixes:
+
+- Fixed progress visible after Twitch commercials
+- Fixed mouse wheel not spinning jump distance on Firefox
+- Fixed Spoiler-Free Mode not working on certain Twitch video pages
+
+
+#### Installation
+
+Chrome:
+
+https://chrome.google.com/webstore/detail/open-end/bgajbplcmfhpfebhiigohjannldlolpf
+
+Firefox:
+
+https://addons.mozilla.org/firefox/addon/open-end/
 
 ### Open End "0.4.0 (BETA)" (2019-01-27)
 
 Maintenance release. Only changes to adapt to the changes Twitch.tv and MLG.com made to their pages.
-
-
-#### Installation
-You can install it via the Chrome Web Store:
-
-https://chrome.google.com/webstore/detail/open-end/bgajbplcmfhpfebhiigohjannldlolpf
 
 
 ### Open End "0.3.1 (BETA)" (2018-04-01)
@@ -41,6 +62,5 @@ This release contains a lot of quality of life changes to enhance the user exper
 
 
 ## Roadmap (Planned Features)
-- Firefox support?
 - YouTube support?
 - Full support for MLG.com?
