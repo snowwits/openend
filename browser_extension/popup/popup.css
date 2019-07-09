@@ -1,6 +1,9 @@
 body {
     white-space: nowrap;
     min-width: 19em;
+    font-size: 0.75em;
+    font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+    margin: 10px;
 }
 
 h1, h2, h3 {
@@ -43,11 +46,12 @@ h3 {
 #sfmStateContainer img {
     width: 2em;
     height: 2em;
-    vertical-align: top; /* align the image with the text */
+    vertical-align: middle; /* align the image with the text */
     margin-right: 0.6em;
 }
 
 #sfmStateLabel {
+    vertical-align: middle; /* align the image with the text */
     font-size: 1.3em;
 }
 
@@ -88,6 +92,7 @@ h3 {
 
 #sfmEnabledOnChannel {
     margin-top: 0; /* override Chrome default to allow custom margins*/
+    vertical-align: middle; /* to align checkbox with label */
 }
 
 /* BUTTON BAR */
