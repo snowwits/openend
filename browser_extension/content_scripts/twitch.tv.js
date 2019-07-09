@@ -1096,16 +1096,18 @@ function isTheatreModeConfigured() {
 /**
  * "Exit Theatre Mode" button:
  * <button class="player-button qa-theatre-mode-button" id="" tabindex="-1" type="button">
- *     <span><span class="player-tip" data-tip="Kino-Modus beenden"></span><span class="">
- *         <svg class=""><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#icon_theatre_deactivate"></use></svg>
- *     </span></span>
+ *     <span>
+ *         <span class="player-tip player-tip--theater-mode" data-tip="Kino-Modus aus"></span>
+ *         <span class=""><svg id="icon_theatre_deactivate" viewBox="0 0 30 30" xmlns="http://www.w3.org/2000/svg"><path>...</path></svg></span>
+ *     </span>
  * </button>
  *
  * "Enter Theatre Mode" button:
  * <button class="player-button qa-theatre-mode-button" id="" tabindex="-1" type="button">
- *      <span><span class="player-tip" data-tip="Kino-Modus"></span><span class="">
- *          <svg class=""><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#icon_theatre"></use></svg>
- *      </span></span>
+ *     <span>
+ *         <span class="player-tip player-tip--theater-mode" data-tip="Kino-Modus"></span>
+ *         <span class=""><svg id="icon_theatre" viewBox="0 0 30 30" xmlns="http://www.w3.org/2000/svg"><path>...</path></svg></span>
+ *     </span>
  * </button>
  *
  * @param theatreModeButton {Element} the theatre mode toggle button node (not null)
@@ -1113,12 +1115,12 @@ function isTheatreModeConfigured() {
  */
 function isTheatreModeActive(theatreModeButton) {
     const innerHtml = theatreModeButton.innerHTML;
-    if (innerHtml.indexOf("xlink:href='#icon_theatre_deactivate'") !== -1) {
+    if (innerHtml.indexOf("id=\"icon_theatre_deactivate\"") !== -1) {
         return true;
-    } else if (innerHtml.indexOf("xlink:href='#icon_theatre'") !== -1) {
+    } else if (innerHtml.indexOf("id=\"icon_theatre\"") !== -1) {
         return false;
     }
-    log("Could not determine if Theatre Mode is active");
+    warn("Could not determine if Theatre Mode is active");
     return false;
 }
 
