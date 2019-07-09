@@ -1,10 +1,11 @@
 body {
     padding: 0 0.5em 0.5em 1em;
+    font-family: "Segoe UI", Tahoma, Arial, sans-serif;
 }
 
 #options {
-    width: 500px;
-    height: 500px;
+    min-width: 500px;
+    min-height: 450px;
     /* height so that the div is not higher than the Chrome options box and Chrome won't display their own scroll pane
            PROBLEM is that the options box's height depends on the height of Chrome. So on 720p its smaller than on 1080p*/
     overflow-y: auto;
