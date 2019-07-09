@@ -1,3 +1,7 @@
 .opnd-hidden {
     display: none;
 }
+
+.opnd-player-btn {
+    text-align: center;
+}

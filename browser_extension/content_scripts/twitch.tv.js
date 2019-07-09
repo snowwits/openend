@@ -1175,7 +1175,7 @@ function buildPlayerToolbarButton(id, onclick, tooltipId = null, tooltipTxtMsgNa
     // Build button
     const btn = document.createElement("button");
     btn.id = id;
-    btn.classList.add(TWITCH_PLAYER_BTN_CLASS);
+    btn.classList.add(TWITCH_PLAYER_BTN_CLASS, OPND_PLAYER_BTN_CLASS);
     btn.onclick = onclick;
 
     // Build button content span
