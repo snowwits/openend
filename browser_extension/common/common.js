@@ -1039,6 +1039,7 @@ const OPND_CONTAINER_VIDEO_LIST_ITEM_PREVIEW_CLASS = "opnd-container-video-list-
  */
 const OPND_CONTAINER_VIDEO_LIST_ITEM_DURATION_CLASS = "opnd-container-video-list-item-duration";
 
+const OPND_PLAYER_BTN_CLASS = "opnd-player-btn";
 const OPND_PLAYER_SHOW_HIDE_DURATION_BTN_ID = "opnd-player-show-hide-duration-btn";
 const OPND_PLAYER_SHOW_HIDE_DURATION_IMG_ID = "opnd-player-show-hide-duration-img";
 const OPND_PLAYER_SHOW_HIDE_DURATION_TOOLTIP_SPAN_ID = "opnd-player-show-hide-duration-tooltip";
