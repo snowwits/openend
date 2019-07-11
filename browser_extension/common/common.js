@@ -589,18 +589,34 @@ class TwitchPlatform extends Platform {
                 if (url.pathname.startsWith("/subscriptions")) {
                     return new PlatformPage(TwitchPageType.SUBSCRIPTIONS);
                 }
+                // "/videos/366201084"
                 let match = new RegExp("^/videos/(\\d+)(?:/)?$").exec(url.pathname);
                 if (match !== null) {
                     return new PlatformPage(TwitchPageType.VIDEO, null, match[1]);
                 }
-                match = new RegExp("^/([^/]+)/videos/all(?:/)?$").exec(url.pathname);
+                // "/overwatchcontenders/video/366201084"
+                match = new RegExp("^/([^/]+)/video/(\\d+)(?:/)?$").exec(url.pathname);
+                if (match !== null) {
+                    return new PlatformPage(TwitchPageType.VIDEO, this.buildChannel(match[1]), match[2]);
+                }
+                // "/overwatchcontenders/videos"
+                match = new RegExp("^/([^/]+)/videos(?:/)?$").exec(url.pathname);
                 if (match !== null) {
                     return new PlatformPage(TwitchPageType.CHANNEL_VIDEOS, this.buildChannel(match[1]));
                 }
+                // Seems like these formats are not used anymore but we will keep them in for a while just to be sure:
+                // "/overwatchcontenders/videos/all"
+                // "/overwatchcontenders/videos/<some_sub_dir>"
+                match = new RegExp("^/([^/]+)/videos/.*$").exec(url.pathname);
+                if (match !== null) {
+                    return new PlatformPage(TwitchPageType.CHANNEL_VIDEOS, this.buildChannel(match[1]));
+                }
+                // "/overwatchcontenders"
                 match = new RegExp("^/([^/]+)(?:/)?$").exec(url.pathname);
                 if (match !== null) {
                     return new PlatformPage(TwitchPageType.CHANNEL, this.buildChannel(match[1]));
                 }
+                // "/overwatchcontenders/<some_sub_dir>"
                 match = new RegExp("^/([^/]+)/.*$").exec(url.pathname);
                 if (match !== null) {
                     return new PlatformPage(TwitchPageType.CHANNEL_UNKNOWN_SUB_DIR, this.buildChannel(match[1]));
