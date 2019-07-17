@@ -123,8 +123,7 @@ function updateInputsWithOptions(options) {
             if (enabledDiv) {
                 const enabledSelect = enabledDiv.querySelector("select");
                 enabledSelect.value = optSfmEnabledPlatforms[platform.name];
-            }
-            else {
+            } else {
                 const newPlatformDiv = document.createElement("div");
                 newPlatformDiv.classList.add(SFM_ENABLED_PLATFORM_CLS);
                 setData(newPlatformDiv, DATA_PLATFORM_NAME, platform.name);
@@ -172,9 +171,9 @@ function updateInputsWithOptions(options) {
 function showStatusMsg(msg) {
     // Update status to let user know options were saved.
     const status = document.getElementById("status");
-    status.innerHTML = msg;
+    status.textContent = msg;
     setTimeout(function () {
-        status.innerHTML = "";
+        status.textContent = "";
     }, MESSAGE_DISPLAY_DURATION);
 }
 
@@ -309,11 +308,11 @@ function init() {
 
     // Controls
     const saveBtn = document.getElementById("save");
-    saveBtn.innerHTML = chrome.i18n.getMessage("options_save");
+    saveBtn.textContent = chrome.i18n.getMessage("options_save");
     saveBtn.onclick = saveOptions;
 
     const restoreDefaultsBtn = document.getElementById("restoreDefaults");
-    restoreDefaultsBtn.innerHTML = chrome.i18n.getMessage("options_restoreDefaults");
+    restoreDefaultsBtn.textContent = chrome.i18n.getMessage("options_restoreDefaults");
     restoreDefaultsBtn.onclick = restoreDefaultOptions;
 
     restoreStoredOptions();
