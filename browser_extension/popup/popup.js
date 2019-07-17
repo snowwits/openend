@@ -102,8 +102,7 @@ function updateIneffective(options) {
             let title = "";
             if (sfmEnabledGlobal === SfmEnabled.NEVER) {
                 title = chrome.i18n.getMessage("popup_sfmEnabled_ineffective_disabledGlobally");
-            }
-            else if (sfmEnabledGlobal === SfmEnabled.ALWAYS) {
+            } else if (sfmEnabledGlobal === SfmEnabled.ALWAYS) {
                 title = chrome.i18n.getMessage("popup_sfmEnabled_ineffective_enabledGlobally");
             }
             sfmEnabledOnPlatformContainerDiv.title = title;
@@ -165,8 +164,7 @@ function updateUiAfterTabInfoUpdate(tabInfo) {
     if (SfmState.ACTIVE === sfmState || SfmState.INACTIVE === sfmState || SfmState.CHANNEL_DEPENDENT === sfmState) {
         sfmStateIconImg.src = chrome.runtime.getURL(SfmState.INACTIVE === sfmState ? "img/show_black.svg" : "img/hide_black.svg");
         setVisible(sfmStateIconImg, true);
-    }
-    else {
+    } else {
         setVisible(sfmStateIconImg, false);
         sfmStateIconImg.src = "";
     }
@@ -286,8 +284,7 @@ function handleSfmEnabledOnChannelChange() {
         let newChannels;
         if (sfmEnabledOnChannelCheckbox.checked === true) {
             newChannels = sortedSetPlus(channels, channel, Channel.equal, Channel.compareByVerboseQualifiedName);
-        }
-        else {
+        } else {
             newChannels = sortedSetMinus(channels, channel, Channel.equal);
         }
         const newChannelsSerialized = Channel.serializeArray(newChannels);
@@ -313,8 +310,7 @@ function sortedSetMinus(array, minusItem, equalsFunction) {
         // Delete 1 element, starting from index
         newArray.splice(indexOfItem, 1);
         return newArray;
-    }
-    else {
+    } else {
         return array;
     }
 }
@@ -396,7 +392,7 @@ function init() {
 
     // Open Options btn
     const openOptionsBtn = document.getElementById(OPEN_OPTIONS_ID);
-    openOptionsBtn.innerHTML = chrome.i18n.getMessage("popup_openOptions");
+    openOptionsBtn.textContent = chrome.i18n.getMessage("popup_openOptions");
     openOptionsBtn.onclick = handleOpenOptionsAction;
 
     // Read options
