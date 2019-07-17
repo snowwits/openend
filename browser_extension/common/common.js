@@ -1059,11 +1059,22 @@ const OPND_PLAYER_BTN_CLASS = "opnd-player-btn";
 const OPND_PLAYER_SHOW_HIDE_DURATION_BTN_ID = "opnd-player-show-hide-duration-btn";
 const OPND_PLAYER_SHOW_HIDE_DURATION_IMG_ID = "opnd-player-show-hide-duration-img";
 const OPND_PLAYER_SHOW_HIDE_DURATION_TOOLTIP_SPAN_ID = "opnd-player-show-hide-duration-tooltip";
+
 const OPND_PLAYER_JUMP_DISTANCE_INPUT_ID = "opnd-player-jump-distance-input";
 const OPND_PLAYER_JUMP_BACKWARD_BTN_ID = "opnd-player-jump-backward-btn";
 const OPND_PLAYER_JUMP_BACKWARD_TOOLTIP_SPAN_ID = "opnd-player-jump-backward-tooltip";
 const OPND_PLAYER_JUMP_FORWARD_BTN_ID = "opnd-player-jump-forward-btn";
 const OPND_PLAYER_JUMP_FORWARD_TOOLTIP_SPAN_ID = "opnd-player-jump-forward-tooltip";
+
+const OPND_PLAYER_JUMP_BACKWARD_30S_BTN_ID = "opnd-player-jump-backward-30s-btn";
+const OPND_PLAYER_JUMP_BACKWARD_30S_TOOLTIP_SPAN_ID = "opnd-player-jump-backward-30s-tooltip";
+const OPND_PLAYER_JUMP_BACKWARD_5S_BTN_ID = "opnd-player-jump-backward-5s-btn";
+const OPND_PLAYER_JUMP_BACKWARD_5S_TOOLTIP_SPAN_ID = "opnd-player-jump-backward-5s-tooltip";
+
+const OPND_PLAYER_JUMP_FORWARD_30S_BTN_ID = "opnd-player-jump-forward-30s-btn";
+const OPND_PLAYER_JUMP_FORWARD_30S_TOOLTIP_SPAN_ID = "opnd-player-jump-forward-30s-tooltip";
+const OPND_PLAYER_JUMP_FORWARD_5S_BTN_ID = "opnd-player-jump-forward-5s-btn";
+const OPND_PLAYER_JUMP_FORWARD_5S_TOOLTIP_SPAN_ID = "opnd-player-jump-forward-5s-tooltip";
 
 
 /*

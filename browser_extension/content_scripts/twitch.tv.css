@@ -34,7 +34,7 @@
 }
 
 #opnd-player-show-hide-duration-btn {
-    margin-right: 10px; /* more spacing right of the show/hide duration button to not accidentally click it */
+    margin-right: 15px; /* more spacing right of the show/hide duration button to not accidentally click it */
 }
 
 #opnd-player-jump-distance-input {

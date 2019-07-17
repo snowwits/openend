@@ -1136,11 +1136,19 @@ function buildPlayerToolbar() {
     toolbar.setAttribute("id", OPND_PLAYER_TOOLBAR_ID);
 
     // Build "Progress Visibility" button
-    const progressVisibilityBtn = buildPlayerToolbarButton(OPND_PLAYER_SHOW_HIDE_DURATION_BTN_ID, handlePlayerShowHideDurationAction, OPND_PLAYER_SHOW_HIDE_DURATION_TOOLTIP_SPAN_ID, null, OPND_PLAYER_SHOW_HIDE_DURATION_IMG_ID);
+    const progressVisibilityBtn = buildPlayerToolbarButton(OPND_PLAYER_SHOW_HIDE_DURATION_BTN_ID, handlePlayerShowHideDurationAction, OPND_PLAYER_SHOW_HIDE_DURATION_IMG_ID, null, OPND_PLAYER_SHOW_HIDE_DURATION_TOOLTIP_SPAN_ID, null);
     toolbar.appendChild(progressVisibilityBtn);
 
+    // Build "Jump Back 5s" button
+    const jumpBackward5sBtn = buildPlayerToolbarButton(OPND_PLAYER_JUMP_BACKWARD_5S_BTN_ID, handlePlayerJumpBackward5sAction, null, "img/replay_5_white.svg", OPND_PLAYER_JUMP_BACKWARD_5S_TOOLTIP_SPAN_ID, "player_jumpBackward", "5s");
+    toolbar.appendChild(jumpBackward5sBtn);
+
+    // Build "Jump Back 30s" button
+    const jumpBackward30sBtn = buildPlayerToolbarButton(OPND_PLAYER_JUMP_BACKWARD_30S_BTN_ID, handlePlayerJumpBackward30sAction, null, "img/replay_30_white.svg", OPND_PLAYER_JUMP_BACKWARD_30S_TOOLTIP_SPAN_ID, "player_jumpBackward", "30s");
+    toolbar.appendChild(jumpBackward30sBtn);
+
     // Build "Jump Back" button
-    const jumpBackwardBtn = buildPlayerToolbarButton(OPND_PLAYER_JUMP_BACKWARD_BTN_ID, handlePlayerJumpBackwardAction, OPND_PLAYER_JUMP_BACKWARD_TOOLTIP_SPAN_ID, "player_jumpBackward", null, "img/jump_backward_white.svg");
+    const jumpBackwardBtn = buildPlayerToolbarButton(OPND_PLAYER_JUMP_BACKWARD_BTN_ID, handlePlayerJumpBackwardAction, null, "img/replay_white.svg", OPND_PLAYER_JUMP_BACKWARD_TOOLTIP_SPAN_ID, "player_jumpBackward");
     toolbar.appendChild(jumpBackwardBtn);
 
     // Build "Jump Distance" text input
@@ -1155,8 +1163,16 @@ function buildPlayerToolbar() {
     toolbar.appendChild(jumpDistanceInput);
 
     // Build "Jump Forward" button
-    const jumpForwardBtn = buildPlayerToolbarButton(OPND_PLAYER_JUMP_FORWARD_BTN_ID, handlePlayerJumpForwardAction, OPND_PLAYER_JUMP_FORWARD_TOOLTIP_SPAN_ID, "player_jumpForward", null, "img/jump_forward_white.svg");
+    const jumpForwardBtn = buildPlayerToolbarButton(OPND_PLAYER_JUMP_FORWARD_BTN_ID, handlePlayerJumpForwardAction, null, "img/forward_white.svg", OPND_PLAYER_JUMP_FORWARD_TOOLTIP_SPAN_ID, "player_jumpForward");
     toolbar.appendChild(jumpForwardBtn);
+
+    // Build "Jump Forward 30s" button
+    const jumpForward30sBtn = buildPlayerToolbarButton(OPND_PLAYER_JUMP_FORWARD_30S_BTN_ID, handlePlayerJumpForward30sAction, null, "img/forward_30_white.svg", OPND_PLAYER_JUMP_FORWARD_30S_TOOLTIP_SPAN_ID, "player_jumpForward", "30s");
+    toolbar.appendChild(jumpForward30sBtn);
+
+    // Build "Jump Forward 5s" button
+    const jumpForward5sBtn = buildPlayerToolbarButton(OPND_PLAYER_JUMP_FORWARD_5S_BTN_ID, handlePlayerJumpForward5sAction, null, "img/forward_5_white.svg", OPND_PLAYER_JUMP_FORWARD_5S_TOOLTIP_SPAN_ID, "player_jumpForward", "5s");
+    toolbar.appendChild(jumpForward5sBtn);
 
     return toolbar;
 }
@@ -1165,13 +1181,14 @@ function buildPlayerToolbar() {
  *
  * @param id {!string}
  * @param onclick {!function}
- * @param tooltipId {?string}
- * @param tooltipTxtMsgName {?string} il8n message name for the tooltip text and image alt
  * @param imgId {?string}
  * @param imgSrc {?string} relative URL in the extension directory
+ * @param tooltipId {?string}
+ * @param tooltipTxtMsgName {?string} il8n message name for the tooltip text and image alt
+ * @param tooltipTxtMsgSubstitutions {...Object} il8n message name for the tooltip text and image alt
  * @return {!Element}
  */
-function buildPlayerToolbarButton(id, onclick, tooltipId = null, tooltipTxtMsgName = null, imgId = null, imgSrc = null) {
+function buildPlayerToolbarButton(id, onclick, imgId = null, imgSrc = null, tooltipId = null, tooltipTxtMsgName = null, ...tooltipTxtMsgSubstitutions) {
     // Build button
     const btn = document.createElement("button");
     btn.id = id;
@@ -1183,7 +1200,7 @@ function buildPlayerToolbarButton(id, onclick, tooltipId = null, tooltipTxtMsgNa
     btn.appendChild(content);
 
     // Build tooltip
-    const tooltipTxtMsg = tooltipTxtMsgName !== null ? chrome.i18n.getMessage(tooltipTxtMsgName) : null;
+    const tooltipTxtMsg = tooltipTxtMsgName !== null ? chrome.i18n.getMessage(tooltipTxtMsgName, tooltipTxtMsgSubstitutions) : null;
     const tooltip = document.createElement("span");
     tooltip.id = tooltipId;
     tooltip.classList.add(TWITCH_PLAYER_TOOLTIP_SPAN_CLASS);
@@ -1194,12 +1211,14 @@ function buildPlayerToolbarButton(id, onclick, tooltipId = null, tooltipTxtMsgNa
 
     // Build img
     const img = document.createElement("img");
-    img.id = imgId;
+    if (imgId !== null) {
+        img.id = imgId;
+    }
     if (imgSrc !== null) {
         img.src = chrome.runtime.getURL(imgSrc);
     }
     if (tooltipTxtMsg !== null) {
-        img.alt = chrome.i18n.getMessage(tooltipTxtMsg);
+        img.alt = chrome.i18n.getMessage(tooltipTxtMsg, tooltipTxtMsgSubstitutions);
     }
 
     content.appendChild(img);
@@ -1345,9 +1364,9 @@ function handleJumpDistanceInputKeyUpEvent(keyboardEvent) {
      */
     if (keyboardEvent.key === "Enter") {
         if (keyboardEvent.shiftKey) {
-            playerJump(-1);
+            playerJumpBasedOnInput(-1);
         } else {
-            playerJump(1);
+            playerJumpBasedOnInput(1);
         }
     } else if (keyboardEvent.key === "ArrowUp") {
         spinPlayerJumpDistance(1);
@@ -1401,19 +1420,64 @@ function spinPlayerJumpDistance(direction) {
 
 function handlePlayerJumpBackwardAction() {
     log("Handling action [Player: Jump Backward]");
-    playerJump(-1);
+    playerJumpBasedOnInput(-1);
 }
 
 function handlePlayerJumpForwardAction() {
-    log("Handling action [Player: Jump Forward]");
-    playerJump(1);
+    log("Handling action [Player:Jump Forward]");
+    playerJumpBasedOnInput(1);
+}
+
+function handlePlayerJumpBackward5sAction() {
+    log("Handling action [Player: Jump Backward 5s]");
+    playerJump(-5);
+}
+
+function handlePlayerJumpBackward30sAction() {
+    log("Handling action [Player: Jump Backward 30s]");
+    playerJump(-30);
+}
+
+function handlePlayerJumpForward5sAction() {
+    log("Handling action [Player: Jump Forward 5]");
+    playerJump(5);
+}
+
+
+function handlePlayerJumpForward30sAction() {
+    log("Handling action [Player: Jump Forward 30]");
+    playerJump(30);
 }
 
 /**
  *
- * @param direction {!number} 1 for forward or -1 for backward
+ *  @param direction {!number} 1 for forward or -1 for backward
  */
-function playerJump(direction) {
+function playerJumpBasedOnInput(direction) {
+    if (direction !== 1 && direction !== -1) {
+        log("Could not dynamic jump: Invalid direction [%s] (needs to be either 1 or -1", direction);
+        return;
+    }
+
+    // Get the jump distance in seconds
+    const distanceInputValue = document.getElementById(OPND_PLAYER_JUMP_DISTANCE_INPUT_ID).value;
+    // distance is an absolute value
+    const distance = parseDuration(distanceInputValue);
+    if (distance === 0) {
+        log("Could not dynamic jump: No valid jump distance given [%s]", distanceInputValue);
+        return;
+    }
+
+    const directedDistance = distance * direction;
+
+    playerJump(directedDistance)
+}
+
+/**
+ *
+ * @param distance {!number} distance to jump in seconds (positive to jump forward, negative to jump backward)
+ */
+function playerJump(distance) {
     const sliderDiv = getSingleElementByClassName(TWITCH_PROGRESS_SLIDER_DIV_CLASS);
     if (!sliderDiv) {
         error("Could not jump: Slider not available [.%s]", TWITCH_PROGRESS_SLIDER_DIV_CLASS);
@@ -1430,17 +1494,8 @@ function playerJump(direction) {
         return;
     }
 
-    // Get the jump distance in seconds
-    const distanceInputValue = document.getElementById(OPND_PLAYER_JUMP_DISTANCE_INPUT_ID).value;
-    // distance is an absolute value
-    const distance = parseDuration(distanceInputValue);
-    if (distance === 0) {
-        log("Could not jump: No valid jump distance given [%s]", distanceInputValue);
-        return;
-    }
-
     // Add/Subtract the jump distance to/from the current time (but require: minTime <= newTime <= maxTime)
-    const newTime = Math.min(maxTime, Math.max(minTime, currentTime + distance * direction));
+    const newTime = Math.min(maxTime, Math.max(minTime, currentTime + distance));
     /**
      *     Can be negative (for jumping backwards) or positive (for jumping forward)
      */
