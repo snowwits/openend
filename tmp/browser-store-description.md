@@ -8,9 +8,9 @@
 
 No more spoilers with the Spoiler-Free Mode:
 
-• Hides the progress and duration of the video you are currently watching.
-• Hides the title, preview and duration of other videos (suggested/related videos, videos in video lists).
-• Provides a Video Navigation Toolbar to mitigate the lack of a seek bar.
+• Hides the progress and duration of the video you are currently watching
+• Hides the title, preview and duration of other videos (suggested/related videos, videos in video lists)
+• Provides a Video Navigation Toolbar to mitigate the lack of a seek bar
 
 
 Keyboard / mouse shortcuts:
@@ -30,9 +30,9 @@ For more information, see the README at GitHub: https://github.com/snowwits/open
 <b>No more spoilers with the Spoiler-Free Mode:</b>
 
 <ul>
-<li>Hides the progress and duration of the video you are currently watching.</li>
-<li>Hides the title, preview and duration of other videos (suggested/related videos, videos in video lists).</li>
-<li>Provides a Video Navigation Toolbar to mitigate the lack of a seek bar.</li>
+<li>Hides the progress and duration of the video you are currently watching</li>
+<li>Hides the title, preview and duration of other videos (suggested/related videos, videos in video lists)</li>
+<li>Provides a Video Navigation Toolbar to mitigate the lack of a seek bar</li>
 </ul>
 
 
@@ -57,16 +57,16 @@ For more information, see the README at GitHub: <a href="https://github.com/snow
 
 Keine Spoiler mehr mit dem Spoilerfreien Modus:
 
-• Versteckt den Fortschritt und die Dauer des aktuell abgespielten Videos.
-• Versteckt den Titel, die Vorschau und die Dauer von anderen Videos (vorgeschlagene/ähnliche Videos oder Videos in Videolisten).
-• Bietet eine Video-Navigations-Leiste als Ersatz für den ausgeblendeten Fortschrittsbalken.
+• Versteckt den Fortschritt und die Dauer des aktuell abgespielten Videos
+• Versteckt den Titel, die Vorschau und die Dauer von anderen Videos (vorgeschlagene/ähnliche Videos oder Videos in Videolisten)
+• Bietet eine Video-Navigations-Leiste als Ersatz für den ausgeblendeten Fortschrittsbalken
 
 
 Tastenkürzel für Maus und Tastatur:
 
 Wenn der Fokus auf dem Zeitsprung-Eingabefeld liegt (mit der Maus hinein klicken), werden die folgenden Tastenkürzel unterstützt:
 
-• Pfeil aufwärts/Pfeil abwärts oder Mausrad: Erhöht/vermindert die Zeitsprunglänge um einen Schritt (die Schrittgröße beträgt üblicherweise ganze Minuten. Unter einer Minute gibt es jedoch zusätzliche Schritte bei 30 Sekuden und 5 Sekunden)
+• Pfeil aufwärts/Pfeil abwärts oder Mausrad: Erhöht/vermindert die Zeitsprunglänge um einen Schritt (die Schrittgröße beträgt üblicherweise ganze Minuten. Unter einer Minute gibt es jedoch zusätzliche Schritte bei 30 Sekunden und 5 Sekunden)
 • Enter: Springt die angegebene Länge vorwärts in der Zeit
 • Shift + Enter: Springt die angegebene Länge rückwärts in der Zeit
 
@@ -81,9 +81,9 @@ Mehr Informationen im README auf GitHub: https://github.com/snowwits/openend
 <b>Keine Spoiler mehr mit dem Spoilerfreien Modus:</b>
 
 <ul>
-<li>Versteckt den Fortschritt und die Dauer des aktuell abgespielten Videos.</li>
-<li>Versteckt den Titel, die Vorschau und die Dauer von anderen Videos (vorgeschlagene/ähnliche Videos oder Videos in Videolisten).</li>
-<li>Bietet eine Video-Navigations-Leiste als Ersatz für den ausgeblendeten Fortschrittsbalken.</li>
+<li>Versteckt den Fortschritt und die Dauer des aktuell abgespielten Videos</li>
+<li>Versteckt den Titel, die Vorschau und die Dauer von anderen Videos (vorgeschlagene/ähnliche Videos oder Videos in Videolisten)</li>
+<li>Bietet eine Video-Navigations-Leiste als Ersatz für den ausgeblendeten Fortschrittsbalken</li>
 </ul>
 
 
@@ -91,7 +91,7 @@ Mehr Informationen im README auf GitHub: https://github.com/snowwits/openend
 
 Wenn der Fokus auf dem Zeitsprung-Eingabefeld liegt (mit der Maus hinein klicken), werden die folgenden Tastenkürzel unterstützt:
 <ul>
-<li>Pfeil aufwärts/Pfeil abwärts oder Mausrad: Erhöht/vermindert die Zeitsprunglänge um einen Schritt (die Schrittgröße beträgt üblicherweise ganze Minuten. Unter einer Minute gibt es jedoch zusätzliche Schritte bei 30 Sekuden und 5 Sekunden)</li>
+<li>Pfeil aufwärts/Pfeil abwärts oder Mausrad: Erhöht/vermindert die Zeitsprunglänge um einen Schritt (die Schrittgröße beträgt üblicherweise ganze Minuten. Unter einer Minute gibt es jedoch zusätzliche Schritte bei 30 Sekunden und 5 Sekunden)</li>
 <li>Enter: Springt die angegebene Länge vorwärts in der Zeit</li>
 <li>Shift + Enter: Springt die angegebene Länge rückwärts in der Zeit</li>
 </ul>
