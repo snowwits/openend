@@ -351,15 +351,21 @@ function formatPageConfigurationState() {
 /**
  * Channel link above the video player in a directory or watching a VOD (twitch.tv/<channel>/... twitch.tv/videos/<video-id>):
  *
- * <a data-target="channel-header__channel-link" data-a-target="user-channel-header-item" class="channel-header__user align-items-center flex flex-shrink-0 flex-nowrap pd-r-2 pd-y-05" href="/silkthread">
- *  <div class="align-items-center flex flex-shrink-0 flex-nowrap">
- *      <div class="channel-header__user-avatar channel-header__user-avatar--active align-items-stretch flex flex-shrink-0 mg-r-1">
- *          <figure class="tw-avatar tw-avatar--size-36">
- *              <img class="" src="https://static-cdn.jtvnw.net/jtv_user_pictures/silkthread-profile_image-9f2fe572026ab4d7-70x70.jpeg" alt="silkthread">
- *          </figure>
- *     </div>
- *     <h5 class="">silkthread</h5>
- *  </div>
+ * <a class="channel-header__user tw-align-items-center tw-flex tw-flex-nowrap tw-flex-shrink-0 tw-interactive tw-link tw-link--hover-underline-none tw-pd-r-2 tw-pd-y-05" data-a-target="user-channel-header-item" href="/overwatchleague">
+ *     <div class="tw-align-items-center tw-flex tw-flex-nowrap tw-flex-shrink-0">
+ *         <div class="channel-header__user-avatar channel-header__user-avatar--active tw-align-items-stretch tw-flex tw-flex-shrink-0 tw-mg-r-1">
+ *             <div class="channel-header__avatar-dropdown tw-relative">
+ *                 <figure class="tw-avatar tw-avatar--size-36"><img class="tw-avatar__img tw-block tw-border-radius-rounded tw-image" alt="OverwatchLeague" src="https://static-cdn.jtvnw.net/jtv_user_pictures/8c55fdc6-9b84-4daf-a33b-cb318acbf994-profile_image-70x70.png"></figure>
+ *             </div>
+ *        </div>
+ *        <h5 class="">OverwatchLeague</h5>
+ *        <div class="tw-inline-flex tw-tooltip-wrapper" aria-describedby="7f4dfe08aac4c3d192c4518ea56f9a68">
+ *            <div class="header-verified-badge tw-align-items-center tw-flex tw-mg-l-1">
+ *                <figure class="tw-svg"><svg class="tw-svg__asset tw-svg__asset--inherit tw-svg__asset--verified" width="20px" height="20px" version="1.1" viewBox="0 0 20 20" x="0px" y="0px"><path d="M13.683 8.731l-4.286 4a1.002 1.002 0 0 1-1.365 0l-1.714-1.602a1 1 0 0 1 1.365-1.461l1.03.963 3.605-3.363a1.001 1.001 0 0 1 1.365 1.463m4.279 1.077l-2.196-5.303a.5.5 0 0 0-.271-.27l-5.303-2.197a.499.499 0 0 0-.383 0L4.506 4.234a.5.5 0 0 0-.271.271L2.038 9.808a.508.508 0 0 0 0 .383l2.194 5.304a.501.501 0 0 0 .27.27l5.307 2.196a.487.487 0 0 0 .383 0l5.303-2.196a.501.501 0 0 0 .27-.27l2.197-5.304a.499.499 0 0 0 0-.383" fill-rule="evenodd"></path></svg></figure>
+ *            </div>
+ *            <div class="tw-tooltip tw-tooltip--align-center tw-tooltip--right" data-a-target="tw-tooltip-label" role="tooltip" id="7f4dfe08aac4c3d192c4518ea56f9a68">Verifizierter Benutzer</div>
+ *        </div>
+ *    </div>
  * </a>
  *
  * Channel link above the video player on the channel main page (both when channel is online or offline):
@@ -399,10 +405,10 @@ function determineChannel() {
         return;
     }
 
-    /**
+    /*
      * If on channel directory or video page, we can parse the channel link <a> element
      */
-    const channelLinkAnchor = document.querySelector("a[data-target=channel-header__channel-link]");
+    const channelLinkAnchor = document.querySelector("a.channel-header__user");
     if (channelLinkAnchor) {
         const pageTypResult = TWITCH_PLATFORM.parsePageFromUrl(channelLinkAnchor);
         if (pageTypResult && pageTypResult.channel) {
