@@ -4,6 +4,24 @@
 ## Version Notes
 
 
+### Open End "0.5.1 (BETA)" (2019-08-03)
+
+Bug fixes:
+
+- Fixed Twitch channel not determined on video page (thus Spoiler-Free Mode not being activated for said channel)
+
+
+#### Installation
+
+Chrome:
+
+https://chrome.google.com/webstore/detail/open-end/bgajbplcmfhpfebhiigohjannldlolpf
+
+Firefox:
+
+https://addons.mozilla.org/firefox/addon/open-end/
+
+
 ### Open End "0.5.0 (BETA)" (2019-07-23)
 
 Firefox support!
@@ -19,16 +37,6 @@ Notable bug fixes:
 - Fixed mouse wheel not spinning jump distance on Firefox
 - Fixed Spoiler-Free Mode not working on certain Twitch video pages
 
-
-#### Installation
-
-Chrome:
-
-https://chrome.google.com/webstore/detail/open-end/bgajbplcmfhpfebhiigohjannldlolpf
-
-Firefox:
-
-https://addons.mozilla.org/firefox/addon/open-end/
 
 ### Open End "0.4.0 (BETA)" (2019-01-27)
 
